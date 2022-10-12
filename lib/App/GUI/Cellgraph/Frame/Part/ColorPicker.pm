@@ -5,7 +5,7 @@ use Wx;
 package App::GUI::Cellgraph::Frame::Part::ColorPicker;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::ColorDisplay;
-use App::GUI::Cellgraph::Color;
+use Graphics::Toolkit::Color;
 
 sub new {
     my ( $class, $parent, $frame, $label, $data, $length, $space ) = @_;

@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.01';
+our $VERSION = '0.01_0';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -31,7 +31,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Cellgraph - draw by cellular automaton
+App::GUI::Cellgraph - draw pattern by cellular automaton
 
 =head1 SYNOPSIS 
 

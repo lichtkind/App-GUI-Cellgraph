@@ -36,14 +36,11 @@ sub new {
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'pendulum'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Pendulum Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Simple Cells');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},      'Pen Settings');
 
     $self->{'pendulum'}{'x'}    = App::GUI::Cellgraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'y'}    = App::GUI::Cellgraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'y','pendulum in y direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'z'}    = App::GUI::Cellgraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'z','circular pendulum',        0, 30);
-    $self->{'pendulum'}{'r'}    = App::GUI::Cellgraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'R','rotating pendulum',        0, 30);
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
+    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x/;
                                 
     $self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -201,11 +198,6 @@ sub new {
     $pendulum_sizer->AddSpacer(15);
     $pendulum_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pendulum_sizer->Add( $self->{'pendulum'}{'y'},   0, $vert_attr| &Wx::wxLEFT, 15);
-    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pendulum_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr| &Wx::wxLEFT, 15);
-    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pendulum_sizer->Add( $self->{'pendulum'}{'r'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $pendulum_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'pendulum'}->SetSizer( $pendulum_sizer );
 
@@ -281,7 +273,7 @@ sub new {
 
 sub init {
     my ($self) = @_;
-    $self->{'pendulum'}{$_}->init() for qw/x y z r/;
+    $self->{'pendulum'}{$_}->init() for qw/x/;
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
     $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
@@ -344,9 +336,6 @@ sub get_data {
     my $self = shift;
     { 
         x => $self->{'pendulum'}{'x'}->get_data,
-        y => $self->{'pendulum'}{'y'}->get_data,
-        z => $self->{'pendulum'}{'z'}->get_data,
-        r => $self->{'pendulum'}{'r'}->get_data,
         start_color => $self->{'color'}{'start'}->get_data,
         end_color => $self->{'color'}{'end'}->get_data,
         color_flow => $self->{'color_flow'}->get_data,
