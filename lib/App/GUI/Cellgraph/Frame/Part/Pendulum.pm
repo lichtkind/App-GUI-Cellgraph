@@ -4,7 +4,7 @@ use Wx;
 
 package App::GUI::Cellgraph::Frame::Part::Pendulum;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::SliderCombo;
+use App::GUI::Cellgraph::Widget::SliderCombo;
 
 sub new {
     my ( $class, $parent, $label, $help, $on, $max,  ) = @_;

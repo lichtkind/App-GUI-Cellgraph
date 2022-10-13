@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::SliderCombo;
+package App::GUI::Cellgraph::Widget::SliderCombo;
 use base qw/Wx::Panel/;
 
 sub new {

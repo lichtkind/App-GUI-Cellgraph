@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::ColorDisplay;
+package App::GUI::Cellgraph::Widget::ColorDisplay;
 use base qw/Wx::Panel/;
 
 sub new {

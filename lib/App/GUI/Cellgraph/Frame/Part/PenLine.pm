@@ -4,15 +4,15 @@ use Wx;
 
 package App::GUI::Cellgraph::Frame::Part::PenLine;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::SliderCombo;
+use App::GUI::Cellgraph::Widget::SliderCombo;
 
 sub new {
     my ( $class, $parent ) = @_;
     #return unless defined $max;
     my $self = $class->SUPER::new( $parent, -1 );
 
-    $self->{'length'} = App::GUI::Cellgraph::SliderCombo->new( $self, 80, 'Length','length of drawing in full circles',     1,  150,  10);
-    $self->{'density'} = App::GUI::Cellgraph::SliderCombo->new( $self, 80, 'Density','x 10 pixel per circle',  1,  400,  100);
+    $self->{'length'} = App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 80, 'Length','length of drawing in full circles',     1,  150,  10);
+    $self->{'density'} = App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 80, 'Density','x 10 pixel per circle',  1,  400,  100);
     $self->{'thickness'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[65, -1], [1,2,3,4,5,6,7,8,9], 1);
     $self->{'thickness'}->SetToolTip('dot size (c of line) in pixel');
 

@@ -8,16 +8,15 @@ use Wx::AUI;
 
 package App::GUI::Cellgraph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Cellgraph::Frame::Part::Pendulum;
 use App::GUI::Cellgraph::Frame::Part::ColorFlow;
 use App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use App::GUI::Cellgraph::Frame::Part::ColorPicker;
 use App::GUI::Cellgraph::Frame::Part::PenLine;
 use App::GUI::Cellgraph::Frame::Part::Board;
+use App::GUI::Cellgraph::Widget::ProgressBar;
 use App::GUI::Cellgraph::Dialog::Function;
 use App::GUI::Cellgraph::Dialog::Interface;
 use App::GUI::Cellgraph::Dialog::About;
-use App::GUI::Cellgraph::ProgressBar;
 use App::GUI::Cellgraph::Settings;
 use App::GUI::Cellgraph::Config;
 
@@ -39,9 +38,6 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Simple Cells');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},      'Pen Settings');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Cellgraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x/;
-                                
     $self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
     
@@ -51,7 +47,7 @@ sub new {
     $self->{'color_flow'}       = App::GUI::Cellgraph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
     $self->{'line'}             = App::GUI::Cellgraph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
                                
-    $self->{'progress'}            = App::GUI::Cellgraph::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
@@ -196,7 +192,6 @@ sub new {
  
      my $pendulum_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $pendulum_sizer->AddSpacer(15);
-    $pendulum_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $pendulum_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'pendulum'}->SetSizer( $pendulum_sizer );
@@ -273,7 +268,6 @@ sub new {
 
 sub init {
     my ($self) = @_;
-    $self->{'pendulum'}{$_}->init() for qw/x/;
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
     $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
@@ -335,7 +329,6 @@ sub save_image_dialog {
 sub get_data {
     my $self = shift;
     { 
-        x => $self->{'pendulum'}{'x'}->get_data,
         start_color => $self->{'color'}{'start'}->get_data,
         end_color => $self->{'color'}{'end'}->get_data,
         color_flow => $self->{'color_flow'}->get_data,
@@ -346,7 +339,6 @@ sub get_data {
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z r/;
     $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start end/;
     $self->{ $_ }->set_data( $data->{ $_ } ) for qw/color_flow line/;
 }
@@ -354,7 +346,7 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->reset;
     $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
@@ -364,7 +356,7 @@ sub draw {
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->reset;
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;

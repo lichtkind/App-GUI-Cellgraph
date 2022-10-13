@@ -4,8 +4,8 @@ use Wx;
 
 package App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::SliderCombo;
-use App::GUI::Cellgraph::ColorDisplay;
+use App::GUI::Cellgraph::Widget::SliderCombo;
+use App::GUI::Cellgraph::Widget::ColorDisplay;
 use Graphics::Toolkit::Color;
 
 sub new {
@@ -16,13 +16,13 @@ sub new {
 
     $self->{'init'} = $init;
     
-    $self->{'red'}   =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
-    $self->{'green'} =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
-    $self->{'blue'}  =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' B  ', "blue part of $type color",   0, 255,  0);
-    $self->{'hue'}   =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
-    $self->{'sat'}   =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
-    $self->{'light'} =  App::GUI::Cellgraph::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
-    $self->{'display'}= App::GUI::Cellgraph::ColorDisplay->new( $self, 25, 10, $init);
+    $self->{'red'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
+    $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
+    $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' B  ', "blue part of $type color",   0, 255,  0);
+    $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
+    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
+    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
+    $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
     $self->{'display'}->SetToolTip("$type color monitor");
     
     my $rgb2hsl = sub {
