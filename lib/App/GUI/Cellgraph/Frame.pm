@@ -8,6 +8,7 @@ use Wx::AUI;
 
 package App::GUI::Cellgraph::Frame;
 use base qw/Wx::Frame/;
+use App::GUI::Cellgraph::Frame::Part::SimpleCell;
 use App::GUI::Cellgraph::Frame::Part::ColorFlow;
 use App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use App::GUI::Cellgraph::Frame::Part::ColorPicker;
@@ -33,10 +34,12 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'pendulum'}  = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'simple'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Simple Cells');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},      'Pen Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'simple'}, 'Simple Cells');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},    'Pen Settings');
+
+    $self->{'panel'}{'simple'} = App::GUI::Cellgraph::Frame::Part::SimpleCell->new( $self->{'tab'}{'simple'});
 
     $self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -190,11 +193,11 @@ sub new {
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
  
-     my $pendulum_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $pendulum_sizer->AddSpacer(15);
-    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pendulum_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    $self->{'tab'}{'pendulum'}->SetSizer( $pendulum_sizer );
+     my $simple_tab_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $simple_tab_sizer->AddSpacer(15);
+    $simple_tab_sizer->Add( $self->{'panel'}{'simple'}, 0, $vert_attr, 0);
+    $simple_tab_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $self->{'tab'}{'simple'}->SetSizer( $simple_tab_sizer );
 
     my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $pen_sizer->AddSpacer(5);

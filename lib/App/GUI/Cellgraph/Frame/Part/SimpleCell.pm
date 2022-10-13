@@ -2,10 +2,39 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::Frame::Part::Pendulum;
+package App::GUI::Cellgraph::Frame::Part::SimpleCell;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::Widget::SliderCombo;
+use App::GUI::Cellgraph::Widget::Rule;
 
+sub new {
+    my ( $class, $parent, $state, $act_state ) = @_;
+    # my $x = 10;
+    # my $y = 10;
+    my $self = $class->SUPER::new( $parent, -1);
+    
+    my $colors = [[0,0,0]];
+    my $rule_cell_size = 20;
+    my @rule_in = ([0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1], );
+    $self->{'rule_img'} = [ map { App::GUI::Cellgraph::Widget::Rule->new( $self, $rule_cell_size, $_, $colors)} @rule_in];
+#    say for @{$self->{'rule_img'}};
+
+    my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
+    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    for my $rule_index (1 .. @{$self->{'rule_img'}}){
+        my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+        $row_sizer->AddSpacer(30);
+        $row_sizer->Add( $self->{'rule_img'}[$rule_index-1], 1, &Wx::wxEXPAND | &Wx::wxGROW);
+        $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+        $main_sizer->AddSpacer(30);
+        $main_sizer->Add( $row_sizer, 0, $std_attr, 10);
+    }
+    $self->SetSizer( $main_sizer );
+    $self;
+}
+
+1;
+
+__END__
 sub new {
     my ( $class, $parent, $label, $help, $on, $max,  ) = @_;
     return unless defined $max;
