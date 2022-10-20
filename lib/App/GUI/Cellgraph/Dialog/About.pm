@@ -7,7 +7,7 @@ use base qw/Wx::Dialog/;
 
 sub new {
     my ( $class, $parent) = @_;
-    my $self = $class->SUPER::new( $parent, -1, 'About Wx::GUI::Harmonograph' );
+    my $self = $class->SUPER::new( $parent, -1, 'About Wx::GUI::Cellgraph' );
 
     my @lblb_pro = ( [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL );
     my $version = Wx::StaticText->new( $self, -1, $App::GUI::Cellgraph::NAME . '    version '.$App::GUI::Cellgraph::VERSION , @lblb_pro);
@@ -15,7 +15,7 @@ sub new {
     my $license = Wx::StaticText->new( $self, -1, ' licensed under the GPL 3 ', @lblb_pro);
     my $libs    = Wx::StaticText->new( $self, -1, 'using Perl '.$^V.'    and    WxPerl '. $Wx::VERSION . '  ( '. &Wx::wxVERSION_STRING. ' )', @lblb_pro);
     my $url_lbl = Wx::StaticText->new( $self, -1, 'latest version on CPAN:   ', @lblb_pro);
-    my $url     = Wx::HyperlinkCtrl->new( $self, -1, 'metacpan.org/dist/App::GUI::Harmonograph', 'https://metacpan.org/dist/App::GUI::Harmonograph' );
+    my $url     = Wx::HyperlinkCtrl->new( $self, -1, 'metacpan.org/dist/App::GUI::Cellgraph', 'https://metacpan.org/dist/App::GUI::Cellgraph' );
 
     $self->{'close'} = Wx::Button->new( $self, -1, '&Close', [10,10], [-1, -1] );
     Wx::Event::EVT_BUTTON( $self, $self->{'close'},  sub { $self->EndModal(1) });
