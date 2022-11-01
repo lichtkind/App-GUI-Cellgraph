@@ -43,35 +43,14 @@ start the program (cellgraph)
 
 =item 2.
 
-read this POD or check dialogs from help menu
+push buttons and see patterns change
 
 =item 3.
 
-move knobs and observe how preview sketch reacts til you got 
-an interesting configuration 
-
-=item 4.
-
-push "Draw" (below drawing board or Ctrl+D) to produce full image
-
-=item 5.
-
 choose "Save" in Image menu (or Ctrl+S) to store image in a PNG / JPEG / SVG file
-
-=item 6.
-
-choose "Write" in settings menu (Ctrl+W) to save settings into an
-INI file for tweaking them later
+(choose image size  in menu beforehand)
 
 =back
-
-Please note that quick preview gets only triggered by the pendulum
-controls (section X, Y Z and R).
-
-After first use of the program, a config file .harmonograph will be
-created in you home directory. You may move it into "Documents" or your
-local directory you start the app from.
-
 
 =head1 DESCRIPTION
 
@@ -80,16 +59,15 @@ creating together spiraling pictures :
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/hose.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/df.png"        alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/126.jpg"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/30.jpg"    alt=""  width="300" height="300">
 </p>
 
 
-This is a cybernetic recreation of an Prof. Blackburns invention with 
-several enhancements:
+This is a row of cellular automata as escribed in Steve Wolframs book
+"A new kind of schience"
+
+enhancements:
 
 =over 4
 
@@ -118,34 +96,13 @@ changeable dot density and dot size
 
 =head1 Mechanics
 
-The classic Harmonograph is sturdy metal rack which does not move 
-while 3 pendula swing independently.
-Let us call the first pendulum X, because it only moves along the x-axis
-(left to right and back).
-In the same fashion the second (Y) only moves up and down.
-When both are connected to a pen, we get a combination of both movements.
-As long as X and Y swing at the same speed, the result is a diagonal line.
-Because when X goes right Y goes up and vice versa.
-But if we start one pendulum at the center and the other 
-at the upmost position we get a circle.
-In other words: we added an offset of 90 degrees to Y (or X).
-Our third pendulum Z moves the paper and does exactly 
-the already described circular movement without rotating around its center.
-If both circular movements (of X, Y and Z) are concurrent - 
-the pen just stays at one point, If both are countercurrent - 
-we get a circle. Interesting things start to happen, if we alter
-the speed of of X, Y and Z. Than famous harmonic pattern appear.
-And for even more complex drawings I added R, which is not really
-a pendulum, but an additional rotary movement of Z around its center.
-The pendula out of metal do of course fizzle out with time, 
-which you can see in the drawing, in a spiraling movement toward the center.
-We emulate this with a damping factor.
+
 
 
 =head1 GUI
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUI.png"    alt=""  width="630" height="410">
 </p>
 
 The general layout of the program has three parts,
@@ -176,7 +133,7 @@ When holting the Alt key you can see which Alt + letter combinations
 trigger which button.
 
 
-=head2 Pendulum
+=head2 Rule
 
 The content of the first tab are the settings that define the properties
 of the 4 pendula (X, Y, Z and R), which determine the shape of the drawing.
@@ -199,61 +156,16 @@ and can also change the starting position.
 The last slider adds an additional fine tuned offset between 0 and 90 degree.
 
 
-=head2 Line
+=head2 Start
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI2.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUI2.png"   alt=""  width="630" height="410">
 </p>
 
 The second tab on the right side has knobs that set the properties of the pen.
 First how many rotations will be drawn. Secondly the distance between dots. 
 Greater distances, together with color changes, help to clearify
 muddled up drawings. The third selector sets the dot size in pixel.
-
-=head2 Colors
-
-Below that on the second tab are the options for colorization and this
-has in itself three parts.
-Topmost are the settings for the color change, which is set on default to "no".
-In that case only the start (upper) color (below the color change section)
-will be used, and not the end (target) color (which is even below that).
-
-Both colors can be changed via controls for the red, green and blue value
-(see labels "R", "G" and "B" ) or hue, saturation and lightness (HSL).
-The result can be seen in the color monitor at the center of a color browser.
-
-An one time or alternating gradient between both colors with different
-dynamics (first in second row) can be employed. Circular gradients travel
-around the rainbow through a complement color with saturation and lightness
-of the target settings.
-Steps size refers always to how maby circles are draw before the color changes.
-
-The third part on the second tab grants you access to the color store of
-config file .harmonograph. There you can store your favorite colors under
-a name and reload or delet them later. The upper row is for interactions
-with the sart color and the lower with the end color.
-
-=head2 Commands
-
-In the lower left corner are two rows of command buttons. All other 
-commands are in the menu.
-
-The upper row has only one button for making a full drawing. This
-might take some time if line length and dot density are high.
-For that reason - changes on the pendulum settings (first tab)
-(and only these) produce an immediate drawing to better understand the
-nature of your changes. In the interest of time, these are only sketches.
-For a full drawing that takes all settings into account you need to push
-the "Draw" button or Press Ctrl + D.
-
-The second row has commands to quickly save many files.
-First push "Dir" to select the directory and then type directly into the
-secand text fiel the file base name - the index is found automatically.
-Every time you now press "Save" a file with the current image is saved
-under the path: dir + base name + index + ending (set in config). 
-The index automatically autoincrements when changing the settings.
-Push "INI" next to it to also save the settings of the current state
-under same file name, but with the ending .ini.
 
 
 =head2 Menu
