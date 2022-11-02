@@ -9,7 +9,6 @@ my $temp = [];
 sub get {
     my ($size, $rules, $start) = @_;
     return unless ref $rules eq 'HASH'and ref $start eq 'HASH';
-    # return $temp->[$rules->{'nr'}] if exists $temp->[$rules->{'nr'}];
     my $transfer_function = $rules->{'f'};
     my $rule_size = $rules->{'size'};
     my @start = @{ $start->{'list'} };

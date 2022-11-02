@@ -6,7 +6,7 @@ package App::GUI::Cellgraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 my $TAU = 6.283185307;
 
-use Graphics::Toolkit::Color;
+# use Graphics::Toolkit::Color;
 use App::GUI::Cellgraph::Grid;
 
 sub new {

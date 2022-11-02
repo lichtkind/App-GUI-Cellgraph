@@ -39,7 +39,7 @@ sub new {
     
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->next_start;  $self->{'call_back'}->() }) ;
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'one'},  sub { $self->init_start;  $self->{'call_back'}->() }) ;
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'one'},  sub { $self->reset_start; $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->random_start;$self->{'call_back'}->() }) ;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/grid cell_size /;# rule_size rule_type
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_start/;
@@ -48,7 +48,6 @@ sub new {
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
     my $all_attr = $std_attr | &Wx::wxALL;
-    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
 
     my $grid_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $grid_sizer->AddSpacer( 23 );
@@ -79,13 +78,14 @@ sub new {
     $int_sizer->Add( $self->{'btn'}{'one'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );
     $int_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    $main_sizer->AddSpacer( 30 );
 
     my $io_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $io_sizer->AddSpacer(20);
     $io_sizer->Add( $self->{'switch'}[$_-1], 0, &Wx::wxGROW ) for 1 .. $self->{'length'};
     $io_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     
+    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $main_sizer->AddSpacer( 20 );
     $main_sizer->Add( $grid_sizer, 0, $std_attr, 0);
     $main_sizer->AddSpacer( 25 );
     #~ $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, 20 );
@@ -126,11 +126,8 @@ sub get_list {
 }
 
 
-sub init {
-    my ($self) = @_;
-    $self->set_data({ value => 1, grid => 'lines', cell_size => 3 });
-    
-}
+sub init        { $_[0]->set_data({ value => 1, grid => 'lines', cell_size => 3 }) }
+sub reset_start { $_[0]->set_start_row(1) }
 
 sub get_data {
     my ($self) = @_;
@@ -145,7 +142,13 @@ sub get_data {
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    my $int = $data->{'value'};
+    $self->set_start_row( $data->{'value'} );
+    $self->{'grid'}->SetValue( $data->{'grid'} );
+    $self->{'cell_size'}->SetValue( $data->{'cell_size'} );
+}
+
+sub set_start_row {
+    my ($self, $int) = @_;
     $self->{'start_int'}->SetValue( $int );
     my $max = (2 ** $self->{'length'}) - 1;
     $int = int $int;
@@ -155,8 +158,6 @@ sub set_data {
         $self->{'switch'}[$i]->SetValue($int & 1);
         $int >>= 1;
     }
-    $self->{'grid'}->SetValue( $data->{'grid'} );
-    $self->{'cell_size'}->SetValue( $data->{'cell_size'} );
 }
 
 sub SetCallBack {

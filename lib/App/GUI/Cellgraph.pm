@@ -2,7 +2,6 @@ use v5.12;
 use warnings;
 use Wx;
 use utf8;
-use FindBin;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
@@ -72,7 +71,7 @@ below reflects the following state (Y is time axis).
 =head1 Mechanics
 
 One automaton is called cell and works like described in I<Steve Wolfram>s
-book  I<"A new kind of schience">. Each cell can be in one of several states.
+book  I<"A new kind of science">. Each cell can be in one of several states.
 The most simple cells have only two: 0 and 1 (pictured as white and black squares).
 The state of each cell may change each round (think of processor cycles).
 How exactly they change s defined by a transfer function. The input of
@@ -121,10 +120,10 @@ as the first row is long.
 </p>
 
 On the second tab you can set the individual rules. Just click on the result
-square in the chosen rule (after the =&gt;). All rule results are combined
+square in the chosen rule (after the =>). All rule results are combined
 in a rule number, which you can see on top. With the buttons left and right
 you can again count that number down and up or even shift the rule results
-left and right (&lt;&lt; and &gt;&gt;). The buttons below allow you to 
+left and right (<< and >>). The buttons below allow you to 
 easily reach related rules, like the inverted, symmetric or opposite.
 Inverted means every rule result will be inverted. Symmetric means ever
 rule switches its result with its symmetric partner (if there is one).
