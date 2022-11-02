@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.02';
+our $VERSION = '0.01_2';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -73,7 +73,7 @@ below reflects the following state (Y is time axis).
 
 One automaton is called cell and works like described in I<Steve Wolfram>s
 book  I<"A new kind of schience">. Each cell can be in one of several states.
-The most simple cells have only two: 0 and 1 (pictured as white and black).
+The most simple cells have only two: 0 and 1 (pictured as white and black squares).
 The state of each cell may change each round (think of processor cycles).
 How exactly they change s defined by a transfer function. The input of
 that function are the states of neighbours left and right and the cell
@@ -98,8 +98,20 @@ at the bottom that appear while browsing the menu.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIstart.png"   alt=""  width="630" height="410">
 </p>
 
-The first tab contains the general settings and content of the staring
-row.
+The first tab contains the general settings.
+
+In the left top corner you can select if the grid should be of visible
+gray lines, gaps (white lines) or no gaps between the squares. Right
+beside you set the aize of the squares in pixel.
+
+Below that you set the content of the starting row of the grid. By 
+clicking on the squares they change their state. Their combined value
+is summarized in the displayed integer abover the squares. The buttons
+left and right will count that number down or up to circle easily through
+all the starting states. The button I<"1"> simply resets the value to 1
+(one activated cell), and I<"?"> selects a random strting sequence.
+When I<"Repeat"> is selected the chosen sequence gets repeated as often
+as the first row is long.
 
 
 =head2 Rules
@@ -108,27 +120,16 @@ row.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrule.png"   alt=""  width="630" height="410">
 </p>
 
-The content of the first tab are the settings that define the properties
-of the 4 pendula (X, Y, Z and R), which determine the shape of the drawing.
-X moves the pen left - right (on the x axis), Y moves up - down,
-Z does a circling movement, R is a rotation ( around Z's axis).
-Each pendulum has the same three rows of controls. 
-
-The first row contains from left to ritght an on/off switch.
-After that follows the pendulum's amplitude and damping.
-Amplitudes define the size of the drawing and damping just means:
-the drawings will spiral toward the center with time (line length).
-
-The second row lets you dial in the speed (frequency).
-For instance 2 means that the pendulum swings back and fourt twice 
-as fast. The second combo control adds decimals for more complex drawings.
-
-The third row has switches to invert (1/x) frequency or direction 
-and can also change the starting position.
-2 = 180 degree offset, 4 = 90 degree (both can be combined). 
-The last slider adds an additional fine tuned offset between 0 and 90 degree.
-
-
+On the second tab you can set the individual rules. Just click on the result
+square in the chosen rule (after the =&gt;). All rule results are combined
+in a rule number, which you can see on top. With the buttons left and right
+you can again count that number down and up or even shift the rule results
+left and right (&lt;&lt; and &gt;&gt;). The buttons below allow you to 
+easily reach related rules, like the inverted, symmetric or opposite.
+Inverted means every rule result will be inverted. Symmetric means ever
+rule switches its result with its symmetric partner (if there is one).
+Opposite rule means ever rule switches its result the rule of inverted 
+input. The button I<"?"> again selects a random rule.
 
 =head2 Menu
 
@@ -142,13 +143,11 @@ names. Also a sub menu allows a quick load of the recently used files.
 The first entry lets you reset the whole program to the starting state
 and the last is just to exit (safely with saving the configs).
 
-The second menu has only two commands for drawing an complete image
-and saving it in an arbitrary named PNG, JPG or SVG file (the file ending decides).
-The submenu above onle set the preferred format, which is the format
-of serial images and the first wild card in dialog. Above that is another
-submenu for setting the image size.
-
-The third menu has some dialogs with documentation and additional information.
+The second menu has only two commands for saving the grin into a image file.
+It can have an arbitrary name - the ending I<PNG>, I<JPG> or I<SVG> decides
+the format. The submenu above sets the image size. Please note that if 
+you choose a larger image than shown, a larger grid will be computed.
+If you want larger squares, please change that in the settings.
 
 =head1 SEE ALSO
 
