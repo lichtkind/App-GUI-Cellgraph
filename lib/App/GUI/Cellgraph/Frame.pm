@@ -20,9 +20,8 @@ sub new {
     my ( $class, $parent, $title ) = @_;
     my $self = $class->SUPER::new( $parent, -1, $title );
     $self->SetIcon( Wx::GetWxPerlIcon() );
-    $self->CreateStatusBar( 2 );
-    $self->SetStatusWidths(2, 800, 100);
-    $self->SetStatusText( "no file loaded", 1 );
+    $self->CreateStatusBar( 1 );
+    #$self->SetStatusWidths(2, 800, 100);
     Wx::InitAllImageHandlers();
 
     # create GUI parts
@@ -157,6 +156,7 @@ sub new {
     $self->SetMaxSize($size);
   
     $self->init();
+    $self->SetStatusText( "settings in init state", 0 );
     $self->{'last_file_settings'} = $self->get_data;
     $self;
 }
@@ -166,7 +166,7 @@ sub init {
     #$self->{'color'}{$_}->init() for qw/start/;
     $self->{'panel'}{ $_ }->init() for qw/rules start/;
     $self->draw( );
-    $self->SetStatusText( "all settings are set to default", 1);
+    $self->SetStatusText( "all settings are set to default", 0);
 }
 
 sub get_data {
@@ -180,21 +180,19 @@ sub get_data {
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start/;
-    $self->{ $_ }->set_data( $data->{ $_ } ) for qw/line/;
+    #$self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start/;
+    $self->{'panel'}{ $_ }->set_data( $data->{ $_ } ) for qw/rules start/;
 }
 
 sub draw {
     my ($self) = @_;
-    $self->SetStatusText( "drawing .....", 0 );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
-    $self->SetStatusText( "done complete drawing", 0 );
 }
 
 sub open_settings_dialog {
     my ($self) = @_;
-    my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", $self->{'config'}->get_value('open_dir'), '',
+    my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", '.', '',
                    ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_OPEN );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
@@ -202,14 +200,13 @@ sub open_settings_dialog {
     if (not ref $ret) { $self->SetStatusText( $ret, 0) }
     else { 
         my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
-        $self->{'config'}->set_value('save_dir', $dir);
-        $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
+        $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 0);
     }
 }
 
 sub write_settings_dialog {
     my ($self) = @_;
-    my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data",$self->{'config'}->get_value('write_dir'), '',
+    my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data", '.', '',
                ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
@@ -220,8 +217,8 @@ sub write_settings_dialog {
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
     $self->write_settings_file( $path );
-    my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
-    $self->{'config'}->set_value('write_dir', $dir);
+    #~ my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
+    #~ $self->{'config'}->set_value('write_dir', $dir);
 }
 
 sub save_image_dialog {
@@ -265,9 +262,7 @@ sub open_setting_file {
         $self->set_data( $data );
         $self->draw;
         my $dir = App::GUI::Cellgraph::Settings::extract_dir( $file );
-        $self->{'config'}->set_value('open_dir', $dir);
-        $self->SetStatusText( "loaded settings from ".$file, 1) ;
-        $self->{'config'}->add_setting_file( $file );
+        $self->SetStatusText( "loaded settings from ".$file, 0) ;
         $self->update_recent_settings_menu();
         $data;
     } else {
@@ -298,7 +293,7 @@ sub write_settings_file {
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     { 
         $self->update_recent_settings_menu();
-        $self->SetStatusText( "saved settings into file $file", 1 );
+        $self->SetStatusText( "saved settings into file $file", 0 );
     }
 }
 

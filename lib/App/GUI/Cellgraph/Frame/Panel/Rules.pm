@@ -120,7 +120,7 @@ sub get_function {
 
 sub init {
     my ($self) = @_;
-    $self->set_data( 18 )
+    $self->set_data( { nr => 18, size => 3 } )
 }
 
 sub get_data {
@@ -133,9 +133,9 @@ sub get_data {
 }    
 
 sub set_data {
-    my ($self, $rule) = @_;
-    return unless defined $rule;
-    $rule = int $rule;
+    my ($self, $data) = @_;
+    return unless ref $data eq 'HASH' and exists $data->{'nr'};
+    my $rule = int $data->{'nr'};
     $rule = 255 if $rule > 255;
     $rule =   0 if $rule < 0;
     $self->{'rule_nr'}->SetValue( $rule );

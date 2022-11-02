@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.01_0';
+our $VERSION = '0.02';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -31,7 +31,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Cellgraph - draw pattern by cellular automaton
+App::GUI::Cellgraph - draw pattern by cellular automata
 
 =head1 SYNOPSIS 
 
@@ -47,93 +47,66 @@ push buttons and see patterns change
 
 =item 3.
 
-choose "Save" in Image menu (or Ctrl+S) to store image in a PNG / JPEG / SVG file
+choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
 (choose image size  in menu beforehand)
+
+=item 4.
+
+choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
+INI file for tweaking them later
 
 =back
 
 =head1 DESCRIPTION
 
-An Harmonograph is an apparatus with several connected pendula,
-creating together spiraling pictures :
-
+This is a row (one dimensional arrangement) of cellular automata.
+Their starting state can be seen in the first row. Each subsequent row
+below reflects the following state (Y is time axis). 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/126.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/30.jpg"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/126.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/30.png"    alt=""  width="300" height="300">
 </p>
-
-
-This is a row of cellular automata as escribed in Steve Wolframs book
-"A new kind of schience"
-
-enhancements:
-
-=over 4
-
-=item *
-
-third pendulum can rotate
-
-=item *
-
-pendula can oscillate at none integer frequencies
-
-=item *
-
-changeable amplitude and damping
-
-=item *
-
-changeable dot density and dot size
-
-=item *
-
-3 types of color changes with changeable speed and polynomial dynamics
-
-=back
 
 
 =head1 Mechanics
 
-
-
+One automaton is called cell and works like described in I<Steve Wolfram>s
+book  I<"A new kind of schience">. Each cell can be in one of several states.
+The most simple cells have only two: 0 and 1 (pictured as white and black).
+The state of each cell may change each round (think of processor cycles).
+How exactly they change s defined by a transfer function. The input of
+that function are the states of neighbours left and right and the cell
+itself. Other neighbourhoods are possible. For every combination of states
+in the neighbourhood there is one rule that defines the next state of the
+cell. If neighbourhoods get greater - the number of rules grows exponentially.
+To reduce again the rule count one might only take the average value of
+the neighbourhood as input.
 
 =head1 GUI
 
-=for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUI.png"    alt=""  width="630" height="410">
-</p>
-
-The general layout of the program has three parts,
-which flow from the position of the drawing board.
-
-=over 4
-
-=item 1
-
-In the left upper corner is the drawing board - showing the result of the Harmonograph.
-
-=item 2
-
-The whole right half of the window contains the settings, which guide the drawing operation.
-These are divided into two tabs - roughly devided in form and decoration.
-
-=item 3
-
-The lower left side contains buttons which are a few commands, 
-but most are in the main menu.
-
-=back
+The general layout is very simple: the settings are on the right and 
+the drawing board is left. The settings are devided into several tabs.
 
 Please mind the tool tips - short help texts which appear if the mouse
-stands still over a button or slider. Also helpful are messages in the
-status bar at the bottom: on left regarding images and right about settings.
-When holting the Alt key you can see which Alt + letter combinations
-trigger which button.
+stands still over a button. Also helpful are messages in the status bar
+at the bottom that appear while browsing the menu.
+
+=head2 Start
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIstart.png"   alt=""  width="630" height="410">
+</p>
+
+The first tab contains the general settings and content of the staring
+row.
 
 
-=head2 Rule
+=head2 Rules
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrule.png"   alt=""  width="630" height="410">
+</p>
 
 The content of the first tab are the settings that define the properties
 of the 4 pendula (X, Y, Z and R), which determine the shape of the drawing.
@@ -156,17 +129,6 @@ and can also change the starting position.
 The last slider adds an additional fine tuned offset between 0 and 90 degree.
 
 
-=head2 Start
-
-=for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUI2.png"   alt=""  width="630" height="410">
-</p>
-
-The second tab on the right side has knobs that set the properties of the pen.
-First how many rotations will be drawn. Secondly the distance between dots. 
-Greater distances, together with color changes, help to clearify
-muddled up drawings. The third selector sets the dot size in pixel.
-
 
 =head2 Menu
 
@@ -187,6 +149,12 @@ of serial images and the first wild card in dialog. Above that is another
 submenu for setting the image size.
 
 The third menu has some dialogs with documentation and additional information.
+
+=head1 SEE ALSO
+
+L<App::GUI::Harmonograph>
+
+L<App::GUI::Dynagraph>
 
 
 =head1 AUTHOR

@@ -30,7 +30,7 @@ sub new {
     #$self->{'rule_type_lbl'} = Wx::StaticText->new( $self, -1, 'Rules :');
     $self->{'cell_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
     $self->{'grid'}      = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[95, -1], ['lines', 'gaps', 'no']);
-    #$self->{'rule_size'} = Wx::ComboBox->new( $self, -1, 3,        [-1,-1],[65, -1], [3, 4, 5], &Wx::wxTE_READONLY);
+    #$self->{'rule_size'} = Wx::ComboBox->new( $self, -1, 3,        [-1,-1],[65, -1], [2, 3, 4, 5], &Wx::wxTE_READONLY);
     #$self->{'rule_type'} = Wx::ComboBox->new( $self, -1, 'pattern', [-1,-1],[110, -1], [qw/pattern average median/], &Wx::wxTE_READONLY);
     $self->{'cell_size'} = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
     $self->{'call_back'} = sub {};
@@ -128,7 +128,7 @@ sub get_list {
 
 sub init {
     my ($self) = @_;
-    $self->set_data({ int => 1, grid => 'lines', cell_size => 3 });
+    $self->set_data({ value => 1, grid => 'lines', cell_size => 3 });
     
 }
 
@@ -136,7 +136,7 @@ sub get_data {
     my ($self) = @_;
     {
         list => [$self->get_list],
-        int => $self->{'start_int'}->GetValue,
+        value => $self->{'start_int'}->GetValue,
         cell_size => $self->{'cell_size'}->GetValue,
         grid => $self->{'grid'}->GetValue,
     }
@@ -145,7 +145,8 @@ sub get_data {
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    my $int = $data->{'int'};
+    my $int = $data->{'value'};
+    $self->{'start_int'}->SetValue( $int );
     my $max = (2 ** $self->{'length'}) - 1;
     $int = int $int;
     $int = $max if $int > $max;
@@ -154,7 +155,6 @@ sub set_data {
         $self->{'switch'}[$i]->SetValue($int & 1);
         $int >>= 1;
     }
-    $self->{'start_int'}->SetValue( $int );
     $self->{'grid'}->SetValue( $data->{'grid'} );
     $self->{'cell_size'}->SetValue( $data->{'cell_size'} );
 }
