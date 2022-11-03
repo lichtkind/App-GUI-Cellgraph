@@ -6,7 +6,7 @@ package App::GUI::Cellgraph::Frame::Panel::Start;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::Rule;
 use App::GUI::Cellgraph::Widget::ColorToggle;
-use App::GUI::Harmonograph::Widget::SliderCombo;
+use App::GUI::Cellgraph::Widget::SliderCombo;
 
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;

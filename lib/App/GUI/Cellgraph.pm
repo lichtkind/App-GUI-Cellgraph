@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.01_2';
+our $VERSION = '0.02';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -77,10 +77,15 @@ The state of each cell may change each round (think of processor cycles).
 How exactly they change s defined by a transfer function. The input of
 that function are the states of neighbours left and right and the cell
 itself. Other neighbourhoods are possible. For every combination of states
-in the neighbourhood there is one rule that defines the next state of the
-cell. If neighbourhoods get greater - the number of rules grows exponentially.
-To reduce again the rule count one might only take the average value of
-the neighbourhood as input.
+in the neighbourhood there is one partial rule that defines the next state
+of the cell. If neighbourhoods get greater - the number of rules grows
+exponentially. To reduce again the rule count one might only take the 
+average value of the neighbourhood as input.
+
+To each partial rule also belongs an instruction how to pass on which 
+cells should apply the transfer function. In the simplest case all cells
+are activated all the time. But you can also decide if the current cell
+or its neighbours remain active, dependent on the state of the neighbourhood.
 
 =head1 GUI
 
@@ -119,16 +124,23 @@ as the first row is long.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrule.png"   alt=""  width="630" height="410">
 </p>
 
-On the second tab you can set the individual rules. Just click on the result
-square in the chosen rule (after the =>). All rule results are combined
-in a rule number, which you can see on top. With the buttons left and right
-you can again count that number down and up or even shift the rule results
-left and right (<< and >>). The buttons below allow you to 
-easily reach related rules, like the inverted, symmetric or opposite.
-Inverted means every rule result will be inverted. Symmetric means ever
-rule switches its result with its symmetric partner (if there is one).
-Opposite rule means ever rule switches its result the rule of inverted 
-input. The button I<"?"> again selects a random rule.
+On the second tab you can set the individual partial rules. 
+Just click on the result square in the chosen subrule (after the =>). 
+All rule results are combined in a rule number, which you can see on top.
+With the buttons left and right you can again count that number down and
+up or even shift the rule results left and right (<< and >>). The buttons
+below allow you to easily reach related rules, like the inverted,
+symmetric or opposite. Inverted means every rule result will be inverted. 
+Symmetric means ever rule switches its result with its symmetric partner
+(if there is one). Opposite rule means ever rule switches its result the
+rule of inverted input. The button I<"?"> again selects a random rule.
+
+Behind the result of each subrule is another subrule for the action
+propagation. The circles show if the cell or its neighbours can do the
+transfer function next cycle. These settings are again combined in a
+singular action value (behind the label "Active:"). Here are also four 
+buttons to select the init state, a grid patter or a random state.
+The first buttom set the inverted distribution of action propagation.
 
 =head2 Menu
 

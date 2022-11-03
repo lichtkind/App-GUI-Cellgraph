@@ -25,7 +25,7 @@ sub new {
     Wx::InitAllImageHandlers();
 
     # create GUI parts
-    $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
+    $self->{'tabs'}           = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'panel'}{'rules'} = App::GUI::Cellgraph::Frame::Panel::Rules->new( $self->{'tabs'} );
     $self->{'panel'}{'start'} = App::GUI::Cellgraph::Frame::Panel::Start->new( $self->{'tabs'} );
     #$self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
@@ -36,20 +36,15 @@ sub new {
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
 
-
     #$self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
-    
     #$self->{'color'}{'startio'} = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Color IO', $self->{'config'}->get_value('color') , 162, 1);
-
-    #$self->{'line'}             = App::GUI::Cellgraph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
                                
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 800, 800 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
-    $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
-    $self->{'dialog'}{'function'}  = App::GUI::Cellgraph::Dialog::Function->new();
+    # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
+    # $self->{'dialog'}{'function'}  = App::GUI::Cellgraph::Dialog::Function->new();
     $self->{'panel'}{'rules'}->SetCallBack( sub { $self->draw( ) } );
     $self->{'panel'}{'start'}->SetCallBack( sub { $self->draw( ) } );
-
 
     Wx::Event::EVT_AUINOTEBOOK_PAGE_CHANGED( $self, $self->{'tabs'}, sub {
         $self->{'tabs'}{'type'} = $self->{'tabs'}->GetSelection unless $self->{'tabs'}->GetSelection == $self->{'tabs'}->GetPageCount - 1;
@@ -60,7 +55,7 @@ sub new {
        # for my $name (keys %$startc){
        #     $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
        # }
-        $self->{'dialog'}{$_}->Destroy() for qw/interface function about/;
+        $self->{'dialog'}{$_}->Destroy() for qw/about/; # interface function
         $_[1]->Skip(1) 
     });
 
@@ -227,7 +222,7 @@ sub save_image_dialog {
     my $wildcard = '|All files (*.*)|*.*';
     $wildcard = ( join '|', @wildcard[1,0,2]) . $wildcard;
     
-    my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '', $wildcard, &Wx::wxFD_SAVE );
+    my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", '.', '', $wildcard, &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
     return if -e $path and
@@ -235,25 +230,8 @@ sub save_image_dialog {
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
     my $ret = $self->write_image( $path );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
-    else     { $self->{'config'}->set_value('save_dir', App::GUI::Cellgraph::Settings::extract_dir( $path )) }
 }
 
-sub update_base_name {
-    my ($self) = @_;
-    my $file = $self->{'txt'}{'file_bname'}->GetValue;
-    $self->{'config'}->set_value('file_base_name', $file);
-    $self->{'config'}->set_value('file_base_counter', 1);
-    $self->inc_base_counter();
-}
-
-sub base_path {
-    my ($self) = @_;
-    my $dir = $self->{'config'}->get_value('file_base_dir');
-    $dir = App::GUI::Cellgraph::Settings::expand_path( $dir );
-    File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') )
-        .'_'.$self->{'config'}->get_value('file_base_counter');
-    
-}
 
 sub open_setting_file {
     my ($self, $file ) = @_;
