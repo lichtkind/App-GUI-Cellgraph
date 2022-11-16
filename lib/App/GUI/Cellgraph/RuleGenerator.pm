@@ -5,10 +5,11 @@ use Wx;
 package App::GUI::Cellgraph::RuleGenerator;
 
 sub new {
-    my ($pkg, $size, $states) = @_;
-    my $self = {size => $size, states => $states, in_list => [], };
-    $self->{'parts'} = 2 ** $size;
-    $self->{'max_nr'} = (2 ** $self->{'parts'}) - 1;
+    my ($pkg, $size, $alphabet) = @_;
+    my $self = {size => $size, states => $alphabet, in_list => [], };
+    $self->{'parts'} = $alphabet ** $size; # count of artial rules
+
+    $self->{'max_nr'} = ($alphabet ** $self->{'parts'}) - 1;
     $self->{'input_nr'} = [ 0 .. $self->{'parts'} - 1];
     my $pattern = '%0'.$size.'b';
     for my $part (@{$self->{'input_nr'}}) {

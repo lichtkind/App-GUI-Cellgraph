@@ -26,8 +26,8 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}           = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'panel'}{'rules'} = App::GUI::Cellgraph::Frame::Panel::Rules->new( $self->{'tabs'} );
     $self->{'panel'}{'start'} = App::GUI::Cellgraph::Frame::Panel::Start->new( $self->{'tabs'} );
+    $self->{'panel'}{'rules'} = App::GUI::Cellgraph::Frame::Panel::Rules->new( $self->{'tabs'} );
     #$self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'}, 'Start');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'}, 'Rules');

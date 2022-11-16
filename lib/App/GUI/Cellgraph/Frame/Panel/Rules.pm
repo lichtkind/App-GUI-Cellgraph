@@ -3,20 +3,24 @@ use warnings;
 use Wx;
 
 package App::GUI::Cellgraph::Frame::Panel::Rules;
-use base qw/Wx::ScrolledWindow/;
+use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::RuleGenerator;
 use App::GUI::Cellgraph::Widget::Rule;
 use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
+use Graphics::Toolkit::Color;
 
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
    
-    my $colors = [[255,255,255], [0,0,0]];
     my $rule_cell_size = 20;
     $self->{'rule_size'} = 3;
-    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new($self->{'rule_size'});
+    $self->{'alphabet_size'} = 2;
+    my $colors = [[255,255,255], [0,0,0]];
+    
+    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'alphabet_size'} );
+    $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'call_back'} = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 50, -1], &Wx::wxTE_PROCESS_ENTER );
@@ -39,7 +43,7 @@ sub new {
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every rule that produces white, goes black and vice versa)');
     $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
-
+    
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
@@ -75,29 +79,21 @@ sub new {
     $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
     $act_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $main_sizer->AddSpacer( 15 );
-    $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
-    $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
-    $main_sizer->AddSpacer( 15 );
-    $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
-    $main_sizer->AddSpacer( 10 );
-
+    my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     for my $rule_index (@{$self->{'rules'}{'input_nr'}}){
-        my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self, $rule_cell_size, 
+        my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
                                                              $self->{'rules'}{'in_list'}[$rule_index], [$colors->[1]] );
         $in_img->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
                                                              
         $self->{'result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new( 
-                                                             $self, $rule_cell_size, $rule_cell_size, $colors, 0);
+                                                             $self->{'rule_plate'}, $rule_cell_size, $rule_cell_size, $colors, 0);
                                                              
         $self->{'result'}[$rule_index]->SetCallBack( sub { 
                 $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->() 
         });
         $self->{'result'}[$rule_index]->SetToolTip('result of partial rule Nr.'.($rule_index+1));
 
-        $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self, $rule_cell_size, [255, 255, 255] );
+        $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $rule_cell_size, [255, 255, 255] );
         
         $self->{'action'}[$rule_index]->SetCallBack( sub { 
                 $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->() 
@@ -108,16 +104,25 @@ sub new {
         $row_sizer->AddSpacer(30);
         $row_sizer->Add( $in_img, 0, &Wx::wxGROW);
         $row_sizer->AddSpacer(15);
-        $row_sizer->Add( Wx::StaticText->new( $self, -1, ' => ' ), 0, &Wx::wxGROW | &Wx::wxLEFT );        
+        $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' ), 0, &Wx::wxGROW | &Wx::wxLEFT );        
         $row_sizer->AddSpacer(15);
         $row_sizer->Add( $self->{'result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->AddSpacer(40);
         $row_sizer->Add( $self->{'action'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-        $main_sizer->AddSpacer(15);
-        $main_sizer->Add( $row_sizer, 0, $std_attr, 10);
+        $plate_sizer->AddSpacer(15);
+        $plate_sizer->Add( $row_sizer, 0, $std_attr, 10);
     }
+    $self->{'rule_plate'}->SetSizer( $plate_sizer );
     
+    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $main_sizer->AddSpacer( 15 );
+    $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
+    $main_sizer->AddSpacer( 5 );
+    $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
+    $main_sizer->AddSpacer( 15 );
+    $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
+    $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
     
@@ -141,14 +146,18 @@ sub new {
         my ($self, $cmd) = @_;
         my $new_value = $cmd->GetString;
         my $old_value = $self->{'rules'}->nr_from_list( $self->get_list );
-        $self->set_rule( $new_value ) if $new_value != $old_value;
+        return if $new_value == $old_value;
+        $self->set_rule( $new_value );
+        $self->{'call_back'}->();
         
     });
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub {
         my ($self, $cmd) = @_;
         my $new_value = $cmd->GetString;
         my $old_value = $self->nr_from_action_list( $self->get_action_list );
-        $self->set_action( $new_value ) if $new_value != $old_value;
+        return if $new_value == $old_value;
+        $self->set_action( $new_value );
+        $self->{'call_back'}->();
     });
 
     $self->init();
@@ -258,5 +267,9 @@ sub invert_action {
 
 sub list_from_action_nr { reverse split '', $_[1]}
 sub nr_from_action_list { shift @_; join '', reverse @_ }
+
+sub generate_rules {
+    
+}
 
 1;
