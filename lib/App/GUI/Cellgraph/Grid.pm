@@ -7,12 +7,12 @@ package App::GUI::Cellgraph::Grid;
 my $temp = [];
 
 sub get {
-    my ($size, $rules, $start) = @_;
-    return unless ref $rules eq 'HASH'and ref $start eq 'HASH';
-    my $transfer_function = $rules->{'f'};
-    my $action_function = $rules->{'action_f'};
-    my $rule_size = $rules->{'size'};
-    my @start = @{ $start->{'list'} };
+    my ($size, $data) = @_;
+    return unless ref $data eq 'HASH';
+    my $transfer_function = $data->{'rules'}{'f'};
+    my $action_function = $data->{'mobile'}{'f'};
+    my $rule_size = $data->{'rules'}{'size'};
+    my @start = @{ $data->{'start'}{'list'} };
     my $grid = [ [] ];
     my ($size_x, $size_y);
     if (ref $size eq 'ARRAY'){

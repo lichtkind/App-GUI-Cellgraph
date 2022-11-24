@@ -42,6 +42,13 @@ sub new {
     return $self;
 }
 
+sub draw {
+    my( $self, $data ) = @_;
+    return unless ref $data eq 'HASH';
+    $self->set_data( $data );
+    $self->Refresh;
+}
+
 sub set_data {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
@@ -57,17 +64,17 @@ sub set_size {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    
-    $self->{'size'}{'cell'} = $self->{'data'}{'start'}{'cell_size'} // 3;
-    $self->{'cells'}{'x'} = ($self->{'data'}{'start'}{'grid'} eq 'no') 
+
+    $self->{'size'}{'cell'} = $self->{'data'}{'global'}{'cell_size'} // 3;
+    $self->{'cells'}{'x'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no') 
                           ? int (  $width      /  $self->{'size'}{'cell'}      )
                           : int ( ($width - 1) / ($self->{'size'}{'cell'} + 1) );
-    $self->{'cells'}{'y'} = ($self->{'data'}{'start'}{'grid'} eq 'no') 
+    $self->{'cells'}{'y'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no') 
                           ? int (  $height      /  $self->{'size'}{'cell'}      )
                           : int ( ($height - 1) / ($self->{'size'}{'cell'} + 1) );
     $self->{'seed_cell'}  = int   $self->{'cells'}{'x'} / 2;
     my $cell_size = $self->{'size'}{'cell'};
-    my $grid_d =  ($self->{'data'}{'start'}{'grid'} eq 'no')  ? $cell_size : $cell_size + 1;
+    my $grid_d =  ($self->{'data'}{'global'}{'grid_type'} eq 'no')  ? $cell_size : $cell_size + 1;
     my $grid_max_x = $grid_d * $self->{'cells'}{'x'};
     my $grid_max_y = $grid_d * $self->{'cells'}{'y'};
     
@@ -75,7 +82,7 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
     $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 170, 170, 170 ), 1, &Wx::wxPENSTYLE_SOLID ) );
-    if ($self->{'data'}{'start'}{'grid'} eq 'lines'){
+    if ($self->{'data'}{'global'}{'grid_type'} eq 'lines'){
         $dc->DrawLine( 0,  0, $grid_max_x,    0);
         $dc->DrawLine( 0,  0,    0, $grid_max_y);
         $dc->DrawLine( $grid_d * $_,            0, $grid_d * $_, $grid_max_y ) for 1 .. $self->{'cells'}{'x'};
@@ -85,8 +92,7 @@ sub paint {
     my $color = Wx::Colour->new( 0, 0, 0 );
     $dc->SetPen( Wx::Pen->new( $color, 1, &Wx::wxPENSTYLE_SOLID ) );
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
-    my $grid = App::GUI::Cellgraph::Grid::get( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}],
-                                                $self->{'data'}{'rules'}, $self->{'data'}{'start'} );
+    my $grid = App::GUI::Cellgraph::Grid::get( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'data'} );
  
     for my $x (0 .. $self->{'cells'}{'x'} - 1){
         for my $y (0 .. $self->{'cells'}{'y'} - 1) {

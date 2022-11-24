@@ -24,7 +24,6 @@ sub new {
     $self->{'call_back'} = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 50, -1], &Wx::wxTE_PROCESS_ENTER );
-    $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 85, -1], &Wx::wxTE_PROCESS_ENTER );
     
     $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
@@ -34,10 +33,6 @@ sub new {
     $self->{'btn'}{'inv'}    = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'btn'}{'act_1'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
-    $self->{'btn'}{'act_2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
-    $self->{'btn'}{'act_!'}  = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
-    $self->{'btn'}{'act_?'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
 
     $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every rule swaps result with symmetric partner)');
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every rule that produces white, goes black and vice versa)');
@@ -67,18 +62,6 @@ sub new {
     $rf_sizer->AddSpacer(20);
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $act_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $act_sizer->AddSpacer( 12 );
-    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Active :' ), 0, $all_attr, 10 );        
-    $act_sizer->AddSpacer( 15 );
-    $act_sizer->Add( $self->{'btn'}{'act_!'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'act_1'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'act_2'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'act_?'}, 0, $all_attr, 5 );
-    $act_sizer->AddSpacer( 15 );
-    $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
-    $act_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-
     my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     for my $rule_index (@{$self->{'rules'}{'input_nr'}}){
         my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
@@ -93,13 +76,6 @@ sub new {
         });
         $self->{'result'}[$rule_index]->SetToolTip('result of partial rule Nr.'.($rule_index+1));
 
-        $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $rule_cell_size, [255, 255, 255] );
-        
-        $self->{'action'}[$rule_index]->SetCallBack( sub { 
-                $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->() 
-        });
-        $self->{'action'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
-        
         my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
         $row_sizer->AddSpacer(30);
         $row_sizer->Add( $in_img, 0, &Wx::wxGROW);
@@ -108,7 +84,6 @@ sub new {
         $row_sizer->AddSpacer(15);
         $row_sizer->Add( $self->{'result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->AddSpacer(40);
-        $row_sizer->Add( $self->{'action'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
         $plate_sizer->AddSpacer(15);
         $plate_sizer->Add( $row_sizer, 0, $std_attr, 10);
@@ -121,7 +96,6 @@ sub new {
     $main_sizer->AddSpacer( 5 );
     $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 15 );
-    $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
@@ -137,10 +111,6 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->invert_rule; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->opposite_rule; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->random_rule; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'act_1'},sub { $self->init_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'act_2'},sub { $self->grid_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'act_?'},sub { $self->random_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'act_!'},sub { $self->invert_action; $self->{'call_back'}->() } );
 
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
         my ($self, $cmd) = @_;
@@ -150,14 +120,6 @@ sub new {
         $self->set_rule( $new_value );
         $self->{'call_back'}->();
         
-    });
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub {
-        my ($self, $cmd) = @_;
-        my $new_value = $cmd->GetString;
-        my $old_value = $self->nr_from_action_list( $self->get_action_list );
-        return if $new_value == $old_value;
-        $self->set_action( $new_value );
-        $self->{'call_back'}->();
     });
 
     $self->init();
@@ -198,8 +160,6 @@ sub get_data {
         f => [$self->get_list],
         nr => $self->{'rule_nr'}->GetValue,
         size => 3,
-        action => $self->{'action_nr'}->GetValue,
-        action_f => [$self->get_action_list],
     }
 }    
 
@@ -207,7 +167,6 @@ sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'nr'};
     $self->set_rule( $data->{'nr'} );
-    $self->set_action( $data->{'action'} );
 }    
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
@@ -227,46 +186,6 @@ sub get_action_list {
     map { $self->{'action'}[$_]->GetValue } @{$self->{'rules'}{'input_nr'}};
 }
 
-sub set_action {
-    my ($self) = shift;
-    my ($nr, @list);
-    if (@_ == 1) {
-        $nr = shift;
-        @list = $self->list_from_action_nr( $nr );
-    } else {
-        @list = @_;
-        $nr = $self->nr_from_action_list( @list );
-    }
-    $self->{'action_nr'}->SetValue( $nr );
-    $self->{'action'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
-}
-
-sub init_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->init } @{$self->{'rules'}{'input_nr'}};
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub grid_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->grid } @{$self->{'rules'}{'input_nr'}};
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub random_action {
-    my ($self) = @_;
-    my @list =  map { $self->{'action'}[$_]->rand } @{$self->{'rules'}{'input_nr'}};
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub invert_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->invert } @{$self->{'rules'}{'input_nr'}};
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub list_from_action_nr { reverse split '', $_[1]}
-sub nr_from_action_list { shift @_; join '', reverse @_ }
 
 sub generate_rules {
     

@@ -4,7 +4,7 @@
 
 ### VERSION
  
-    0.01
+    0.02
 
 [Home on CPAN](https://metacpan.org/pod/App-Cellgraph)
 
