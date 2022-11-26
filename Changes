@@ -1,7 +1,7 @@
-0.03  2022-11-03  lichtkind
+0.03  2022-11-27  lichtkind
 -------
     * = feature expand
-    * + greater state alphabets for cells
+    * + greater state alphabets for cells states and actions states
     * ! no draw when enter new rule number in text field and press enter
 
 0.02  2022-11-03  lichtkind

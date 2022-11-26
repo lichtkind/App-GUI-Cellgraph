@@ -95,7 +95,9 @@ sub new {
     $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 5 );
     $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
-    $main_sizer->AddSpacer( 15 );
+    #$main_sizer->AddSpacer( 10 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL|&Wx::wxRIGHT, 20 );
+
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );

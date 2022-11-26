@@ -12,24 +12,24 @@ sub new {
     my ( $class, $parent ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
     
-    my $colors = [[255,255,255], [0,0,0]];
     
-    #$self->{'repeat_start'} = Wx::CheckBox->new( $self, -1, '  Repeat');
-    #$self->{'btn'}{'prev'}  = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'grid_lbl'} = Wx::StaticText->new( $self, -1, 'Grid :');
-    #$self->{'rule_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
-    #$self->{'rule_type_lbl'} = Wx::StaticText->new( $self, -1, 'Rules :');
+    $self->{'state_ab_lbl'} = Wx::StaticText->new( $self, -1, 'Cell State Count :');
+    $self->{'action_ab_lbl'} = Wx::StaticText->new( $self, -1, 'Action Values :');
+    $self->{'threshhold_lbl'} = Wx::StaticText->new( $self, -1, 'Threshold :');
     $self->{'cell_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
-    $self->{'grid'}      = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[95, -1], ['lines', 'gaps', 'no']);
-    #$self->{'rule_size'} = Wx::ComboBox->new( $self, -1, 3,        [-1,-1],[65, -1], [2, 3, 4, 5], &Wx::wxTE_READONLY);
-    #$self->{'rule_type'} = Wx::ComboBox->new( $self, -1, 'pattern', [-1,-1],[110, -1], [qw/pattern average median/], &Wx::wxTE_READONLY);
+    $self->{'data_keys'} = [qw/grid_type cell_size state_count action_values action_threshold/];
+    $self->{'grid_type'} = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[95, -1], ['lines', 'gaps', 'no']);
     $self->{'cell_size'} = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
+    $self->{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
+    $self->{'action_values'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
+    $self->{'action_threshold'} = Wx::ComboBox->new( $self, -1, '1', [-1,-1],[75, -1], [qw/0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2/], &Wx::wxTE_READONLY);
     $self->{'call_back'} = sub {};
     
     #$self->{'rule_type'}->SetToolTip('set rule type');
     
     #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
-    Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/grid cell_size /;# rule_size rule_type
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for @{$self->{'data_keys'}};
     #Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_start/;
     
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -39,19 +39,41 @@ sub new {
     my $grid_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $grid_sizer->AddSpacer( 23 );
     $grid_sizer->Add( $self->{'grid_lbl'}, 0, $all_attr, 7);
-    $grid_sizer->Add( $self->{'grid'}, 0, $row_attr, 8);
+    $grid_sizer->Add( $self->{'grid_type'}, 0, $row_attr, 8);
     $grid_sizer->AddSpacer( 31 );
     $grid_sizer->Add( $self->{'cell_size_lbl'}, 0, $all_attr, 7);
     $grid_sizer->AddSpacer( 3 );
     $grid_sizer->Add( $self->{'cell_size'}, 0, $row_attr, 8);
     $grid_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    my $state_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $state_sizer->AddSpacer( 23 );
+    $state_sizer->Add( $self->{'state_ab_lbl'}, 0, $all_attr, 7);
+    $state_sizer->Add( $self->{'state_count'}, 0, $row_attr, 8);
+    $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+
+    my $action_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $action_sizer->AddSpacer( 23 );
+    $action_sizer->Add( $self->{'action_ab_lbl'}, 0, $all_attr, 7);
+    $action_sizer->Add( $self->{'action_values'}, 0, $row_attr, 8);
+    $action_sizer->AddSpacer( 18 );
+    $action_sizer->Add( $self->{'threshhold_lbl'}, 0, $all_attr, 7);
+    $action_sizer->Add( $self->{'action_threshold'}, 0, $row_attr, 8);
+    $action_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+
    
+    my $row_spce = 25;
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $main_sizer->AddSpacer( 20 );
+    $main_sizer->AddSpacer( $row_spce );
     $main_sizer->Add( $grid_sizer, 0, $std_attr, 0);
-    $main_sizer->AddSpacer( 25 );
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, 20 );
+    $main_sizer->AddSpacer( $row_spce );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, $row_spce );
+    $main_sizer->AddSpacer( $row_spce );
+    $main_sizer->Add( $state_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( $row_spce );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, $row_spce );
+    $main_sizer->AddSpacer( $row_spce );
+    $main_sizer->Add( $action_sizer, 0, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->SetSizer( $main_sizer );
@@ -59,28 +81,26 @@ sub new {
     $self;
 }
 
-sub init        { $_[0]->set_data({ grid_type => 'lines', cell_size => 3 }) }
+sub init        { $_[0]->set_data({ grid_type => 'lines', cell_size => 3,
+                                    state_count => 2, action_values => 2, action_threshold => 1 }) }
 
 sub get_data {
     my ($self) = @_;
-    {
-        cell_size => $self->{'cell_size'}->GetValue,
-        grid_type => $self->{'grid'}->GetValue,
-    }
+    my $data = { map { $_ => $self->{$_}->GetValue } @{$self->{'data_keys'}} };
+    $data;
 }
 
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'grid'}->SetValue( $data->{'grid_type'} );
-    $self->{'cell_size'}->SetValue( $data->{'cell_size'} );
+    $self->{$_}->SetValue( $data->{$_} ) for @{$self->{'data_keys'}};
 }
-
 
 sub SetCallBack {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;
 }
+
 
 1;

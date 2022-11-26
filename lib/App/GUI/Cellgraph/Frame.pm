@@ -36,7 +36,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Mobile');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Action');
     $self->{'tabs'}{'type'} = 0;
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
@@ -48,9 +48,7 @@ sub new {
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
     # $self->{'dialog'}{'function'}  = App::GUI::Cellgraph::Dialog::Function->new();
-    $self->{'panel'}{'start'}->SetCallBack( sub { $self->draw( ) } );
-    $self->{'panel'}{'rules'}->SetCallBack( sub { $self->draw( ) } );
-    $self->{'panel'}{'mobile'}->SetCallBack( sub { $self->draw( ) } );
+    $self->{'panel'}{$_}->SetCallBack( sub { $self->draw( ) } ) for @{$self->{'panel_names'}};
 
     Wx::Event::EVT_AUINOTEBOOK_PAGE_CHANGED( $self, $self->{'tabs'}, sub {
         $self->{'tabs'}{'type'} = $self->{'tabs'}->GetSelection unless $self->{'tabs'}->GetSelection == $self->{'tabs'}->GetPageCount - 1;
