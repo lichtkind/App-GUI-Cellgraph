@@ -16,10 +16,10 @@ sub new {
    
     my $rule_cell_size = 20;
     $self->{'rule_size'} = 3;
-    $self->{'alphabet_size'} = 2;
+    $self->{'state_count'} = 2;
+    $self->generate_rules();
     my $colors = [[255,255,255], [0,0,0]];
     
-    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'alphabet_size'} );
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'call_back'} = sub {};
 
@@ -48,9 +48,9 @@ sub new {
     $act_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    for my $rule_index (@{$self->{'rules'}{'input_nr'}}){
+    for my $rule_index ($self->{'rules'}->input_iterator){
         my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
-                                                             $self->{'rules'}{'in_list'}[$rule_index], [$colors->[1]] );
+                                                             $self->{'rules'}{'input_list'}[$rule_index], [$colors->[1]] );
         $in_img->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
                                                              
         $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $rule_cell_size, [255, 255, 255] );
@@ -128,7 +128,7 @@ sub set_data {
 sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
     my ($self) = @_;
-    map { $self->{'action'}[$_]->GetValue } @{$self->{'rules'}{'input_nr'}};
+    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->input_iterator;
 }
 
 sub set_action {
@@ -147,25 +147,25 @@ sub set_action {
 
 sub init_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->init } @{$self->{'rules'}{'input_nr'}};
+    my @list = map { $self->{'action'}[$_]->init } $self->{'rules'}->input_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub grid_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->grid } @{$self->{'rules'}{'input_nr'}};
+    my @list = map { $self->{'action'}[$_]->grid } $self->{'rules'}->input_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub random_action {
     my ($self) = @_;
-    my @list =  map { $self->{'action'}[$_]->rand } @{$self->{'rules'}{'input_nr'}};
+    my @list =  map { $self->{'action'}[$_]->rand } $self->{'rules'}->input_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub invert_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->invert } @{$self->{'rules'}{'input_nr'}};
+    my @list = map { $self->{'action'}[$_]->invert } $self->{'rules'}->input_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
@@ -173,7 +173,12 @@ sub list_from_action_nr { reverse split '', $_[1]}
 sub nr_from_action_list { shift @_; join '', reverse @_ }
 
 sub generate_rules {
-    
+    my ($self, $data) = @_;
+    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'};
+    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
+    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'state_count'} );
+
+    #$self->{'state_count'}
 }
 
 1;

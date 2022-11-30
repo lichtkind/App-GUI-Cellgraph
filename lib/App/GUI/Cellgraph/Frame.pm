@@ -63,7 +63,6 @@ sub new {
         $_[1]->Skip(1) 
     });
 
-
     # GUI layout assembly
     
     my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
@@ -183,7 +182,8 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     my $data = $self->get_data;
-    $self->{'board'}->draw( $self->get_data );
+    $self->{'panel'}{'rules'}->generate_rules( $data );
+    $self->{'board'}->draw( $data );
 }
 
 sub open_settings_dialog {

@@ -21,16 +21,18 @@ sub new {
     $self->{'data_keys'} = [qw/grid_type cell_size state_count action_values action_threshold/];
     $self->{'grid_type'} = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[95, -1], ['lines', 'gaps', 'no']);
     $self->{'cell_size'} = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
-    $self->{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
+    $self->{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
     $self->{'action_values'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
     $self->{'action_threshold'} = Wx::ComboBox->new( $self, -1, '1', [-1,-1],[75, -1], [qw/0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2/], &Wx::wxTE_READONLY);
     $self->{'call_back'} = sub {};
     
-    #$self->{'rule_type'}->SetToolTip('set rule type');
+    $self->{'grid_type'}->SetToolTip('how to display the cell map');
+    $self->{'cell_size'}->SetToolTip('visual size of the cells');
+    $self->{'state_count'}->SetToolTip('how many states a cell can have?');
+    $self->{'action_values'}->SetToolTip('how many action values between 0 and 1 a cell can emit to itself and neighbours?');
+    $self->{'action_threshold'}->SetToolTip('when action value of a cell is equal or higher the cell will be active?');
     
-    #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for @{$self->{'data_keys'}};
-    #Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_start/;
     
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
@@ -60,7 +62,6 @@ sub new {
     $action_sizer->Add( $self->{'threshhold_lbl'}, 0, $all_attr, 7);
     $action_sizer->Add( $self->{'action_threshold'}, 0, $row_attr, 8);
     $action_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-
    
     my $row_spce = 25;
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);

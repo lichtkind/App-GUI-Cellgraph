@@ -144,14 +144,14 @@ sub prev_start {
     my ($self) = @_;
     my $int = $self->{'start_int'}->GetValue;
     $int-- if $int > 1;
-    $self->set_data( $int );
+    $self->set_start_row( $int );
 }
 
 sub next_start {
     my ($self) = @_;
     my $int = $self->{'start_int'}->GetValue;
     $int++;
-    $self->set_data( $int );
+    $self->set_start_row( $int );
 }
 
 1;

@@ -13,15 +13,15 @@ use Graphics::Toolkit::Color;
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
-   
+
     my $rule_cell_size = 20;
     $self->{'rule_size'} = 3;
-    $self->{'alphabet_size'} = 2;
+    $self->{'state_count'} = 2;
+    $self->generate_rules();
     my $colors = [[255,255,255], [0,0,0]];
     
-    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'alphabet_size'} );
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
-    $self->{'call_back'} = sub {};
+    $self->{'call_back'}  = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 50, -1], &Wx::wxTE_PROCESS_ENTER );
     
@@ -63,9 +63,9 @@ sub new {
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    for my $rule_index (@{$self->{'rules'}{'input_nr'}}){
+    for my $rule_index ($self->{'rules'}->input_iterator){
         my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
-                                                             $self->{'rules'}{'in_list'}[$rule_index], [$colors->[1]] );
+                                                             $self->{'rules'}{'input_list'}[$rule_index], [$colors->[1]] );
         $in_img->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
                                                              
         $self->{'result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new( 
@@ -123,8 +123,8 @@ sub new {
         $self->{'call_back'}->();
         
     });
-
     $self->init();
+
     $self;
 }
 
@@ -136,7 +136,7 @@ sub SetCallBack {
 
 sub get_list {
     my ($self) = @_;
-    map { $self->{'result'}[$_]->GetValue } @{$self->{'rules'}{'input_nr'}};
+    map { $self->{'result'}[$_]->GetValue } $self->{'rules'}->input_iterator;
 }
 sub get_rule_number { $_[0]->{'rules'}->nr_from_list( $_[0]->get_list ) }
 
@@ -185,12 +185,16 @@ sub random_rule    { $_[0]->set_rule( $_[0]->{'rules'}->random_nr ) }
 sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
     my ($self) = @_;
-    map { $self->{'action'}[$_]->GetValue } @{$self->{'rules'}{'input_nr'}};
+    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->input_iterator;
 }
 
-
 sub generate_rules {
-    
+    my ($self, $data) = @_;
+    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'};
+    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
+    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'state_count'} );
+
+    #$self->{'state_count'}
 }
 
 1;
