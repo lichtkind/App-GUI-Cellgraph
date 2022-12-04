@@ -5,26 +5,27 @@ use Wx;
 package App::GUI::Cellgraph::Frame::Panel::Rules;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::RuleGenerator;
-use App::GUI::Cellgraph::Widget::Rule;
+use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
-use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
 
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    my $rule_cell_size = 20;
-    $self->{'rule_size'} = 3;
-    $self->{'state_count'} = 2;
-    $self->generate_rules();
-    my $colors = [[255,255,255], [0,0,0]];
-    
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
+    $self->{'rule_plate'}->ShowScrollbars(0,1);
+    $self->{'rule_plate'}->EnableScrolling(0,1);
+    $self->{'rule_plate'}->SetAutoLayout(1);
     $self->{'call_back'}  = sub {};
+    $self->{'rule_square_size'} = 20;
+    $self->{'input_size'} = 3;
+    $self->{'state_count'} = 2;
+
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 50, -1], &Wx::wxTE_PROCESS_ENTER );
-    
+    $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
     $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
     $self->{'btn'}{'sh_l'}   = Wx::Button->new( $self, -1, '<<', [-1,-1], [35,25] );
@@ -62,44 +63,15 @@ sub new {
     $rf_sizer->AddSpacer(20);
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    for my $rule_index ($self->{'rules'}->input_iterator){
-        my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
-                                                             $self->{'rules'}{'input_list'}[$rule_index], [$colors->[1]] );
-        $in_img->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-                                                             
-        $self->{'result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new( 
-                                                             $self->{'rule_plate'}, $rule_cell_size, $rule_cell_size, $colors, 0);
-                                                             
-        $self->{'result'}[$rule_index]->SetCallBack( sub { 
-                $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->() 
-        });
-        $self->{'result'}[$rule_index]->SetToolTip('result of partial rule Nr.'.($rule_index+1));
-
-        my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-        $row_sizer->AddSpacer(30);
-        $row_sizer->Add( $in_img, 0, &Wx::wxGROW);
-        $row_sizer->AddSpacer(15);
-        $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' ), 0, &Wx::wxGROW | &Wx::wxLEFT );        
-        $row_sizer->AddSpacer(15);
-        $row_sizer->Add( $self->{'result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-        $row_sizer->AddSpacer(40);
-        $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-        $plate_sizer->AddSpacer(15);
-        $plate_sizer->Add( $row_sizer, 0, $std_attr, 10);
-    }
-    $self->{'rule_plate'}->SetSizer( $plate_sizer );
-    
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 15 );
     $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 5 );
     $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
     #$main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL|&Wx::wxRIGHT, 20 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
 
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
-    $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
     
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
@@ -123,9 +95,69 @@ sub new {
         $self->{'call_back'}->();
         
     });
+    $self->regenerate_rules();
     $self->init();
-
     $self;
+}
+
+sub regenerate_rules {
+    my ($self, $data) = @_;
+    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'}
+                                  and $self->{'input_size'} == $data->{'global'}{'input_size'};
+    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
+    $self->{'input_size'} = $data->{'global'}{'input_size'} if ref $data eq 'HASH';
+    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
+    $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
+    my @input_colors = map {[map { $self->{'state_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};
+
+    my $refresh = 0;
+    if (exists $self->{'rule_img'}){
+        $self->{'plate_sizer'}->Clear(1);
+        # map { $_->Destroy} @{$self->{'rule_img'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
+        $refresh = 1;
+    } else {
+        $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+        $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
+    }
+    my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
+    for my $rule_index ($self->{'rules'}->input_iterator){
+        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
+                                           $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
+        $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+        
+        $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new( 
+                                         $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'}, 
+                                         $self->{'state_colors'}, 0 );
+        $self->{'rule_result'}[$rule_index]->SetCallBack( sub { 
+                $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->() 
+        });
+        $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
+
+        $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+    }
+    for my $rule_index ($self->{'rules'}->input_iterator){
+        my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+        $row_sizer->AddSpacer(30);
+        $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
+        $row_sizer->AddSpacer(15);
+        $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );        
+        $row_sizer->AddSpacer(15);
+        $row_sizer->Add( $self->{'rule_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+        $row_sizer->AddSpacer(40);
+        $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+        $self->{'plate_sizer'}->AddSpacer(15);
+        $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10); # ->Insert(4,
+    }
+ #   $self->Layout;
+ #   $self->{'rule_plate'}->SetVirtualSize( $self->{'plate_sizer'}->CalcMin ) if $refresh;
+    # $self->{'rule_plate'}->UpdateScrollbar;
+    # $self->{'rule_plate'}->Fit if $refresh;
+    #->SetVirtualSize ->SetSize
+#my $size = $self->{'plate_sizer'}->GetSize();
+#my $min = $self->{'plate_sizer'}->CalcMin();
+#say 'min: ',$min->x,' ', $min->y, '   size: ',$size->x,' ', $size->y;
+    #$self->{'rule_plate'}->AdjustScrollbars;
+    $self->Layout if $refresh;
 }
 
 sub SetCallBack {
@@ -136,7 +168,7 @@ sub SetCallBack {
 
 sub get_list {
     my ($self) = @_;
-    map { $self->{'result'}[$_]->GetValue } $self->{'rules'}->input_iterator;
+    map { $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->input_iterator;
 }
 sub get_rule_number { $_[0]->{'rules'}->nr_from_list( $_[0]->get_list ) }
 
@@ -150,7 +182,7 @@ sub set_rule {
         @list = @_;
         $rule = $self->{'rules'}->nr_from_list( @list );
     }
-    $self->{'result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
+    $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
     $self->{'rule_nr'}->SetValue( $rule );
 }
 
@@ -186,15 +218,6 @@ sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
     my ($self) = @_;
     map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->input_iterator;
-}
-
-sub generate_rules {
-    my ($self, $data) = @_;
-    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'};
-    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
-    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'rule_size'}, $self->{'state_count'} );
-
-    #$self->{'state_count'}
 }
 
 1;

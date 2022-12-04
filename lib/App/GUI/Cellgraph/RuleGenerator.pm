@@ -12,7 +12,7 @@ sub new {
     my @input = (0) x $size;
     $self->{'input_list'}[0] = [@input];
     $self->{'input_nr'}  [0] = 0;
-    if ($self->{'parts'} > 50 ) {
+    if ($self->{'parts'} > 30 ) {
         $self->{'parts'} = ($alphabet-1) * $size + 1;
         $self->{'avg'} = 1; # here we do averaging to min amount of pastial rules
         my $cursor_pos = 0;
@@ -29,12 +29,12 @@ sub new {
                 last if $input[$cp] < $alphabet;
                 $input[$cp] = 0;
             }
-            $self->{'input_list'}[$i]              = [@input];
+            $self->{'input_list'}[$i]              = [reverse @input];
             $self->{'input_nr'}  [join '', @input] = $i;
         }            
     }
-
     $self->{'input_iterator'} = [ 0 .. $self->{'parts'} - 1];
+say "gen $self->{'parts'} parts " , int @{$self->{'input_iterator'}};
     $self->{'max_nr'} = ($alphabet ** $self->{'parts'}) - 1;
     for my $i (0 .. $self->{'parts'} - 1){
         #$self->{'symmetry_partner'}[ $i ] = $self->{'input_nr'}[ join '', reverse @{$self->{'input_list'}[$i]} ];
@@ -49,7 +49,7 @@ sub nr_from_list {
     my ($self) = shift;
     my $number = 0;
     my $base = 1;
-    for (reverse @_){
+    for (@_){
         $number += $_ * $base;
         $base *= $self->{'states'};
     }

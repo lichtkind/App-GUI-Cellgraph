@@ -182,7 +182,9 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     my $data = $self->get_data;
-    $self->{'panel'}{'rules'}->generate_rules( $data );
+    $self->{'panel'}{'rules'}->regenerate_rules( $data );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $data );
+    $self->{'panel'}{'start'}->regenerate_cells( $data );
     $self->{'board'}->draw( $data );
 }
 

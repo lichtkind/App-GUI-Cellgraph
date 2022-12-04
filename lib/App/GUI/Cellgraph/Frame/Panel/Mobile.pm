@@ -5,20 +5,23 @@ use Wx;
 package App::GUI::Cellgraph::Frame::Panel::Mobile;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::RuleGenerator;
-use App::GUI::Cellgraph::Widget::Rule;
+use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
-use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
 
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
    
-    my $rule_cell_size = 20;
+    $self->{'rule_square_size'} = 20;
     $self->{'rule_size'} = 3;
     $self->{'state_count'} = 2;
     $self->generate_rules();
-    my $colors = [[255,255,255], [0,0,0]];
+    # my @colors = [[255,255,255], [0,0,0]];
+    $self->{'rule_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
+    my @colors = map {[ map { $self->{'rule_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};
+
     
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'call_back'} = sub {};
@@ -49,11 +52,12 @@ sub new {
 
     my $plate_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     for my $rule_index ($self->{'rules'}->input_iterator){
-        my $in_img = App::GUI::Cellgraph::Widget::Rule->new( $self->{'rule_plate'}, $rule_cell_size, 
-                                                             $self->{'rules'}{'input_list'}[$rule_index], [$colors->[1]] );
-        $in_img->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
+                                           $self->{'rule_plate'}, $self->{'rule_square_size'}, $colors[$rule_index] );
+
+        $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
                                                              
-        $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $rule_cell_size, [255, 255, 255] );
+        $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
         
         $self->{'action'}[$rule_index]->SetCallBack( sub { 
                 $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->() 
@@ -62,7 +66,7 @@ sub new {
         
         my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
         $row_sizer->AddSpacer(30);
-        $row_sizer->Add( $in_img, 0, &Wx::wxGROW);
+        $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
         $row_sizer->AddSpacer(15);
         $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' ), 0, &Wx::wxGROW | &Wx::wxLEFT );        
         $row_sizer->AddSpacer(15);
