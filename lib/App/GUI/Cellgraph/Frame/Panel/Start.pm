@@ -78,6 +78,9 @@ sub new {
 sub regenerate_cells {
     my ($self, $data) = @_;
     return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'};
+    $self->{'state_count'} = $data->{'global'}{'state_count'};
+    $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
+    $self->{'switch'}[$_]->SetColors( $self->{'state_colors'} ) for 0 .. $self->{'length'} - 1;
 }    
 
 
