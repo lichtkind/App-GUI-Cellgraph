@@ -17,7 +17,7 @@ sub new {
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
-    $self->{'rule_plate'}->SetAutoLayout(1);
+    $self->{'rule_plate'}->SetScrollRate( 1, 1 );
     $self->{'call_back'}  = sub {};
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 3;
@@ -113,6 +113,9 @@ sub regenerate_rules {
     my $refresh = 0;
     if (exists $self->{'rule_img'}){
         $self->{'plate_sizer'}->Clear(1);
+        $self->{'rule_img'} = [];
+        $self->{'arrow'} = [];
+        $self->{'rule_result'} = [];
         # map { $_->Destroy} @{$self->{'rule_img'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
         $refresh = 1;
     } else {
@@ -148,15 +151,6 @@ sub regenerate_rules {
         $self->{'plate_sizer'}->AddSpacer(15);
         $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10); # ->Insert(4,
     }
- #   $self->Layout;
- #   $self->{'rule_plate'}->SetVirtualSize( $self->{'plate_sizer'}->CalcMin ) if $refresh;
-    # $self->{'rule_plate'}->UpdateScrollbar;
-    # $self->{'rule_plate'}->Fit if $refresh;
-    #->SetVirtualSize ->SetSize
-#my $size = $self->{'plate_sizer'}->GetSize();
-#my $min = $self->{'plate_sizer'}->CalcMin();
-#say 'min: ',$min->x,' ', $min->y, '   size: ',$size->x,' ', $size->y;
-    #$self->{'rule_plate'}->AdjustScrollbars;
     $self->Layout if $refresh;
 }
 
@@ -213,11 +207,5 @@ sub opposite_rule  { $_[0]->set_rule( $_[0]->{'rules'}->opposite_nr( $_[0]->{'ru
 sub symmetric_rule { $_[0]->set_rule( $_[0]->{'rules'}->symmetric_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
 sub invert_rule    { $_[0]->set_rule( $_[0]->{'rules'}->inverted_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
 sub random_rule    { $_[0]->set_rule( $_[0]->{'rules'}->random_nr ) }
-
-sub get_action_number { join '', reverse $_[0]->get_action_list }
-sub get_action_list {
-    my ($self) = @_;
-    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->input_iterator;
-}
 
 1;
