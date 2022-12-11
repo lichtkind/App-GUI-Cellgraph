@@ -93,11 +93,71 @@ sub paint {
     $dc->SetPen( Wx::Pen->new( $color, 1, &Wx::wxPENSTYLE_SOLID ) );
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
     my $grid = App::GUI::Cellgraph::Grid::get( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'data'} );
- 
-    for my $x (0 .. $self->{'cells'}{'x'} - 1){
-        for my $y (0 .. $self->{'cells'}{'y'} - 1) {
-            $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size )
-                if $grid->[$y][$self->{'cells'}{'x'} + $x];
+
+    if ($self->{'data'}{'global'}{'paint_direction'} eq 'inside_out') {
+        my $mid = int($self->{'cells'}{'x'} / 2);
+        my $odd = $self->{'cells'}{'x'} % 2;
+        if ($odd){
+            for my $y (0 .. int($self->{'cells'}{'y'} / 2) + 1) {
+                last if $y >= $mid;
+                for my $x ($mid - $y .. $mid + $y){
+                    if ($grid->[$y][$self->{'cells'}{'x'} + $x]){
+                        my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        ($nx, $ny) = ($x, $mid + $y);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        #next if $x == $mid - $y or $x == $mid + $y;
+                        ($nx, $ny) = ($mid - 1 - $y, $x);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    }
+                        
+                }
+            }
+        } else {
+            for my $y (0 .. int($self->{'cells'}{'y'} / 2) + 1) {
+                last if $y >= $mid;
+                for my $x ($mid - $y .. $mid + $y){
+                    if ($grid->[$y][$self->{'cells'}{'x'} + $x]){
+                        my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        ($nx, $ny) = ($x, $mid + $y);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        ($nx, $ny) = ($mid - 1 - $y, $x);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                        ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
+                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    }
+                        
+                }
+            }
+        }
+    } elsif ($self->{'data'}{'global'}{'paint_direction'} eq 'outside_in') {
+        for my $y (0 .. int($self->{'cells'}{'y'} / 2) + 1) {
+            last if $y >= $self->{'cells'}{'x'} - 2 - $y;
+            for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
+                if ($grid->[$y][$self->{'cells'}{'x'} + $x]){
+                    my ($nx, $ny) = ($x, $y);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    $ny = $self->{'cells'}{'y'} - 1 - $y;
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    $nx = $y;
+                    $ny = $self->{'cells'}{'y'} - 1 - $x;
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    $nx = $self->{'cells'}{'x'} - 1 - $y;
+                    $ny = $x;
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                }
+                    
+            }
+        }
+    } else {
+        for my $x (0 .. $self->{'cells'}{'x'} - 1){
+            for my $y (0 .. $self->{'cells'}{'y'} - 1) {
+                $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size )
+                    if $grid->[$y][$self->{'cells'}{'x'} + $x];
+            }
         }
     }
     delete $self->{'data'}{'new'};
