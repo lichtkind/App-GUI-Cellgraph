@@ -11,16 +11,16 @@ sub new {
     
     my @input = (0) x $size;
     $self->{'input_list'}[0] = [@input];
-    $self->{'input_nr'}  [0] = 0;
+    $self->{'input_pattern'}  [0] = join '', @input;
     if ($self->{'parts'} > 30 ) {
         $self->{'parts'} = ($alphabet-1) * $size + 1;
         $self->{'avg'} = 1; # here we do averaging to min amount of pastial rules
         my $cursor_pos = 0;
         for my $i (1 .. $self->{'parts'} - 1){
-            $cursor_pos++ if $input[$cursor_pos] == $alphabet -1;
+            $cursor_pos++ if $input[$cursor_pos] == $alphabet - 1;
             $input[$cursor_pos]++;
             $self->{'input_list'}[$i] = [@input];
-            $self->{'input_nr'}  [$i] = join '', @input;
+            $self->{'input_pattern'}  [$i] = join '', @input;
         }
     } else {
         for my $i (1 .. $self->{'parts'} - 1){
@@ -29,23 +29,41 @@ sub new {
                 last if $input[$cp] < $alphabet;
                 $input[$cp] = 0;
             }
-            $self->{'input_list'}[$i]              = [reverse @input];
-            $self->{'input_nr'}  [join '', @input] = $i;
+            $self->{'input_list'}[$i]    = [reverse @input];
+            $self->{'input_pattern'}[$i] = join '', @input;
         }            
     }
-    $self->{'input_iterator'} = [ 0 .. $self->{'parts'} - 1];
-say "gen $self->{'parts'} parts " , int @{$self->{'input_iterator'}};
+    $self->{'part_iterator'} = [ 0 .. $self->{'parts'} - 1];
+    for my $i (@{$self->{'part_iterator'}}){
+        $self->{'index_from_pattern'}{ $self->{'input_pattern'}[$i] } = $i;
+    }
     $self->{'max_nr'} = ($alphabet ** $self->{'parts'}) - 1;
-    for my $i (0 .. $self->{'parts'} - 1){
-        #$self->{'symmetry_partner'}[ $i ] = $self->{'input_nr'}[ join '', reverse @{$self->{'input_list'}[$i]} ];
+    for my $i (@{$self->{'part_iterator'}}){
+        $self->{'symmetry_partner'}[ $i ] = $self->{'index_from_pattern'}{ join '', reverse @{$self->{'input_list'}[$i]} };
     }
     bless $self;
 }
 
 
-sub input_iterator { @{$_[0]->{'input_iterator'}} }
+sub part_rule_iterator { @{$_[0]->{'part_iterator'}} }
 
-sub nr_from_list {
+sub nr_from_input_list {
+    my ($self) = shift;
+    my $pattern = join '', @_;
+    $self->{'index_from_pattern'}{ $pattern } if exists $self->{'index_from_pattern'}{ $pattern };    
+}
+
+sub input_list_from_nr {
+    my ($self, $rule) = @_;
+    @{$self->{'input_list'}[$rule]} if exists $self->{'input_list'}[$rule];
+}
+
+sub input_pattern_from_nr {
+    my ($self, $sub_rule_nr) = @_;
+    $self->{'input_pattern'}[$sub_rule_nr] if exists $self->{'input_pattern'}[$sub_rule_nr];
+}
+
+sub nr_from_output_list {
     my ($self) = shift;
     my $number = 0;
     my $base = 1;
@@ -56,11 +74,12 @@ sub nr_from_list {
     $number;
 }
 
-sub list_from_nr {
+sub output_list_from_nr {
     my ($self, $rule) = @_;
     my $base = $self->{'states'};
-    my $nr = $rule * $base;
-    map { $nr = int $nr / $base; $nr % $base } $self->input_iterator;
+    my $nr = ($self->{'max_nr'}+1) / $base;
+    map { $nr = int $nr / $base; $nr % $base } $self->part_rule_iterator;
+
 }
 
 sub prev_nr {
@@ -112,3 +131,4 @@ sub random_nr {
 }
 
 1;
+__END__

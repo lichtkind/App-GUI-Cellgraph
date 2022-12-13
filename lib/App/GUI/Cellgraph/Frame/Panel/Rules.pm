@@ -35,9 +35,9 @@ sub new {
     $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
 
-    $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every rule swaps result with symmetric partner)');
-    $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every rule that produces white, goes black and vice versa)');
-    $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule');
+    $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
+    $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
+    $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
     
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -123,7 +123,7 @@ sub regenerate_rules {
         $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
     }
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-    for my $rule_index ($self->{'rules'}->input_iterator){
+    for my $rule_index ($self->{'rules'}->part_rule_iterator){
         $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
                                            $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
         $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
@@ -138,7 +138,7 @@ sub regenerate_rules {
 
         $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
     }
-    for my $rule_index ($self->{'rules'}->input_iterator){
+    for my $rule_index ($self->{'rules'}->part_rule_iterator){
         my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
         $row_sizer->AddSpacer(30);
         $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
@@ -162,7 +162,13 @@ sub SetCallBack {
 
 sub get_list {
     my ($self) = @_;
-    map { $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->input_iterator;
+    map { $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
+}
+sub get_map {
+    my ($self) = @_;
+    my %map = map { $self->{'rules'}->input_pattern_from_nr($_) => 
+                    $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
+    \%map;
 }
 sub get_rule_number { $_[0]->{'rules'}->nr_from_list( $_[0]->get_list ) }
 
@@ -171,10 +177,10 @@ sub set_rule {
     my ($rule, @list);
     if (@_ == 1) {
         $rule = shift;
-        @list = $self->{'rules'}->list_from_nr( $rule );
+        @list = $self->{'rules'}->output_list_from_nr( $rule );
     } else {
         @list = @_;
-        $rule = $self->{'rules'}->nr_from_list( @list );
+        $rule = $self->{'rules'}->nr_from_output_list( @list );
     }
     $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
     $self->{'rule_nr'}->SetValue( $rule );
@@ -184,6 +190,9 @@ sub init { $_[0]->set_data( { nr => 18, size => 3, action => 22222222 } ) }
 
 sub get_data {
     my ($self) = @_;
+    say $self->get_map;
+#    say for keys %{ $self->get_map };
+#    say '--';
     {
         f => [$self->get_list],
         nr => $self->{'rule_nr'}->GetValue,

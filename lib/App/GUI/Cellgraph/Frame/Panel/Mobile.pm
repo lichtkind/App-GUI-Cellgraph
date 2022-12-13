@@ -106,7 +106,7 @@ sub set_data {
 sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
     my ($self) = @_;
-    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->input_iterator;
+    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
 }
 
 sub set_action {
@@ -125,25 +125,25 @@ sub set_action {
 
 sub init_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->init } $self->{'rules'}->input_iterator;
+    my @list = map { $self->{'action'}[$_]->init } $self->{'rules'}->part_rule_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub grid_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->grid } $self->{'rules'}->input_iterator;
+    my @list = map { $self->{'action'}[$_]->grid } $self->{'rules'}->part_rule_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub random_action {
     my ($self) = @_;
-    my @list =  map { $self->{'action'}[$_]->rand } $self->{'rules'}->input_iterator;
+    my @list =  map { $self->{'action'}[$_]->rand } $self->{'rules'}->part_rule_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub invert_action {
     my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->invert } $self->{'rules'}->input_iterator;
+    my @list = map { $self->{'action'}[$_]->invert } $self->{'rules'}->part_rule_iterator;
     $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
@@ -175,7 +175,7 @@ sub regenerate_rules {
     }
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-    for my $rule_index ($self->{'rules'}->input_iterator) {
+    for my $rule_index ($self->{'rules'}->part_rule_iterator) {
         $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
                                            $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
         $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
