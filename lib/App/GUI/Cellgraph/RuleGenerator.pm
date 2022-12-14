@@ -37,7 +37,8 @@ sub new {
     for my $i (@{$self->{'part_iterator'}}){
         $self->{'index_from_pattern'}{ $self->{'input_pattern'}[$i] } = $i;
     }
-    $self->{'max_nr'} = ($alphabet ** $self->{'parts'}) - 1;
+    $self->{'max_nr'} = ($alphabet ** ($self->{'parts'} + 1)) - 1;
+
     for my $i (@{$self->{'part_iterator'}}){
         $self->{'symmetry_partner'}[ $i ] = $self->{'index_from_pattern'}{ join '', reverse @{$self->{'input_list'}[$i]} };
     }
@@ -78,7 +79,7 @@ sub output_list_from_nr {
     my ($self, $rule) = @_;
     my $base = $self->{'states'};
     my $nr = ($self->{'max_nr'}+1) / $base;
-    map { $nr = int $nr / $base; $nr % $base } $self->part_rule_iterator;
+    reverse map { $rule %= $nr; $nr /= $base; int $rule / $nr } $self->part_rule_iterator;
 
 }
 

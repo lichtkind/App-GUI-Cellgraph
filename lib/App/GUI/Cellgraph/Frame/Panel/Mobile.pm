@@ -109,6 +109,7 @@ sub get_action_list {
     map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
 }
 
+
 sub set_action {
     my ($self) = shift;
     my ($nr, @list);

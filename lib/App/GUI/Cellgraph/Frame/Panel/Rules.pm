@@ -89,14 +89,14 @@ sub new {
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
         my ($self, $cmd) = @_;
         my $new_value = $cmd->GetString;
-        my $old_value = $self->{'rules'}->nr_from_list( $self->get_list );
+        my $old_value = $self->{'rules'}->nr_from_output_list( $self->get_output_list );
         return if $new_value == $old_value;
         $self->set_rule( $new_value );
         $self->{'call_back'}->();
         
     });
-    $self->regenerate_rules();
-    $self->init();
+    $self->regenerate_rules;
+    $self->init;
     $self;
 }
 
@@ -160,7 +160,7 @@ sub SetCallBack {
     $self->{'call_back'} = $code;
 }
 
-sub get_list {
+sub get_output_list {
     my ($self) = @_;
     map { $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
 }
@@ -170,7 +170,7 @@ sub get_map {
                     $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
     \%map;
 }
-sub get_rule_number { $_[0]->{'rules'}->nr_from_list( $_[0]->get_list ) }
+sub get_rule_number { $_[0]->{'rules'}->nr_from_output_list( $_[0]->get_output_list ) }
 
 sub set_rule {
     my ($self) = shift;
@@ -186,17 +186,15 @@ sub set_rule {
     $self->{'rule_nr'}->SetValue( $rule );
 }
 
-sub init { $_[0]->set_data( { nr => 18, size => 3, action => 22222222 } ) }
+sub init { $_[0]->set_data( { nr => 18, size => 3, avg => 0 } ) }
 
 sub get_data {
     my ($self) = @_;
-    say $self->get_map;
-#    say for keys %{ $self->get_map };
-#    say '--';
     {
-        f => [$self->get_list],
+        f => [$self->get_output_list],
         nr => $self->{'rule_nr'}->GetValue,
-        size => 3,
+        size => $self->{'input_size'},
+        avg => $self->{'rules'}{'avg'},
     }
 }    
 
