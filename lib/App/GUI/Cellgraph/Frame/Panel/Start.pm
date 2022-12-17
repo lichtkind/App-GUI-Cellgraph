@@ -98,8 +98,8 @@ sub get_list {
     my ($self) = @_;
     my @list = map { $self->{'switch'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
     pop @list while @list and not $list[-1];
-    if ($self->{'repeat_start'}->GetValue){ unshift @list, [] }
-    else                                  { shift @list while @list and not $list[0] }
+    # remove starting 0
+    unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
     @list;
 }
 
@@ -112,6 +112,7 @@ sub get_data {
     {
         list => [$self->get_list],
         value => $self->{'start_int'}->GetValue,
+        repeat => $self->{'repeat_start'}->GetValue,
     }
 }
 
