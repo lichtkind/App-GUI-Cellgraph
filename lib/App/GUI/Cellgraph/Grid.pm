@@ -76,8 +76,7 @@ sub compile_iterator {
     my $code = 'sub { my ($state_row, $action_row) = @_;'."\n";  # $code .= 'say int @$state_row;';
     $code .= 'my ($new_srow, $new_arow) = ([],[(0) x $comp_size_x]); my $state = 0; my $active = 0;'."\n";
     # row start
-say "tf -> ", int @$transfer_function;
-say "take avg ",$config->{'rules'}{'avg'};
+say "tf -> ", int @$transfer_function, "  take avg ",$config->{'rules'}{'avg'};
     my $shift_val = '$state *= '.$states.';';
     my $crop_val = '$state %= '.$rule_count.';';
     if ($config->{'global'}{'circular_grid'}){
@@ -124,7 +123,7 @@ say "take avg ",$config->{'rules'}{'avg'};
               : $shift_val . $crop_val;
         unless ($rule_size % 2){
             $code .= $config->{'rules'}{'avg'}
-                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->[$cell_i];'
+                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'
                    : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);';
         }
         $code .= '$state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];' if $config->{'global'}{'circular_grid'};
