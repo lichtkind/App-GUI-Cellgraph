@@ -181,11 +181,12 @@ sub set_data {
 
 sub draw {
     my ($self) = @_;
-    my $data = $self->get_data;
-    $self->{'panel'}{'rules'}->regenerate_rules( $data );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $data );
-    $self->{'panel'}{'start'}->regenerate_cells( $data );
-    $self->{'board'}->draw( $data );
+    my $config = $self->get_data;
+    $self->{'panel'}{'rules'}->regenerate_rules( $config );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $config );
+    $self->{'panel'}{'start'}->regenerate_cells( $config );
+    $config = $self->get_data;
+    $self->{'board'}->draw( $config );
 }
 
 sub open_settings_dialog {
