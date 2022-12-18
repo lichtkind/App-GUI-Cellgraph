@@ -94,6 +94,8 @@ sub get_data {
     {
         nr => $self->{'action_nr'}->GetValue,
         f => [$self->get_action_list],
+        sum => 0,
+        threshold => 1,
     }
 }    
 

@@ -43,6 +43,7 @@ sub new {
     # $self->{'action_values'}->SetToolTip('how many action values between 0 and 1 a cell can emit to itself and neighbours?');
     # $self->{'action_threshold'}->SetToolTip('when action value of a cell is equal or higher the cell will be active?');
     
+    Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/circular_grid/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for @{$self->{'data_keys'}};
     
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -107,7 +108,7 @@ sub new {
 }
 
 sub init        { $_[0]->set_data({ grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
-                                    state_count => 2, input_size => 3, circular_grid => 1}) } #action_values => 2, action_threshold => 1 
+                                    state_count => 2, input_size => 3, circular_grid => 0}) } #action_values => 2, action_threshold => 1 
 
 sub get_data {
     my ($self) = @_;
