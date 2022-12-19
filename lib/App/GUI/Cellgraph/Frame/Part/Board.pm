@@ -6,7 +6,7 @@ package App::GUI::Cellgraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 my $TAU = 6.283185307;
 
-# use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
 use App::GUI::Cellgraph::Grid;
 
 sub new {
@@ -81,6 +81,9 @@ sub paint {
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
+    my @color = map { Wx::Colour->new( $_->rgb ) } color('white')->gradient_to('black', $self->{'data'}{'global'}{'state_count'});
+    my @pen = map {Wx::Pen->new( $_, 1, &Wx::wxPENSTYLE_SOLID )} @color;
+    my @brush = map { Wx::Brush->new( $_, &Wx::wxBRUSHSTYLE_SOLID ) } @color;
     $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 170, 170, 170 ), 1, &Wx::wxPENSTYLE_SOLID ) );
     if ($self->{'data'}{'global'}{'grid_type'} eq 'lines'){
         $dc->DrawLine( 0,  0, $grid_max_x,    0);
@@ -100,6 +103,8 @@ sub paint {
             for my $y (1 .. $mid) {
                 for my $x ($mid - $y .. $mid -1 + $y){
                     if ($grid->[$y][$x]){
+                        $dc->SetPen( $pen[$grid->[$y][$x]] );
+                        $dc->SetBrush( $brush[$grid->[$y][$x]] );
                         my ($nx, $ny) = ($x, $mid + $y);
                         $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
                         ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - $y);
@@ -118,6 +123,8 @@ sub paint {
                 last if $y >= $mid;
                 for my $x ($mid - $y .. $mid + $y){
                     if ($grid->[$y][$x]){
+                        $dc->SetPen( $pen[$grid->[$y][$x]] );
+                        $dc->SetBrush( $brush[$grid->[$y][$x]] );
                         my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
                         $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
                         ($nx, $ny) = ($x, $mid + $y);
@@ -136,6 +143,8 @@ sub paint {
             last if $y >= $self->{'cells'}{'x'} - 2 - $y;
             for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
                 if ($grid->[$y][$x]){
+                    $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
                     my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $self->{'cells'}{'y'} - 1 - $y);
                     $dc->DrawRectangle( 1 + ( $x * $grid_d), 1 + ( $y * $grid_d), $cell_size, $cell_size );
                     $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
@@ -147,8 +156,11 @@ sub paint {
     } else {
         for my $x (0 .. $self->{'cells'}{'x'} - 1){
             for my $y (0 .. $self->{'cells'}{'y'} - 1) {
-                $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size )
-                    if $grid->[$y][$x];
+                if ($grid->[$y][$x]){
+                    $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                    $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size );
+                }
             }
         }
     }

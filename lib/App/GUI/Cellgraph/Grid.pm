@@ -21,7 +21,6 @@ sub get {
     my $xskew_factor = int $rule_size / 2;
     my $paint_extra_x = $cylinder_grid ? 0 : ($xskew_factor * $size_y);
     my $comp_size_x = $size_x + (2 * $paint_extra_x);
-say "size x $size_x rx $comp_size_x";
 
     my $action_grid  = [ [(1) x $comp_size_x] ];
     my $state_grid   = [ [] ];
@@ -47,8 +46,7 @@ say "size x $size_x rx $comp_size_x";
     }
 
     $state_grid->[0] = \@start_states;
-    for my $row_i (1 .. $size_y - 1) { # compute next rows
-        # say "row $row_i :";
+    for my $row_i (1 .. $size_y - 1) { # compute next rows  say "row $row_i :";
         ($state_grid->[$row_i], $action_grid->[$row_i]) 
             = $iterator->( $state_grid->[$row_i - 1], $action_grid->[$row_i - 1]);
     }    
@@ -73,10 +71,9 @@ sub compile_iterator {
     my $x_skew_factor = int $rule_size / 2;
     my $a_skew_factor = 1;
     # code head
-    my $code = 'sub { my ($state_row, $action_row) = @_;'."\n";  # $code .= 'say int @$state_row;';
+    my $code = 'sub { my ($state_row, $action_row) = @_;'."\n";  # $code .= 'say "l ", int @$state_row;';
     $code .= 'my ($new_srow, $new_arow) = ([],[(0) x $comp_size_x]); my $state = 0; my $active = 0;'."\n";
-    # row start
-say "tf -> ", int @$transfer_function, "  take avg ",$config->{'rules'}{'avg'};
+    # row start #say "tf -> ", int @$transfer_function, "  take avg ",$config->{'rules'}{'avg'};
     my $shift_val = '$state *= '.$states.';';
     my $crop_val = '$state %= '.$rule_count.';';
     if ($config->{'global'}{'circular_grid'}){
@@ -96,7 +93,20 @@ say "tf -> ", int @$transfer_function, "  take avg ",$config->{'rules'}{'avg'};
         $code .= $shift_val.'$state += $state_row->['.$_.'];'."\n" for reverse 1 .. $x_skew_factor; 
     }
     $code .= '$new_srow->[0] = $transfer_function->[$state];'."\n";
-    $code .= '$new_arow->[0] = $action_function->[$active];'."\n"; 
+    $code .= '$new_arow->[0] = $action_function->[$active];'."\n";
+    for my $cell_i( 1 .. $x_skew_factor - 1){
+        $code .= $config->{'rules'}{'avg'} 
+              ? '$state -= $state_row->['.($comp_size_x - $x_skew_factor + $cell_i).'];'."\n"
+              : $shift_val . $crop_val."\n";
+        unless ($rule_size % 2){
+            $code .= $config->{'rules'}{'avg'}
+                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'."\n"
+                   : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);'."\n";
+        }
+        $code .= '$state += $state_row->['.($cell_i + $x_skew_factor).'];';
+        $code .= '$new_srow->['.$cell_i.'] = $transfer_function->[$state];'; 
+        $code .= '$new_arow->['.$cell_i.'] = $action_function->[$active];';
+    }
     my $plus_factor = $states ** ($x_skew_factor);
     my $minus_factor = $states ** ($x_skew_factor-1);
     my $row_stop = $comp_size_x - 1 - $x_skew_factor;
@@ -110,34 +120,31 @@ say "tf -> ", int @$transfer_function, "  take avg ",$config->{'rules'}{'avg'};
     }
     $code .= $shift_val unless $config->{'rules'}{'avg'}; 
     $code .= '$state += $state_row->[$cell_i + '.$x_skew_factor.'];'."\n"; 
-# $code .= 'say  " undef cell ", $cell_i + $x_skew_factor unless defined $state_row->[$cell_i + '.$x_skew_factor.'];'."\n"; 
     $code .= $config->{'rules'}{'avg'} ? '$state -= $state_row->[$cell_i - $x_skew_factor - 1];'."\n" : $crop_val;
     $code .= '$new_srow->[$cell_i] = $transfer_function->[$state];'."\n"; 
     $code .= '$new_arow->[$cell_i] = $action_function->[$active];'."\n"; 
-# $code .= 'say  "state ", $state if $state >= @$transfer_function;'."\n"; 
-    $code .= '}';
+    $code .= '}'."\n";
     # loop tail
     for my $cell_i( $comp_size_x - $x_skew_factor .. $comp_size_x - 1){
         $code .= $config->{'rules'}{'avg'} 
-              ? '$state -= $state_row->['.($cell_i - $x_skew_factor - 1).'];'
-              : $shift_val . $crop_val;
+              ? '$state -= $state_row->['.($cell_i - $x_skew_factor - 1).'];'."\n"
+              : $shift_val . $crop_val."\n";
         unless ($rule_size % 2){
             $code .= $config->{'rules'}{'avg'}
-                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'
-                   : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);';
+                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'."\n"
+                   : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);'."\n";
         }
         $code .= '$state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];' if $config->{'global'}{'circular_grid'};
         $code .= '$new_srow->['.$cell_i.'] = $transfer_function->[$state];'; 
         $code .= '$new_arow->['.$cell_i.'] = $action_function->[$active];'; 
-    }; 
-    say $code;
+    }; # say $code;
 
     eval $code.'($new_srow, $new_arow) }';
 }
 
 1;
 
-
+# - activity grid
 __END__
         #~ my $row = $state_grid->[$row_i] = [];
                 #~ my $act = $action_grid->[$row_i]  = [(0) x $comp_size_x];
