@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -59,8 +59,10 @@ INI file for tweaking them later
 =head1 DESCRIPTION
 
 This is a row (one dimensional arrangement) of cellular automata.
-Their starting state can be seen in the first row. Each subsequent row
-below reflects the following state (Y is time axis). 
+Their starting state can be seen as a color in the first row of the grid.
+Each subsequent row below reflects the following state (Y is time axis).
+Other drawing  directions are optional and explained as part of the
+I<Global> panel.
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/126.png"    alt=""  width="300" height="300">
@@ -71,21 +73,23 @@ below reflects the following state (Y is time axis).
 =head1 Mechanics
 
 One automaton is called cell and works like described in I<Steve Wolfram>s
-book  I<"A new kind of science">. Each cell can be in one of several states.
-The most simple cells have only two: 0 and 1 (pictured as white and black squares).
+book  I<"A new kind of science">. Each cell can be in one of several states,
+displayed as a greyscale or user defined color. The most simple cells
+have only two states: 0 and 1 (pictured as white and black squares).
 The state of each cell may change each round (think of processor cycles).
-How exactly they change s defined by a transfer function. The input of
+How exactly they change is defined by a transfer function. The input of
 that function are the states of neighbours left and right and the cell
-itself. Other neighbourhoods are possible. For every combination of states
-in the neighbourhood there is one partial rule that defines the next state
-of the cell. If neighbourhoods get greater - the number of rules grows
-exponentially. To reduce again the rule count one might only take the 
-average value of the neighbourhood as input.
+itself. The size of this neighbourhood can be changed. For every combination
+of states in the neighbourhood there is one partial rule that defines the
+next state of the cell. If large neighbourhoods or large state counts would
+result in too many partial rules, than a different logic will apply.
+Than there is only a different partial rule for every distinct sum value.
+By sum is meant the sum of all states in the neighbourhood, since the
+state of a cell is just an integer.
 
-To each partial rule also belongs an instruction how to pass on which 
-cells should apply the transfer function. In the simplest case all cells
-are activated all the time. But you can also decide if the current cell
-or its neighbours remain active, dependent on the state of the neighbourhood.
+To each partial rule also belongs also an action rule, an instruction 
+that decides if the transfer function will be even applied or the state
+just stays the same. Action rules will be set via the I<Action> panel.
 
 =head1 GUI
 
@@ -96,35 +100,63 @@ Please mind the tool tips - short help texts which appear if the mouse
 stands still over a button. Also helpful are messages in the status bar
 at the bottom that appear while browsing the menu.
 
+=head2 Global
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIglobal.png"   alt=""  width="630" height="410">
+</p>
+
+The first tab contains the general (meta) settings.
+In upper left corder is the selector for the optical grid style. With or
+without grid lines (always sized one pixel) or just same sized gaps
+between the colored squares, which represent the cells. Right beside you
+set the size of the squares in pixel.
+
+In the row below are options how to draw the state matrix. Default
+is the already in the description mentioned top down drawing method,
+where the first row is the initial state of the cells as set in the next
+tab named I<start>. Each following state of a cell is in the square below,
+which makes Y so to speak the (vertical) time axis (top to down). To 
+produce more decorative patterns there are two more frawing patters:
+I<inside out> and I<outside in>. Both are based on the idea of cutting
+the grid square into 4 triangles, by using the diagonals as dividing lines.
+With I<outside in> the upper triangle is filled as before and the content
+rotated 3 times around the center to fill the other triangles. With the 
+option I<inside out> is almost everything the same except the upper triangle
+is filled from the center up so the central pixel of the square is the 
+central pixel of the starting row, growing into all four directions.
+On the checkbox beside that you hab the option to make the leftmost and
+rightmost cells neighbours. It their not the program will calculate 
+enough so no artefacts stemming from the corner cells will be visible.
+But making the cell row into a ring can produce a different kind of artefacts.
+
+
+The third row in this tab sets the meta properties of the rules: number 
+of states and size of neighbourhood. If that is even, the cell in question
+is not part of its own neighbourhood.
+
 =head2 Start
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIstart.png"   alt=""  width="630" height="410">
 </p>
 
-The first tab contains the general settings.
-
-In the left top corner you can select if the grid should be of visible
-gray lines, gaps (white lines) or no gaps between the squares. Right
-beside you set the aize of the squares in pixel.
-
-Below that you set the content of the starting row of the grid. By 
-clicking on the squares they change their state. Their combined value
-is summarized in the displayed integer abover the squares. The buttons
-left and right will count that number down or up to circle easily through
-all the starting states. The button I<"1"> simply resets the value to 1
-(one activated cell), and I<"?"> selects a random strting sequence.
-When I<"Repeat"> is selected the chosen sequence gets repeated as often
-as the first row is long.
-
+The second tab contains settings for the starting values (states).
+By clicking on the squares you change (cycle) the state. Only the cells
+from the first to the last none zero (white) one will be recognised and
+placed into the center of the first grid row and the rest will be filled
+with zeros. If you choose I<Repeat>, the selected cell staes will repeated
+to take up the entire cell row. To get only one none zero cell, press the
+butoon C<1> and for a random starting sequence C<?>. The arrow buttons
+are just increment or decrement the numeric value of the starting sequence.
 
 =head2 Rules
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrule.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrules.png"   alt=""  width="630" height="410">
 </p>
 
-On the second tab you can set the individual partial rules. 
+On the third tab you can set the individual partial rules. 
 Just click on the result square in the chosen subrule (after the =>). 
 All rule results are combined in a rule number, which you can see on top.
 With the buttons left and right you can again count that number down and
@@ -134,6 +166,12 @@ symmetric or opposite. Inverted means every rule result will be inverted.
 Symmetric means ever rule switches its result with its symmetric partner
 (if there is one). Opposite rule means ever rule switches its result the
 rule of inverted input. The button I<"?"> again selects a random rule.
+
+=head2 Action
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIaction.png"   alt=""  width="630" height="410">
+</p>
 
 Behind the result of each subrule is another subrule for the action
 propagation. The circles show if the cell or its neighbours can do the

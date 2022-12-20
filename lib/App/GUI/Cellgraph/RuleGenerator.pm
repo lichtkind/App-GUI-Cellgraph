@@ -40,7 +40,7 @@ sub new {
     $self->{'max_nr'} = ($alphabet ** ($self->{'parts'} + 1)) - 1;
 
     for my $i (@{$self->{'part_iterator'}}){
-        $self->{'symmetry_partner'}[ $i ] = $self->{'index_from_pattern'}{ join '', reverse @{$self->{'input_list'}[$i]} };
+        $self->{'symmetry_partner'}[ $i ] = $self->{'index_from_pattern'}{ join '', @{$self->{'input_list'}[$i]} };
     }
     bless $self;
 }
@@ -95,28 +95,28 @@ sub next_nr {
 
 sub shift_nr_left {
     my ($self, $nr) = @_;
-    my @old_list = $self->list_from_nr( $nr );
+    my @old_list = $self->output_list_from_nr( $nr );
     push @old_list, shift @old_list;
     @old_list;
 }
 
 sub shift_nr_right {
     my ($self, $nr) = @_;
-    my @old_list = $self->list_from_nr( $nr );
+    my @old_list = $self->output_list_from_nr( $nr );
     unshift @old_list, pop @old_list;
     @old_list;
 }
 
 sub opposite_nr {
     my ($self, $nr) = @_;
-    my @old_list = $self->list_from_nr( $nr );
-    map { $old_list[ $self->{'parts'} - $_ - 1] } @{$self->{'input_nr'}};
+    my @old_list = $self->output_list_from_nr( $nr );
+    map { $old_list[ $self->{'parts'} - $_ - 1] } $self->part_rule_iterator;
 }
 
 sub symmetric_nr {
     my ($self, $nr) = @_;
-    my @old_list = $self->list_from_nr( $nr );
-    map { $old_list[ $self->{'symmetry_partner'}[$_] ] } @{ $self->{'input_nr'} };
+    my @old_list = $self->output_list_from_nr( $nr );
+    map { $old_list[ $self->{'symmetry_partner'}[$_] ] } $self->part_rule_iterator;
 }
 
 

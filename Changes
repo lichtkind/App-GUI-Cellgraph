@@ -1,3 +1,10 @@
+0.04  2022-12-22  lichtkind
+-------
+    * = feature expand
+    * + bring back cell mobility
+    * ? update docs
+    * ! symmetric_nr crashes
+
 0.03  2022-12-19  lichtkind
 -------
     * = feature expand
