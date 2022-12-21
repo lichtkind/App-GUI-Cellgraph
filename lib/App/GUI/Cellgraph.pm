@@ -157,15 +157,18 @@ are just increment or decrement the numeric value of the starting sequence.
 </p>
 
 On the third tab you can set the individual partial rules. 
-Just click on the result square in the chosen subrule (after the =>). 
+Just click on the result square in the chosen subrule (after the =>).
+The state color will cycle through as in the previous tab.
 All rule results are combined in a rule number, which you can see on top.
 With the buttons left and right you can again count that number down and
 up or even shift the rule results left and right (<< and >>). The buttons
-below allow you to easily reach related rules, like the inverted,
-symmetric or opposite. Inverted means every rule result will be inverted. 
-Symmetric means ever rule switches its result with its symmetric partner
-(if there is one). Opposite rule means ever rule switches its result the
-rule of inverted input. The button I<"?"> again selects a random rule.
+in the second row you to reach related rules, like the inverted, symmetric
+or opposite. Inverted means every sub rule result will be inverted.
+(Inverted result state, C< = $state_count - $previous_state >)
+Symmetric means every subrule switches its result with its symmetric
+partner (neighbourhood pattern or sum reversed). Opposite rule means 
+the pattern of result states will be reversed (mirrored).
+The button I<"?"> again selects a random rule.
 
 =head2 Action
 
@@ -173,7 +176,11 @@ rule of inverted input. The button I<"?"> again selects a random rule.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIaction.png"   alt=""  width="630" height="410">
 </p>
 
-Behind the result of each subrule is another subrule for the action
+Here are listed the same sub rule inputs as before (every possible 
+neighbourhood configuration) on the left hand side of the =&gt;.
+The reults of these action rules control which cell are allowed to change
+during the next round (only neighbours marked with a circle).
+Behind the result of each subrule input is here a result for the action
 propagation. The circles show if the cell or its neighbours can do the
 transfer function next cycle. These settings are again combined in a
 singular action value (behind the label "Active:"). Here are also four 
