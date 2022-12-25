@@ -28,6 +28,7 @@ sub write {
     my ($file, $data) = @_;
     return unless ref $data eq 'HASH';
     delete $data->{'rules'}{'f'};
+    delete $data->{'mobile'}{'f'};
     delete $data->{'start'}{'list'};
     open my $FH, '>', $file or return "could not write $file: $!";
     for my $main_key (sort keys %$data){

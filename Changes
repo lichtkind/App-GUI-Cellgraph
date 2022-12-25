@@ -1,8 +1,9 @@
-0.04  2022-12-21  lichtkind
+0.04  2022-12-25  lichtkind
 -------
-    * = feature expand
+    * = multi level fix
+    * + bring back cell mobility with previous fixed feature set
     * ? update docs
-    * ! symmetric_nr crashes
+    * ! crashes on most buttons to get related rules
 
 0.03  2022-12-19  lichtkind
 -------
@@ -22,8 +23,7 @@
     * + changeable starting row with repeat function
 
 
+TODO:
 
-
-
-
-    * + bring back cell mobility
+  meta settings for action rules
+  chanable colors

@@ -24,7 +24,7 @@ sub new {
     $self->{'state_count'} = 2;
 
 
-    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 50, -1], &Wx::wxTE_PROCESS_ENTER );
+    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 75, -1], &Wx::wxTE_PROCESS_ENTER );
     $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
     $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
@@ -55,7 +55,7 @@ sub new {
     $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rf_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $rf_sizer->AddSpacer( 125 );
+    $rf_sizer->AddSpacer( 135 );
     $rf_sizer->Add( $self->{'btn'}{'inv'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'sym'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'opp'}, 0, $all_attr, 5 );
