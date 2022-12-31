@@ -12,11 +12,13 @@ use App::GUI::Cellgraph::Frame::Panel::Global;
 use App::GUI::Cellgraph::Frame::Panel::Start;
 use App::GUI::Cellgraph::Frame::Panel::Rules;
 use App::GUI::Cellgraph::Frame::Panel::Mobile;
+use App::GUI::Cellgraph::Frame::Panel::Color;
 use App::GUI::Cellgraph::Frame::Part::Board;
 use App::GUI::Cellgraph::Dialog::Function;
 use App::GUI::Cellgraph::Dialog::Interface;
 use App::GUI::Cellgraph::Dialog::About;
 use App::GUI::Cellgraph::Settings;
+use App::GUI::Cellgraph::Config;
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -25,6 +27,8 @@ sub new {
     $self->CreateStatusBar( 1 );
     #$self->SetStatusWidths(2, 800, 100);
     Wx::InitAllImageHandlers();
+    $self->{'config'} = App::GUI::Cellgraph::Config->new();
+# say $self->{'config'}->get_value('color');
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
@@ -32,18 +36,20 @@ sub new {
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
     $self->{'panel'}{'mobile'} = App::GUI::Cellgraph::Frame::Panel::Mobile->new( $self->{'tabs'} );
-    $self->{'panel_names'} = [qw/global start rules mobile/];
+    $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'} );
+    $self->{'panel_names'} = [qw/global start rules mobile color/];
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Action');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'color'}, 'Color');
     $self->{'tabs'}{'type'} = 0;
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
 
     #$self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     #$self->{'color'}{'startio'} = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Color IO', $self->{'config'}->get_value('color') , 162, 1);
-                               
+
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 800, 800 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
@@ -60,11 +66,11 @@ sub new {
        #     $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
        # }
         $self->{'dialog'}{$_}->Destroy() for qw/about/; # interface function
-        $_[1]->Skip(1) 
+        $_[1]->Skip(1)
     });
 
     # GUI layout assembly
-    
+
     my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
     $settings_menu->Append( 11100, "&Init\tCtrl+I", "put all settings to default" );
     $settings_menu->Append( 11200, "&Open\tCtrl+O", "load settings from an INI file" );
@@ -76,21 +82,21 @@ sub new {
     for (1 .. 20) {
         my $size = $_ * 100;
         $image_size_menu->AppendRadioItem(12100 + $_, $size, "set image size to $size x $size");
-        Wx::Event::EVT_MENU( $self, 12100 + $_, sub { 
-            $self->{'img_size'} = 100 * ($_[1]->GetId - 12100); 
+        Wx::Event::EVT_MENU( $self, 12100 + $_, sub {
+            $self->{'img_size'} = 100 * ($_[1]->GetId - 12100);
             $self->{'board'}->set_size( $self->{'img_size'} );
         });
-        
+
     }
     $image_size_menu->Check( 12100 +($self->{'img_size'} / 100), 1);
 
-    
+
     my $image_menu = Wx::Menu->new();
     # $image_menu->Append( 12300, "&Draw\tCtrl+D", "complete a sketch drawing" );
     $image_menu->Append( 12100, "S&ize",  $image_size_menu,   "set image size" );
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
 
-    
+
     my $help_menu = Wx::Menu->new();
     #$help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Cellgraph works" );
     #$help_menu->Append( 13200, "&Knobs\tAlt+K", "Dialog explaining the layout and function of knobs" );
@@ -118,7 +124,7 @@ sub new {
     my $horiz_attr = $std_attr | &Wx::wxLEFT;
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
- 
+
     #my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     #$pen_sizer->AddSpacer(5);
     #$pen_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
@@ -132,7 +138,7 @@ sub new {
     #$pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
     #$pen_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     #$self->{'tab'}{'pen'}->SetSizer( $pen_sizer );
-    
+
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -152,7 +158,7 @@ sub new {
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
-  
+
     $self->init();
     $self->SetStatusText( "settings in init state", 0 );
     $self->{'last_file_settings'} = $self->get_data;
@@ -197,7 +203,7 @@ sub open_settings_dialog {
     my $path = $dialog->GetPath;
     my $ret = $self->open_setting_file ( $path );
     if (not ref $ret) { $self->SetStatusText( $ret, 0) }
-    else { 
+    else {
         my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
         $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 0);
     }
@@ -225,7 +231,7 @@ sub save_image_dialog {
     my @wildcard = ( 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg');
     my $wildcard = '|All files (*.*)|*.*';
     $wildcard = ( join '|', @wildcard[1,0,2]) . $wildcard;
-    
+
     my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", '.', '', $wildcard, &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
@@ -273,7 +279,7 @@ sub write_settings_file {
     my ($self, $file)  = @_;
     my $ret = App::GUI::Cellgraph::Settings::write( $file, $self->get_data );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
-    else     { 
+    else     {
         $self->update_recent_settings_menu();
         $self->SetStatusText( "saved settings into file $file", 0 );
     }

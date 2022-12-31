@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -32,7 +32,7 @@ __END__
 
 App::GUI::Cellgraph - draw pattern by cellular automata
 
-=head1 SYNOPSIS 
+=head1 SYNOPSIS
 
 =over 4
 
@@ -87,13 +87,13 @@ Than there is only a different partial rule for every distinct sum value.
 By sum is meant the sum of all states in the neighbourhood, since the
 state of a cell is just an integer.
 
-To each partial rule also belongs also an action rule, an instruction 
+To each partial rule also belongs also an action rule, an instruction
 that decides if the transfer function will be even applied or the state
 just stays the same. Action rules will be set via the I<Action> panel.
 
 =head1 GUI
 
-The general layout is very simple: the settings are on the right and 
+The general layout is very simple: the settings are on the right and
 the drawing board is left. The settings are devided into several tabs.
 
 Please mind the tool tips - short help texts which appear if the mouse
@@ -116,22 +116,22 @@ In the row below are options how to draw the state matrix. Default
 is the already in the description mentioned top down drawing method,
 where the first row is the initial state of the cells as set in the next
 tab named I<start>. Each following state of a cell is in the square below,
-which makes Y so to speak the (vertical) time axis (top to down). To 
+which makes Y so to speak the (vertical) time axis (top to down). To
 produce more decorative patterns there are two more frawing patters:
 I<inside out> and I<outside in>. Both are based on the idea of cutting
 the grid square into 4 triangles, by using the diagonals as dividing lines.
 With I<outside in> the upper triangle is filled as before and the content
-rotated 3 times around the center to fill the other triangles. With the 
+rotated 3 times around the center to fill the other triangles. With the
 option I<inside out> is almost everything the same except the upper triangle
-is filled from the center up so the central pixel of the square is the 
+is filled from the center up so the central pixel of the square is the
 central pixel of the starting row, growing into all four directions.
 On the checkbox beside that you hab the option to make the leftmost and
-rightmost cells neighbours. It their not the program will calculate 
+rightmost cells neighbours. It their not the program will calculate
 enough so no artefacts stemming from the corner cells will be visible.
 But making the cell row into a ring can produce a different kind of artefacts.
 
 
-The third row in this tab sets the meta properties of the rules: number 
+The third row in this tab sets the meta properties of the rules: number
 of states and size of neighbourhood. If that is even, the cell in question
 is not part of its own neighbourhood.
 
@@ -156,7 +156,7 @@ are just increment or decrement the numeric value of the starting sequence.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrules.png"   alt=""  width="630" height="410">
 </p>
 
-On the third tab you can set the individual partial rules. 
+On the third tab you can set the individual partial rules.
 Just click on the result square in the chosen subrule (after the =>).
 The state color will cycle through as in the previous tab.
 All rule results are combined in a rule number, which you can see on top.
@@ -166,7 +166,7 @@ in the second row you to reach related rules, like the inverted, symmetric
 or opposite. Inverted means every sub rule result will be inverted.
 (Inverted result state, C< = $state_count - $previous_state >)
 Symmetric means every subrule switches its result with its symmetric
-partner (neighbourhood pattern or sum reversed). Opposite rule means 
+partner (neighbourhood pattern or sum reversed). Opposite rule means
 the pattern of result states will be reversed (mirrored).
 The button I<"?"> again selects a random rule.
 
@@ -176,14 +176,31 @@ The button I<"?"> again selects a random rule.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIaction.png"   alt=""  width="630" height="410">
 </p>
 
-Here are listed the same sub rule inputs as before (every possible 
+Here are listed the same sub rule inputs as before (every possible
 neighbourhood configuration) on the left hand side of the =&gt;.
 The reults of these action rules control which cell are allowed to change
 during the next round (only neighbours marked with a circle).
 Behind the result of each subrule input is here a result for the action
 propagation. The circles show if the cell or its neighbours can do the
 transfer function next cycle. These settings are again combined in a
-singular action value (behind the label "Active:"). Here are also four 
+singular action value (behind the label "Active:"). Here are also four
+buttons to select the init state, a grid patter or a random state.
+The first buttom set the inverted distribution of action propagation.
+
+=head2 Color
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIcolor.png"   alt=""  width="630" height="410">
+</p>
+
+Here are listed the same sub rule inputs as before (every possible
+neighbourhood configuration) on the left hand side of the =&gt;.
+The reults of these action rules control which cell are allowed to change
+during the next round (only neighbours marked with a circle).
+Behind the result of each subrule input is here a result for the action
+propagation. The circles show if the cell or its neighbours can do the
+transfer function next cycle. These settings are again combined in a
+singular action value (behind the label "Active:"). Here are also four
 buttons to select the init state, a grid patter or a random state.
 The first buttom set the inverted distribution of action propagation.
 
@@ -194,14 +211,14 @@ Please not that each menu shows which key combination triggers the same
 command and while hovering over an menu item you see a short help text
 the left status bar field.
 
-The first menu is for loading and storing setting files with arbitrary 
+The first menu is for loading and storing setting files with arbitrary
 names. Also a sub menu allows a quick load of the recently used files.
 The first entry lets you reset the whole program to the starting state
 and the last is just to exit (safely with saving the configs).
 
 The second menu has only two commands for saving the grin into a image file.
 It can have an arbitrary name - the ending I<PNG>, I<JPG> or I<SVG> decides
-the format. The submenu above sets the image size. Please note that if 
+the format. The submenu above sets the image size. Please note that if
 you choose a larger image than shown, a larger grid will be computed.
 If you want larger squares, please change that in the settings.
 
@@ -220,7 +237,7 @@ Herbert Breunung (lichtkind@cpan.org)
 
 Copyright(c) 2022 by Herbert Breunung
 
-All rights reserved. 
+All rights reserved.
 This program is free software and can be used and distributed
 under the GPL 3 licence.
 

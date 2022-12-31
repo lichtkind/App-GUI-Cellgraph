@@ -6,7 +6,6 @@ package App::GUI::Cellgraph::Frame::Panel::Rules;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::RuleGenerator;
 use App::GUI::Cellgraph::Widget::RuleInput;
-use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
 use Graphics::Toolkit::Color qw/color/;
 
@@ -39,13 +38,13 @@ sub new {
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
     $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
-    
+
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
     my $rule_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $rule_sizer->AddSpacer( 20 );
-    $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );        
+    $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
     $rule_sizer->AddSpacer( 15 );
     $rule_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $all_attr, 5 );
     $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
@@ -73,7 +72,7 @@ sub new {
 
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
-    
+
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
 
@@ -93,7 +92,7 @@ sub new {
         return if $new_value == $old_value;
         $self->set_rule( $new_value );
         $self->{'call_back'}->();
-        
+
     });
     $self->regenerate_rules;
     $self->init;
@@ -124,15 +123,15 @@ sub regenerate_rules {
     }
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     for my $rule_index ($self->{'rules'}->part_rule_iterator){
-        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
+        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new(
                                            $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
         $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-        
-        $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new( 
-                                         $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'}, 
+
+        $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new(
+                                         $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'},
                                          $self->{'state_colors'}, 0 );
-        $self->{'rule_result'}[$rule_index]->SetCallBack( sub { 
-                $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->() 
+        $self->{'rule_result'}[$rule_index]->SetCallBack( sub {
+                $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->()
         });
         $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
 
@@ -143,7 +142,7 @@ sub regenerate_rules {
         $row_sizer->AddSpacer(30);
         $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
         $row_sizer->AddSpacer(15);
-        $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );        
+        $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->AddSpacer(15);
         $row_sizer->Add( $self->{'rule_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
         $row_sizer->AddSpacer(40);
@@ -166,7 +165,7 @@ sub get_output_list {
 }
 sub get_map {
     my ($self) = @_;
-    my %map = map { $self->{'rules'}->input_pattern_from_nr($_) => 
+    my %map = map { $self->{'rules'}->input_pattern_from_nr($_) =>
                     $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
     \%map;
 }
@@ -196,13 +195,13 @@ sub get_data {
         size => $self->{'input_size'},
         avg => $self->{'rules'}{'avg'},
     }
-}    
+}
 
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'nr'};
     $self->set_rule( $data->{'nr'} );
-}    
+}
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
 sub next_rule      { $_[0]->set_rule( $_[0]->{'rules'}->next_nr( $_[0]->{'rule_nr'}->GetValue ) ) }

@@ -16,16 +16,16 @@ sub new {
     $self->{'grid_lbl'} = Wx::StaticText->new( $self, -1, 'Grid Style:');
     $self->{'cell_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
     $self->{'direction_lbl'} = Wx::StaticText->new( $self, -1, 'Direction :');
-    $self->{'input_size_lbl'} = Wx::StaticText->new( $self, -1, 'Input :');
+    $self->{'input_size_lbl'} = Wx::StaticText->new( $self, -1, 'Rule Input :');
     $self->{'state_ab_lbl'} = Wx::StaticText->new( $self, -1, 'Cell States :');
     $self->{'circular_grid'} = Wx::CheckBox->new( $self, -1, '  Circular');
     # $self->{'action_ab_lbl'} = Wx::StaticText->new( $self, -1, 'Action Values :');
     # $self->{'threshhold_lbl'} = Wx::StaticText->new( $self, -1, 'Threshold :');
-    $self->{'grid_type'} = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[95, -1], ['lines', 'gaps', 'no']);
-    $self->{'cell_size'} = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
+    $self->{'grid_type'} = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[90, -1], ['lines', 'gaps', 'no']);
+    $self->{'cell_size'} = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[65, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
     $self->{'paint_direction'} = Wx::ComboBox->new( $self, -1, 'top_down', [-1,-1],[120, -1], [qw/top_down outside_in inside_out/], &Wx::wxTE_READONLY);
-    $self->{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
-    $self->{'input_size'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
+    $self->{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
+    $self->{'input_size'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     # $self->{'action_values'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
     # $self->{'action_threshold'} = Wx::ComboBox->new( $self, -1, '1', [-1,-1],[75, -1], [qw/0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2/], &Wx::wxTE_READONLY);
     
@@ -35,8 +35,8 @@ sub new {
     $self->{'cell_size'}->SetToolTip('visual size of the cells in pixel');
     $self->{'direction_lbl'}->SetToolTip('painting direction');
     $self->{'paint_direction'}->SetToolTip('painting direction');
-    $self->{'input_size_lbl'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from?');
-    $self->{'input_size'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from?');
+    $self->{'input_size_lbl'}->SetToolTip('Size of neighbourhood - from how many cells compute new cell state ?');
+    $self->{'input_size'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from ?');
     $self->{'state_ab_lbl'}->SetToolTip('How many states a cell can have?');
     $self->{'state_count'}->SetToolTip('How many states a cell can have?');
     $self->{'circular_grid'}->SetToolTip('using cells on the endges as neighbours to each other');
@@ -54,9 +54,9 @@ sub new {
     $grid_sizer->AddSpacer( 15 );
     $grid_sizer->Add( $self->{'grid_lbl'}, 0, $all_attr, 7);
     $grid_sizer->Add( $self->{'grid_type'}, 0, $row_attr, 8);
-    $grid_sizer->AddSpacer( 22 );
+    $grid_sizer->AddSpacer( 33 );
     $grid_sizer->Add( $self->{'cell_size_lbl'}, 0, $all_attr, 7);
-    #$grid_sizer->AddSpacer( 3 );
+    $grid_sizer->AddSpacer( 3 );
     $grid_sizer->Add( $self->{'cell_size'}, 0, $row_attr, 8);
     $grid_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
