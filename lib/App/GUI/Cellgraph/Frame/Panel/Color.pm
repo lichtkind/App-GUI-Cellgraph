@@ -18,7 +18,7 @@ sub new {
     $self->{'state_count'} = 2;
 
     $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
-    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $self->GetParent->GetParent, 'State Color IO:');
+    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $self->GetParent->GetParent, 'State Color IO:', );
 
 
     #$self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
@@ -41,10 +41,11 @@ sub new {
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 15 );
     $main_sizer->Add(  $self->{'browser'}, 1, $std_attr, 0);
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
     $main_sizer->Add(  $self->{'picker'}, 1, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     #$main_sizer->AddSpacer( 10 );
-    #$main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
 
 
     $self->SetSizer( $main_sizer );
@@ -116,17 +117,17 @@ sub init { $_[0]->set_data( { value => ['FFFFFF', '000000'], dynamics => 1, delt
 sub get_data {
     my ($self) = @_;
     {
-        f => [$self->get_output_list],
-        nr => $self->{'rule_nr'}->GetValue,
-        size => $self->{'input_size'},
-        avg => $self->{'rules'}{'avg'},
+        value => [],
+        dynamics => 1,
+        delta_S => 0,
+        delta_L => 0
     }
 }
 
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'nr'};
-    $self->set_rule( $data->{'nr'} );
+    #$self->set_rule( $data->{'nr'} );
 }
 
 sub update_settings {

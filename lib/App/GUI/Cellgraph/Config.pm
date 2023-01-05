@@ -9,16 +9,12 @@ my $file = '.harmonograph';
 my $dir = '';
 my $default = {
     file_base_dir => '~',
-    file_base_name => 'good',
-    file_base_counter => 0,
     file_base_ending => 'png',
     image_size => 600,
-    precision => 4,
     open_dir => '~',
     save_dir => '~',
     write_dir => '~',
     last_settings => [],
-    tips => 1,
     color => {
         bright_blue      => [  98, 156, 249 ],
         marsala          => [ 149,  82,  81],
@@ -183,7 +179,7 @@ sub new {
         my $path = File::Spec->catfile( $d, $file );
         $dir = $d, last if -r $path;
     }
-    my $data = $dir 
+    my $data = $dir
              ? load( $pkg, File::Spec->catfile( $dir, $file ) )
              : $default;
     $dir ||= File::HomeDir->my_home;
@@ -200,14 +196,14 @@ sub load {
         next unless $_ or substr( $_, 0, 1) eq '#';
         if    (/^\s*(\w+):/)              { $data->{$cat} = [];    $cat = $1 }
         elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1        }
-        elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/) 
+        elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/)
                                           { $data->{$cat}{$1} = [$2, $3, $4] }
         elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = ''      }
     }
     close $FH;
     $data;
 }
-    
+
 sub save {
     my ($self) = @_;
     my $data = $self->{'data'};
@@ -250,9 +246,9 @@ sub add_setting_file {
 sub add_color {
     my ($self, $name, $color) = @_;
     return 'not a color' unless ref $color eq 'ARRAY' and @$color == 3
-        and int $color->[0] == $color->[0] and $color->[0] < 256 and $color->[0] >= 0 
+        and int $color->[0] == $color->[0] and $color->[0] < 256 and $color->[0] >= 0
         and int $color->[1] == $color->[1] and $color->[1] < 256 and $color->[1] >= 0
-        and int $color->[2] == $color->[2] and $color->[2] < 256 and $color->[2] >= 0; 
+        and int $color->[2] == $color->[2] and $color->[2] < 256 and $color->[2] >= 0;
     return 'color name alread taken' if exists $self->{'data'}{'color'}{ $name };
     $self->{'data'}{'color'}{ $name } = $color;
 }
