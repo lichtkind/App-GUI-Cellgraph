@@ -65,19 +65,24 @@ sub new {
 
     my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
     my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxALL;
-    my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $sizer->Add( $self->{'label'},              0, $all_attr,  20 );
-    $sizer->AddSpacer( $space );
-    $sizer->Add( $self->{'select'}, 0, $vset_attr, 10 );
-    $sizer->Add( $self->{'<'},      0, $vset_attr, 10 );
-    $sizer->Add( $self->{'>'},      0, $vset_attr, 10 );
-    $sizer->AddSpacer( 20 );
-    $sizer->Add( $self->{'display'},  0, $vset_attr, 15);
-    $sizer->AddSpacer( 10 );
-    $sizer->Add( $self->{'load'}, 0, $all_attr,  10 );
-    $sizer->Add( $self->{'del'},  0, $all_attr,  10 );
-    $sizer->Add( $self->{'save'}, 0, $all_attr,  10 );
-    $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $row1 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $row1->Add( $self->{'label'}, 0, $all_attr,  20 );
+    $row1->AddSpacer( $space );
+    $row1->Add( $self->{'select'}, 0, $vset_attr, 10 );
+    $row1->Add( $self->{'<'},      0, $vset_attr, 10 );
+    $row1->Add( $self->{'>'},      0, $vset_attr, 10 );
+    $row1->AddSpacer( 20 );
+    $row1->Add( $self->{'display'},  0, $vset_attr, 15);
+    $row1->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    $row2->AddSpacer( 120 );
+    $row2->Add( $self->{'load'}, 0, $all_attr,  10 );
+    $row2->Add( $self->{'del'},  0, $all_attr,  10 );
+    $row2->Add( $self->{'save'}, 0, $all_attr,  10 );
+    $row2->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $sizer->Add( $row1, 0, $all_attr, 0 );
+    $sizer->Add( $row2, 0, $all_attr, 0 );
     $self->SetSizer($sizer);
 
     $self;

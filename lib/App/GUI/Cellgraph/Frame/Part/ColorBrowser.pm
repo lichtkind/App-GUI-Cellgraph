@@ -6,24 +6,26 @@ package App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::SliderCombo;
 use App::GUI::Cellgraph::Widget::ColorDisplay;
-use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
 
 sub new {
-    my ( $class, $parent, $type, $init  ) = @_;
-    return unless ref $init eq 'HASH' and exists $init->{'red'}and exists $init->{'green'}and exists $init->{'blue'};
+    my ( $class, $parent, $type, $init_color ) = @_;
+    $init_color = color( $init_color );
+    return unless ref $init_color;
 
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'init'} = $init;
+    $self->{'init'} = $init_color;
+    $self->{'call_back'} = sub {};
 
-    $self->{'red'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
-    $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
-    $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' B  ', "blue part of $type color",   0, 255,  0);
-    $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
-    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
-    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
-    $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
-    $self->{'display'}->SetToolTip("$type color monitor");
+    $self->{'red'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' R  ', "red part of $type color",    0, 255,  $init_color->red);
+    $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' G  ', "green part of $type color",  0, 255,  $init_color->green);
+    $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' B  ', "blue part of $type color",   0, 255,  $init_color->blue);
+    $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' H  ', "hue of $type color",         0, 359,  $init_color->hue);
+    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' S  ', "saturation of $type color",  0, 100,  $init_color->saturation);
+    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' L  ', "lightness of $type color",   0, 100,  $init_color->lightness);
+   # $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
+   # $self->{'display'}->SetToolTip("$type color monitor");
 
     my $rgb2hsl = sub {
         my @rgb = ($self->{'red'}->GetValue, $self->{'green'}->GetValue, $self->{'blue'}->GetValue);
@@ -31,7 +33,7 @@ sub new {
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
-        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        #$self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
         my @rgb = Graphics::Toolkit::Color::Value::rgb_from_hsl(
@@ -39,7 +41,7 @@ sub new {
         $self->{'red'}->SetValue( $rgb[0], 1 );
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
-        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        #$self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     $self->{'red'}->SetCallBack( $rgb2hsl );
     $self->{'green'}->SetCallBack( $rgb2hsl );
@@ -49,27 +51,15 @@ sub new {
     $self->{'light'}->SetCallBack( $hsl2rgb );
 
 
-    my $rh_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $rh_sizer->Add( $self->{'red'},  0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $rh_sizer->Add( $self->{'hue'},  0, &Wx::wxGROW|&Wx::wxLEFT, 50);
-    $rh_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $gs_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $gs_sizer->Add( $self->{'green'},    0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $gs_sizer->Add( $self->{'display'},  0, &Wx::wxGROW|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL, 15);
-    $gs_sizer->Add( $self->{'sat'},      0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $gs_sizer->Add( 0,                   0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $bl_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $bl_sizer->Add( $self->{'blue'},    0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $bl_sizer->Add( $self->{'light'},   0, &Wx::wxGROW|&Wx::wxLEFT, 50);
-    $bl_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-
+    my $attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxLEFT;
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $rh_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $gs_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $bl_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
+    $sizer->Add( $self->{'red'},  0, $attr, 10);
+    $sizer->Add( $self->{'green'},  0, $attr, 10);
+    $sizer->Add( $self->{'blue'},  0, $attr, 10);
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $self->{'hue'},  0, $attr, 10);
+    $sizer->Add( $self->{'sat'},  0, $attr, 10);
+    $sizer->Add( $self->{'light'},  0, $attr, 10);
 
     $self->SetSizer($sizer);
     $self;
@@ -91,5 +81,10 @@ sub set_data {
     $self->{'blue'}->SetValue( $data->{'blue'} );
 }
 
+sub SetCallBack {
+    my ($self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'call_back'} = $code;
+}
 
 1;
