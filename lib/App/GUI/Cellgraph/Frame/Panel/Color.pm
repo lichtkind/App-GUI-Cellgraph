@@ -7,6 +7,8 @@ use base qw/Wx::Panel/;
 
 use App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use App::GUI::Cellgraph::Frame::Part::ColorPicker;
+use App::GUI::Cellgraph::Widget::ColorDisplay;
+
 use Graphics::Toolkit::Color qw/color/;
 
 sub new {
@@ -20,28 +22,36 @@ sub new {
     $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $self->GetParent->GetParent, 'Color Store:', );
 
+    $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
+    $self->{'state_selector'}[0] = Wx::RadioButton->new($self, -1, '  0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
+    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, '  '.$_, [-1,-1], [-1,-1], 0) for 1 .. $self->{'state_count'} - 1;
+    $self->{'state_pic'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 25, 25, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'state_count'} - 1;
 
     #$self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
-    #~ my $rule_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    #~ $rule_sizer->AddSpacer( 20 );
-    #~ $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
-    #~ $rule_sizer->AddSpacer( 15 );
-    #~ $rule_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $all_attr, 5 );
-    #~ $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
-    #~ $rule_sizer->Add( $self->{'rule_nr'},     0, $all_attr, 5 );
-    #~ $rule_sizer->Add( $self->{'btn'}{'next'}, 0, $all_attr, 5 );
-    #~ $rule_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $all_attr, 5 );
-    #~ $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $statec_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    for my $state (0 .. $self->{'state_count'} - 1){
+        $statec_sizer->AddSpacer( 20 );
+        $statec_sizer->Add( $self->{'state_pic'}[$state], 0, $all_attr, 10);
+    }
+    $statec_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    my $statesel_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $statesel_sizer->AddSpacer( 16 );
+    for my $state (0 .. $self->{'state_count'} - 1){
+        $statesel_sizer->Add( $self->{'state_selector'}[$state], 0, $all_attr, 10);
+        $statesel_sizer->AddSpacer( 6 );
+    }
+    $statesel_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 15 );
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $main_sizer->AddSpacer( 15 );
+    $main_sizer->Add(  $statec_sizer, 1, $std_attr, 0);
+    $main_sizer->Add(  $statesel_sizer, 1, $std_attr, 0);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
     $main_sizer->Add(  $self->{'browser'}, 1, $std_attr, 0);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
