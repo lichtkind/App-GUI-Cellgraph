@@ -31,8 +31,8 @@ sub new {
     $self->{'select'}->SetToolTip("select color in list directly");
     $self->{'<'}->SetToolTip("go to previous color in list");
     $self->{'>'}->SetToolTip("go to next color in list");
-    $self->{'load'}->SetToolTip("use displayed color on the right side as color of marked automaton state");
-    $self->{'save'}->SetToolTip("copy marked automaton state color into color storage");
+    $self->{'load'}->SetToolTip("use displayed color on the right side as color of selected state");
+    $self->{'save'}->SetToolTip("copy selected state color into color storage");
     $self->{'del'}->SetToolTip("delete displayed color from storage");
     $self->{'display'}->SetToolTip("color monitor");
 
