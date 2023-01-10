@@ -7,7 +7,7 @@ use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::ColorDisplay;
 
 sub new {
-    my ( $class, $parent, $frame, $label, $data, $length, $space ) = @_;
+    my ( $class, $parent, $frame, $label, $target, $length, $space ) = @_;
     #return unless defined $max;
     $length //= 170;
     $space //= 0;
@@ -16,10 +16,6 @@ sub new {
     $self->{'colors'} = { %{$frame->{'config'}->get_value('color')} };
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'color_index'} = 0;
-    my @np = split ' ', $label;
-    $self->{'target'}      = lc $np[0];
-    $self->{'browser'}     = $frame->{'color'}{ $self->{'target'} };
-
 
     my $btnw = 50; my $btnh = 40;# button width and height
     $self->{'label'}  = Wx::StaticText->new($self, -1, $label );
@@ -29,22 +25,22 @@ sub new {
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
-    $self->{'display'} = App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $self->current_color );
+    $self->{'display'} = App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $self->get_current_color );
 
-    $self->{'label'}->SetToolTip("access to internal color storage for $self->{'target'} color");
+    $self->{'label'}->SetToolTip("access to internal color storage for setting state colors");
     $self->{'select'}->SetToolTip("select color in list directly");
     $self->{'<'}->SetToolTip("go to previous color in list");
     $self->{'>'}->SetToolTip("go to next color in list");
-    $self->{'load'}->SetToolTip("use displayed color on the right side as $self->{'target'} color");
-    $self->{'save'}->SetToolTip("copy current $self->{'target'} color here (into color storage)");
-    $self->{'del'}->SetToolTip("delete displayed color from storage)");
+    $self->{'load'}->SetToolTip("use displayed color on the right side as color of marked automaton state");
+    $self->{'save'}->SetToolTip("copy marked automaton state color into color storage");
+    $self->{'del'}->SetToolTip("delete displayed color from storage");
     $self->{'display'}->SetToolTip("color monitor");
 
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'}, sub {
         my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_display });
     Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;  $self->update_display });
     Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;  $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $self->{'browser'}->set_data( $self->current_color ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $self->GetParent->set_current_color( $self->get_current_color ) });
     Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
         delete $self->{'colors'}{ $self->current_color_name };
         $self->update_select();
@@ -54,8 +50,7 @@ sub new {
         return if $dialog->ShowModal == &Wx::wxID_CANCEL;
         my $name = $dialog->GetValue();
         return $self->GetParent->SetStatusText( "color name '$name' already taken ") if exists $self->{'colors'}{ $name };
-        my $cval = $self->{'browser'}->get_data;
-        $self->{'colors'}{ $name } = [ $cval->{'red'}, $cval->{'green'}, $cval->{'blue'} ];
+        $self->{'colors'}{ $name } = [ $self->GetParent->get_current_color->rgb ];
         $self->update_select();
         for (0 .. $#{$self->{'color_names'}}){
             $self->{'color_index'} = $_ if $name eq $self->{'color_names'}[$_];
@@ -92,7 +87,7 @@ sub get_data { $_[0]->{'colors'} }
 
 sub current_color_name { $_[0]->{'color_names'}->[ $_[0]->{'color_index'} ] }
 
-sub current_color {
+sub get_current_color {
     my ( $self ) = @_;
     my $cc = $self->{'colors'}->{ $self->current_color_name };
     {red=> $cc->[0], green=> $cc->[1], blue=> $cc->[2] };
@@ -111,7 +106,7 @@ sub update_display {
     $self->{'color_index'} = $#{$self->{'color_names'}} if $self->{'color_index'} < 0;
     $self->{'color_index'} = 0                          if $self->{'color_index'} > $#{$self->{'color_names'}};
     $self->{'select'}->SetSelection( $self->{'color_index'} );
-    $self->{'display'}->set_color( $self->current_color );
+    $self->{'display'}->set_color( $self->get_current_color );
 }
 
 1;

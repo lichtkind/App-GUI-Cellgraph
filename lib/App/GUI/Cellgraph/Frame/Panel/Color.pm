@@ -18,14 +18,22 @@ sub new {
     $self->{'call_back'}  = sub {};
     $self->{'rule_square_size'} = 20;
     $self->{'state_count'} = 2;
-
-    $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
-    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $self->GetParent->GetParent, 'Color Store:', );
+    $self->{'current_state'} = 1;
 
     $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
     $self->{'state_selector'}[0] = Wx::RadioButton->new($self, -1, '  0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
-    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, '  '.$_, [-1,-1], [-1,-1], 0) for 1 .. $self->{'state_count'} - 1;
+    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, '  '.$_, [-1,-1], [-1,-1], 0, ) for 1 .. $self->{'state_count'} - 1;
+    $self->{'state_selector'}[1]->SetValue(1);
     $self->{'state_pic'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 25, 25, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'state_count'} - 1;
+
+    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $self->GetParent->GetParent, 'Color Store:' );
+    $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
+    $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
+
+    Wx::Event::EVT_RADIOBUTTON( $self->{'state_selector'}[$_], $self->{'state_selector'}[$_], sub {
+        $self->{'current_state'} = $_[0]->GetLabel+0;
+        $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+    }) for 0 .. $self->{'state_count'} - 1;
 
     #$self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
 
@@ -141,6 +149,18 @@ sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'nr'};
     #$self->set_rule( $data->{'nr'} );
+}
+
+sub get_current_color {
+    my ($self) = @_;
+    $self->{'state_colors'}[$self->{'current_state'}];
+}
+
+sub set_current_color {
+    my ($self, $color) = @_;
+    return unless ref $color eq 'HASH';
+    $self->{'state_colors'}[$self->{'current_state'}] = color( $color );
+    $self->{'state_pic'}[$self->{'current_state'}]->set_color( $color );
 }
 
 sub update_settings {

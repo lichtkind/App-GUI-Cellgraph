@@ -22,8 +22,8 @@ sub new {
     $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' G  ', "green part of $type color",  0, 255,  $init_color->green);
     $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' B  ', "blue part of $type color",   0, 255,  $init_color->blue);
     $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' H  ', "hue of $type color",         0, 359,  $init_color->hue);
-    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' S  ', "saturation of $type color",  0, 100,  $init_color->saturation);
-    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' L  ', "lightness of $type color",   0, 100,  $init_color->lightness);
+    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 174, ' S   ', "saturation of $type color",  0, 100,  $init_color->saturation);
+    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 174, ' L   ', "lightness of $type color",   0, 100,  $init_color->lightness);
    # $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
    # $self->{'display'}->SetToolTip("$type color monitor");
 
@@ -33,7 +33,8 @@ sub new {
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
-        #$self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        # $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
         my @rgb = Graphics::Toolkit::Color::Value::rgb_from_hsl(
@@ -42,6 +43,7 @@ sub new {
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
         #$self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     $self->{'red'}->SetCallBack( $rgb2hsl );
     $self->{'green'}->SetCallBack( $rgb2hsl );
