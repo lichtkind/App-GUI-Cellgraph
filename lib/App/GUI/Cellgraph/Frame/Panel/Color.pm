@@ -32,7 +32,9 @@ sub new {
     $self->{'curr_color_lbl'}    = Wx::StaticText->new($self, -1, 'Selected State Color' );
     $self->{'color_store_lbl'}   = Wx::StaticText->new($self, -1, 'Color Store' );
 
-#   $self->{'grid_type'} = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[90, -1], ['lines', 'gaps', 'no']);
+    $self->{'dynamics'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.33, 0.5, 0.66, 0.83, 1, 1.2, 1.5, 2, 3 ]);
+    $self->{'Sdelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
+    $self->{'Ldelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 
 
     $self->{'btn'}{'gray'}       = Wx::Button->new( $self, -1, 'Gray',       [-1,-1], [45, 35] );
@@ -41,10 +43,13 @@ sub new {
     $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet");
     $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color");
     $self->{'btn'}{'complement'}->SetToolTip("set from first up to current color as complementary colors");
+    $self->{'dynamics'}->SetToolTip("dynamics of gradient (1 = linear) and also of gray scale");
+    $self->{'Sdelta'}->SetToolTip("max. satuaration deviation when computing complement colors ( -100 .. 100)");
+    $self->{'Ldelta'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
 
 
     $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $config->get_value('color'));
-#    $self->{'setpicker'}  = App::GUI::Cellgraph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
+    $self->{'setpicker'}  = App::GUI::Cellgraph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
     $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
@@ -72,11 +77,14 @@ sub new {
     $f_sizer->AddSpacer( 10 );
     $f_sizer->Add( $self->{'btn'}{'gray'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'btn'}{'gradient'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'dynamics'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'Sdelta'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'Ldelta'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
-    $state_sizer->AddSpacer( 20 );
+    $state_sizer->AddSpacer( 7 );
     my @option_sizer;
     for my $state (0 .. $self->{'state_count'} - 1){
         $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
@@ -90,7 +98,8 @@ sub new {
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 10 );
     $main_sizer->Add( $self->{'color_set_store_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
-#    $main_sizer->Add( $self->{'setpicker'}, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( 5 );
+    $main_sizer->Add( $self->{'setpicker'}, 0, $std_attr, 0);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
     $main_sizer->Add( $self->{'color_set_f_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
     $main_sizer->AddSpacer( 5 );

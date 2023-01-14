@@ -15,14 +15,14 @@ sub new {
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'color_index'} = 0;
 
-    my $btnw = 50; my $btnh = 40;# button width and height
+    my $btnw = 50; my $btnh = 20;# button width and height
     $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [170, -1], $self->{'color_names'});
     $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 20] );
     $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 20] );
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
-    $self->{'save'} = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
+    $self->{'new'}  = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
 
     $self->{'select'}->SetToolTip("select color set in list directly");
     $self->{'<'}->SetToolTip("go to previous color set name in list");
@@ -33,10 +33,10 @@ sub new {
     $self->{'new'}->SetToolTip("save");
 
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'}, sub {
-        my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;  $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;  $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $parent->set_current_color( $self->get_current_color ) });
+        my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; });
+    Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;  });
+    Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;  });
+    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { });
     Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
         delete $self->{'colors'}{ $self->current_color_name };
         $self->update_select();
@@ -58,14 +58,14 @@ sub new {
     my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxALL;
     my $row1 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row1->AddSpacer( 10 );
-    $row1->Add( $self->{'select'}, 0, $vset_attr, 10 );
-    $row1->Add( $self->{'<'},      0, $vset_attr, 10 );
-    $row1->Add( $self->{'>'},      0, $vset_attr, 10 );
-    $row1->AddSpacer( 15 );
-    $row1->Add( $self->{'load'}, 0, $all_attr,  5 );
-    $row1->Add( $self->{'del'},  0, $all_attr,  5 );
-    $row1->Add( $self->{'save'}, 0, $all_attr,  5 );
-    $row1->Add( $self->{'new'}, 0, $all_attr,  5 );
+    $row1->Add( $self->{'select'}, 0, $vset_attr, 5 );
+    $row1->Add( $self->{'<'},      0, $vset_attr, 5 );
+    $row1->Add( $self->{'>'},      0, $vset_attr, 5 );
+    $row1->AddSpacer( 5 );
+    $row1->Add( $self->{'load'}, 0, $all_attr,  3 );
+    $row1->Add( $self->{'del'},  0, $all_attr,  3 );
+    $row1->Add( $self->{'save'}, 0, $all_attr,  3 );
+    $row1->Add( $self->{'new'},  0, $all_attr,  3 );
     $row1->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->Add( $row1, 0, $all_attr, 0 );
