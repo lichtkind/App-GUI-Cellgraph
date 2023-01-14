@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use v5.12;
 use lib 'lib';
-use Test::More tests => 16;
+use Test::More tests => 19;
 
 use_ok( 'App::GUI::Cellgraph::Settings' );
 use_ok( 'App::GUI::Cellgraph::Grid' );
@@ -13,6 +13,9 @@ use_ok( 'App::GUI::Cellgraph::Widget::ColorToggle' );
 use_ok( 'App::GUI::Cellgraph::Widget::SliderCombo' );
 use_ok( 'App::GUI::Cellgraph::Widget::RuleInput' );
 use_ok( 'App::GUI::Cellgraph::Frame::Part::Board' );
+use_ok( 'App::GUI::Cellgraph::Frame::Part::ColorBrowser' );
+use_ok( 'App::GUI::Cellgraph::Frame::Part::ColorPicker' );
+use_ok( 'App::GUI::Cellgraph::Frame::Part::ColorSetPicker' );
 use_ok( 'App::GUI::Cellgraph::Frame::Panel::Rules' );
 use_ok( 'App::GUI::Cellgraph::Frame::Panel::Start' );
 use_ok( 'App::GUI::Cellgraph::Frame::Panel::Mobile' );
