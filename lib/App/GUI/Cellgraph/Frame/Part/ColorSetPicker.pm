@@ -2,17 +2,16 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::Frame::Part::ColorPicker;
+package App::GUI::Cellgraph::Frame::Part::ColorSetPicker;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::Widget::ColorDisplay;
 
 sub new {
-    my ( $class, $parent, $colors ) = @_;
-    return unless ref $parent and ref  $colors eq 'HASH';
+    my ( $class, $parent, $color_sets) = @_;
+    return unless ref $parent and ref $color_sets eq 'HASH';
 
     my $self = $class->SUPER::new( $parent, -1 );
 
-    $self->{'colors'} = { %$colors }; # $frame->{'config'}->get_value('color')
+    $self->{'colors'} = { %$color_sets };
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'color_index'} = 0;
 
@@ -23,15 +22,15 @@ sub new {
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
-    $self->{'display'} = App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $self->get_current_color );
+    $self->{'save'} = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
 
-    $self->{'select'}->SetToolTip("select color in list directly");
-    $self->{'<'}->SetToolTip("go to previous color in list");
-    $self->{'>'}->SetToolTip("go to next color in list");
+    $self->{'select'}->SetToolTip("select color set in list directly");
+    $self->{'<'}->SetToolTip("go to previous color set name in list");
+    $self->{'>'}->SetToolTip("go to next color set name in list");
     $self->{'load'}->SetToolTip("use displayed color on the right side as color of selected state");
     $self->{'save'}->SetToolTip("copy selected state color into color storage");
-    $self->{'del'}->SetToolTip("delete displayed color from storage");
-    $self->{'display'}->SetToolTip("color monitor");
+    $self->{'del'}->SetToolTip("delete color set of displayed name from storage");
+    $self->{'new'}->SetToolTip("save");
 
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'}, sub {
         my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_display });
@@ -57,18 +56,19 @@ sub new {
 
     my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
     my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxALL;
-    my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $sizer->AddSpacer( 10 );
-    $sizer->Add( $self->{'select'}, 0, $vset_attr, 10 );
-    $sizer->Add( $self->{'<'},      0, $vset_attr, 10 );
-    $sizer->Add( $self->{'>'},      0, $vset_attr, 10 );
-    $sizer->AddSpacer( 15 );
-    $sizer->Add( $self->{'display'},  0, $vset_attr, 10);
-    $sizer->AddSpacer( 10 );
-    $sizer->Add( $self->{'load'}, 0, $all_attr,  5 );
-    $sizer->Add( $self->{'del'},  0, $all_attr,  5 );
-    $sizer->Add( $self->{'save'}, 0, $all_attr,  5 );
-    $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $row1 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $row1->AddSpacer( 10 );
+    $row1->Add( $self->{'select'}, 0, $vset_attr, 10 );
+    $row1->Add( $self->{'<'},      0, $vset_attr, 10 );
+    $row1->Add( $self->{'>'},      0, $vset_attr, 10 );
+    $row1->AddSpacer( 15 );
+    $row1->Add( $self->{'load'}, 0, $all_attr,  5 );
+    $row1->Add( $self->{'del'},  0, $all_attr,  5 );
+    $row1->Add( $self->{'save'}, 0, $all_attr,  5 );
+    $row1->Add( $self->{'new'}, 0, $all_attr,  5 );
+    $row1->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $sizer->Add( $row1, 0, $all_attr, 0 );
     $self->SetSizer($sizer);
 
     $self;
@@ -76,7 +76,7 @@ sub new {
 
 sub current_color_name { $_[0]->{'color_names'}->[ $_[0]->{'color_index'} ] }
 
-sub get_current_color {
+sub get_current_color_set {
     my ( $self ) = @_;
     my $color = $self->{'colors'}->{ $self->current_color_name };
     {red=> $color->[0], green=> $color->[1], blue=> $color->[2] };
@@ -87,15 +87,6 @@ sub update_select {
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'select'}->Clear ();
     $self->{'select'}->Append( $_) for @{$self->{'color_names'}};
-    $self->update_display();
-}
-
-sub update_display {
-    my ( $self ) = @_;
-    $self->{'color_index'} = $#{$self->{'color_names'}} if $self->{'color_index'} < 0;
-    $self->{'color_index'} = 0                          if $self->{'color_index'} > $#{$self->{'color_names'}};
-    $self->{'select'}->SetSelection( $self->{'color_index'} );
-    $self->{'display'}->set_color( $self->get_current_color );
 }
 
 sub get_config { $_[0]->{'colors'} }

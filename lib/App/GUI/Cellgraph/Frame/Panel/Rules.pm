@@ -100,11 +100,11 @@ sub new {
 }
 
 sub regenerate_rules {
-    my ($self, $data) = @_;
-    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'}
-                                  and $self->{'input_size'} == $data->{'global'}{'input_size'};
-    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
-    $self->{'input_size'} = $data->{'global'}{'input_size'} if ref $data eq 'HASH';
+    my ($self, $input_size, $state_count, @colors) = @_;
+    return if defined $state_count and $self->{'state_count'} == $state_count
+                                   and $self->{'input_size'} == $input_size;
+    $self->{'state_count'} = $state_count if defined $state_count;
+    $self->{'input_size'} = $input_size if defined $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
     my @input_colors = map {[map { $self->{'state_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};

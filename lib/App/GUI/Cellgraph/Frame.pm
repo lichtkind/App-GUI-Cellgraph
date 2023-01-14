@@ -36,7 +36,7 @@ sub new {
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
     $self->{'panel'}{'mobile'} = App::GUI::Cellgraph::Frame::Panel::Mobile->new( $self->{'tabs'} );
-    $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'} );
+    $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'panel_names'} = [qw/global start rules mobile color/];
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
@@ -188,9 +188,10 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     my $config = $self->get_data;
-    $self->{'panel'}{'rules'}->regenerate_rules( $config );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $config );
+    $self->{'panel'}{'rules'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
     $self->{'panel'}{'start'}->regenerate_cells( $config );
+    $self->{'panel'}{'color'}->regenerate_states( $config );
     $config = $self->get_data;
     $self->{'board'}->draw( $config );
 }

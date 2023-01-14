@@ -13,11 +13,11 @@ use Graphics::Toolkit::Color qw/color/;
 sub new {
     my ( $class, $parent, $state, $act_state ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
-   
+
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 3;
     $self->{'state_count'} = 2;
-    
+
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
@@ -25,20 +25,20 @@ sub new {
     $self->{'call_back'} = sub {};
 
     $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 95, -1], &Wx::wxTE_PROCESS_ENTER );
-    
+
     $self->{'btn'}{'1'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
     $self->{'btn'}{'2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
     $self->{'btn'}{'!'}  = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'?'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
 
     #$self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every rule swaps result with symmetric partner)');
-    
+
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
     my $act_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $act_sizer->AddSpacer( 12 );
-    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Active :' ), 0, $all_attr, 10 );        
+    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Active :' ), 0, $all_attr, 10 );
     $act_sizer->AddSpacer( 15 );
     $act_sizer->Add( $self->{'btn'}{'!'}, 0, $all_attr, 5 );
     $act_sizer->Add( $self->{'btn'}{'1'}, 0, $all_attr, 5 );
@@ -50,7 +50,7 @@ sub new {
 
     $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
-    
+
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 15 );
     $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
@@ -58,7 +58,7 @@ sub new {
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxALL|&Wx::wxRIGHT, 20 );
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
-    
+
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
 
@@ -97,13 +97,13 @@ sub get_data {
         sum => 0,
         threshold => 1,
     }
-}    
+}
 
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'nr'};
     $self->set_action( $data->{'nr'} );
-}    
+}
 
 sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
@@ -154,12 +154,11 @@ sub list_from_action_nr { reverse split '', $_[1]}
 sub nr_from_action_list { shift @_; join '', reverse @_ }
 
 sub regenerate_rules {
-    my ($self, $data) = @_;
-    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'}
-                                  and $self->{'input_size'} == $data->{'global'}{'input_size'};
-
-    $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
-    $self->{'input_size'} = $data->{'global'}{'input_size'} if ref $data eq 'HASH';
+    my ($self, $input_size, $state_count, @colors) = @_;
+    return if defined $state_count and $self->{'state_count'} == $state_count
+                                   and $self->{'input_size'} == $input_size;
+    $self->{'state_count'} = $state_count if defined $state_count;
+    $self->{'input_size'} = $input_size if defined $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
     my @input_colors = map {[map { $self->{'state_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};
@@ -179,19 +178,19 @@ sub regenerate_rules {
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     for my $rule_index ($self->{'rules'}->part_rule_iterator) {
-        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new( 
+        $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new(
                                            $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
         $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-      
+
         $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
-        
-        $self->{'action'}[$rule_index]->SetCallBack( sub { 
-                $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->() 
+
+        $self->{'action'}[$rule_index]->SetCallBack( sub {
+                $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
         });
         $self->{'action'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
 
         $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-        
+
         my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
         $row_sizer->AddSpacer(30);
         $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, $std_attr);

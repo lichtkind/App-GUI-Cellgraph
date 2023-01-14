@@ -5,18 +5,21 @@ use File::Spec;
 
 package App::GUI::Cellgraph::Config;
 
-my $file = '.harmonograph';
+my $file = '.cellgraph';
 my $dir = '';
 my $default = {
     file_base_dir => '~',
     file_base_ending => 'png',
-    image_size => 600,
+    image_size => 700,
     open_dir => '~',
     save_dir => '~',
     write_dir => '~',
     last_settings => [],
+    color_set => {
+        grey => ['#FFF', '#BBB', '#888', '#444','#000' ],
+    },
     color => {
-        bright_blue      => [  98, 156, 249 ],
+        bright_blue      => [  98, 156, 249],
         marsala          => [ 149,  82,  81],
         radiandorchid    => [ 181, 101, 167],
         emerald          => [   0, 155, 119],
@@ -237,7 +240,7 @@ sub set_value {
 
 sub add_setting_file {
     my ($self, $file) = @_;
-    $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
+    $file = App::GUI::Cellgraph::Settings::shrink_path( $file );
     for my $f (@{$self->{'data'}{'last_settings'}}) { return if $f eq $file }
     push @{$self->{'data'}{'last_settings'}}, $file;
     shift @{$self->{'data'}{'last_settings'}} if @{$self->{'data'}{'last_settings'}} > 15;
