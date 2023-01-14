@@ -25,7 +25,7 @@ sub new {
     $self->{'state_selector'}[0]  = Wx::RadioButton->new($self, -1, '  0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
     $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, '  '.$_, [-1,-1], [-1,-1], 0, ) for 1 .. $self->{'state_count'} - 1;
     $self->{'state_selector'}[1]->SetValue(1);
-    $self->{'state_pic'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 25, 25, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'state_count'} - 1;
+    $self->{'state_pic'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 25, 25, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'state_count'} - 1;
     $self->{'color_set_store_lbl'}  = Wx::StaticText->new($self, -1, 'Colors Set Store' );
     $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'State Colors' );
@@ -50,6 +50,12 @@ sub new {
 
     Wx::Event::EVT_RADIOBUTTON( $self->{'state_selector'}[$_], $self->{'state_selector'}[$_], sub {
         $self->{'current_state'} = $_[0]->GetLabel+0;
+        $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+    }) for 0 .. $self->{'state_count'} - 1;
+
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub {
+        $self->{'current_state'} = $_[0]->get_nr;
+        $self->{'state_selector'}[ $self->{'current_state'} ]->SetValue(1);
         $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
     }) for 0 .. $self->{'state_count'} - 1;
 
