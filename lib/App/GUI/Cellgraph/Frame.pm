@@ -118,6 +118,13 @@ sub new {
     Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
 
+    Wx::Event::EVT_CLOSE( $self, sub {
+        $self->{'panel'}{'color'}->update_config;
+        $self->{'config'}->save();
+       # $self->{'dialog'}{$_}->Destroy() for qw/interface function about/;
+        $_[1]->Skip(1)
+    });
+
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -191,7 +198,7 @@ sub draw {
     $self->{'panel'}{'rules'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
     $self->{'panel'}{'mobile'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
     $self->{'panel'}{'start'}->regenerate_cells( $config );
-    $self->{'panel'}{'color'}->regenerate_states( $config );
+    $self->{'panel'}{'color'}->regenerate_states( $config->{'global'}{'input_size'} );
     $config = $self->get_data;
     $self->{'board'}->draw( $config );
 }

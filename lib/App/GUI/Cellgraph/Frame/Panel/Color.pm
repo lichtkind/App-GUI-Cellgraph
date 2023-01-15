@@ -12,23 +12,27 @@ use App::GUI::Cellgraph::Widget::ColorDisplay;
 
 use Graphics::Toolkit::Color qw/color/;
 
+our $default_color_def = $App::GUI::Cellgraph::Frame::Part::ColorSetPicker::default_color;
+
 sub new {
     my ( $class, $parent, $config ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
     $self->{'call_back'}  = sub {};
+    $self->{'config'}     = $config;
     $self->{'rule_square_size'} = 20;
     $self->{'state_count'} = 2;
     $self->{'current_state'} = 1;
 
-    $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
-    $self->{'state_selector'}[0]  = Wx::RadioButton->new($self, -1, '  0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
-    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, '  '.$_, [-1,-1], [-1,-1], 0, ) for 1 .. $self->{'state_count'} - 1;
+    $self->{'state_colors'}       = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
+    $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. 8;
+    $self->{'state_selector'}[0]  = Wx::RadioButton->new($self, -1, '0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
+    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, ' '.$_, [-1,-1], [-1,-1], 0, ) for 1 .. 8;
     $self->{'state_selector'}[1]->SetValue(1);
-    $self->{'state_pic'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 25, 25, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'state_count'} - 1;
-    $self->{'color_set_store_lbl'}  = Wx::StaticText->new($self, -1, 'Colors Set Store' );
+    $self->{'state_pic'}[$_]      = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 20, 25, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. 8;
+    $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
-    $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'State Colors' );
+    $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
     $self->{'curr_color_lbl'}    = Wx::StaticText->new($self, -1, 'Selected State Color' );
     $self->{'color_store_lbl'}   = Wx::StaticText->new($self, -1, 'Color Store' );
 
@@ -48,26 +52,22 @@ sub new {
     $self->{'Ldelta'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
 
 
-    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $config->get_value('color'));
+    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $config->get_value('color') );
     $self->{'setpicker'}  = App::GUI::Cellgraph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
     $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_RADIOBUTTON( $self->{'state_selector'}[$_], $self->{'state_selector'}[$_], sub {
-        $self->{'current_state'} = $_[0]->GetLabel+0;
-        $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+        $self->select_state( $_[0]->GetLabel+0 );
     }) for 0 .. $self->{'state_count'} - 1;
 
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub {
-        $self->{'current_state'} = $_[0]->get_nr;
-        $self->{'state_selector'}[ $self->{'current_state'} ]->SetValue(1);
-        $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
-    }) for 0 .. $self->{'state_count'} - 1;
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. 8;
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
         $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
-        $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'state_count'} - 1;
-        $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+        $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. 8;
+        $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. 8;
+        $self->select_state();
     });
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
@@ -86,11 +86,11 @@ sub new {
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
     $state_sizer->AddSpacer( 7 );
     my @option_sizer;
-    for my $state (0 .. $self->{'state_count'} - 1){
+    for my $state (0 .. 8){
         $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
         $option_sizer[$state]->AddSpacer( 2 );
-        $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 5);
-        $option_sizer[$state]->Add( $self->{'state_selector'}[$state], 0, $all_attr, 5);
+        $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 3);
+        $option_sizer[$state]->Add( $self->{'state_selector'}[$state], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 5);
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -118,60 +118,13 @@ sub new {
 
     $self->SetSizer( $main_sizer );
     #$self->init;
+    $self->select_state;
     $self;
 }
 
 sub regenerate_states {
-    my ($self, @colors) = @_;
-    #~ return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'}
-                                  #~ and $self->{'input_size'} == $data->{'global'}{'input_size'};
-    #~ $self->{'state_count'} = $data->{'global'}{'state_count'} if ref $data eq 'HASH';
-    #~ $self->{'input_size'} = $data->{'global'}{'input_size'} if ref $data eq 'HASH';
-    #~ $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
-    #~ my @input_colors = map {[map { $self->{'state_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};
+    my ($self, $count) = @_;
 
-    #~ my $refresh = 0;
-    #~ if (exists $self->{'rule_img'}){
-        #~ $self->{'plate_sizer'}->Clear(1);
-        #~ $self->{'rule_img'} = [];
-        #~ $self->{'arrow'} = [];
-        #~ $self->{'rule_result'} = [];
-        #~ # map { $_->Destroy} @{$self->{'rule_img'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
-        #~ $refresh = 1;
-    #~ } else {
-        #~ $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-        #~ $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
-    #~ }
-    #~ my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-    #~ for my $rule_index ($self->{'rules'}->part_rule_iterator){
-        #~ $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new(
-                                           #~ $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
-        #~ $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-
-        #~ $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new(
-                                         #~ $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'},
-                                         #~ $self->{'state_colors'}, 0 );
-        #~ $self->{'rule_result'}[$rule_index]->SetCallBack( sub {
-                #~ $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->()
-        #~ });
-        #~ $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
-
-        #~ $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-    #~ }
-    #~ for my $rule_index ($self->{'rules'}->part_rule_iterator){
-        #~ my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-        #~ $row_sizer->AddSpacer(30);
-        #~ $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
-        #~ $row_sizer->AddSpacer(15);
-        #~ $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-        #~ $row_sizer->AddSpacer(15);
-        #~ $row_sizer->Add( $self->{'rule_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-        #~ $row_sizer->AddSpacer(40);
-        #~ $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-        #~ $self->{'plate_sizer'}->AddSpacer(15);
-        #~ $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10); # ->Insert(4,
-    #~ }
-    #~ $self->Layout if $refresh;
 }
 
 sub SetCallBack {
@@ -211,8 +164,34 @@ sub set_current_color {
     $self->{'browser'}->set_data( $color );
 }
 
+sub set_all_colors {
+    my ($self, @color) = @_;
+    return unless @color == 9;
+    map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
+    @{$self->{'state_colors'}} = @color;
+    $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. 8;
+    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. 8;
+    $self->select_state;
+}
+
+sub select_state {
+    my ($self, $state) = @_;
+    $state //= $self->{'current_state'};
+    $self->{'current_state'} = $state > $self->{'state_count'} - 1 ? $self->{'state_count'} - 1 : $state;
+    $self->{'state_selector'}[$self->{'current_state'}]->SetValue(1);
+    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+}
+
 sub update_settings {
 
 }
+
+sub update_config {
+    my ($self) = @_;
+    $self->{'config'}->set_value('color',     $self->{'picker'}->get_config);
+    $self->{'config'}->set_value('color_set', $self->{'setpicker'}->get_config);
+}
+
+
 
 1;
