@@ -43,10 +43,13 @@ sub new {
         $self->update_select();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
-        my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color name", 'Request Dialog');
-        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $name = $dialog->GetValue();
-        return $self->GetParent->SetStatusText( "color name '$name' already taken ") if exists $self->{'colors'}{ $name };
+        my $name;
+        while (1){
+            my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color name", 'Request Dialog');
+            return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+            $name = $dialog->GetValue();
+            last unless exists $self->{'colors'}{ $name };
+        }
         $self->{'colors'}{ $name } = [ $self->GetParent->get_current_color->rgb ];
         $self->update_select();
         for (0 .. $#{$self->{'color_names'}}){

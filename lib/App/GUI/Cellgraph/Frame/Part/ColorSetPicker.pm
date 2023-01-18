@@ -29,8 +29,7 @@ sub new {
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
     $self->{'new'}  = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
 
-    $self->{'display'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 7, $_, $default_color ) for 0 .. 8;
-
+    $self->{'display'}[$_] = App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 16, 8, $_, $default_color ) for 0 .. 8;
 
     $self->{'select'}->SetToolTip("select color set in list directly");
     $self->{'<'}->SetToolTip("go to previous color set name in list");
@@ -50,11 +49,21 @@ sub new {
         $self->update_select();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
-        my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color set name", 'Request Dialog');
-        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $name = $dialog->GetValue();
-        return $self->GetParent->SetStatusText( "color set name '$name' already taken ") if exists $self->{'sets'}{ $name };
-        $self->{'sets'}{ $name } = [ $self->GetParent->get_current_color->rgb ];
+        my $set_name = $self->{'set_names'}[ $self->{'set_index'} ];
+        my @colornames = map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors;
+        $self->{'sets'}{ $set_name } = \@colornames;
+        $self->update_display();
+    });
+    Wx::Event::EVT_BUTTON( $self, $self->{'new'}, sub {
+        my $name;
+        while (1){
+            my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color set name", 'Request Dialog');
+            return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+            $name = $dialog->GetValue();
+            last unless exists $self->{'sets'}{ $name };
+        }
+        $self->{'sets'}{ $name } = [ map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors ];
+        $self->{'set_names'} = [ sort keys %{$self->{'sets'}} ];
         $self->update_select();
         for (0 .. $#{$self->{'set_names'}}){
             $self->{'set_index'} = $_ if $name eq $self->{'set_names'}[$_];
@@ -78,7 +87,7 @@ sub new {
 
     my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row2->AddSpacer( 10 );
-    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 7 ) for 0 .. 8;
+    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 5 ) for 0 .. 8;
     $row2->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -97,9 +106,9 @@ sub get_current_color_set { @{$_[0]->{'set_content'}} }
 
 sub update_select {
     my ( $self ) = @_;
-    $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
+    $self->{'set_names'} = [ sort keys %{$self->{'sets'}} ];
     $self->{'select'}->Clear ();
-    $self->{'select'}->Append( $_) for @{$self->{'color_names'}};
+    $self->{'select'}->Append( $_) for @{$self->{'set_names'}};
 }
 
 sub update_display {

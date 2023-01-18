@@ -198,7 +198,7 @@ sub draw {
     $self->{'panel'}{'rules'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
     $self->{'panel'}{'mobile'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
     $self->{'panel'}{'start'}->regenerate_cells( $config );
-    $self->{'panel'}{'color'}->regenerate_states( $config->{'global'}{'input_size'} );
+    $self->{'panel'}{'color'}->set_state_count( $config->{'global'}{'state_count'} );
     $config = $self->get_data;
     $self->{'board'}->draw( $config );
 }

@@ -9,6 +9,7 @@ use App::GUI::Cellgraph::Frame::Part::ColorBrowser;
 use App::GUI::Cellgraph::Frame::Part::ColorPicker;
 use App::GUI::Cellgraph::Frame::Part::ColorSetPicker;
 use App::GUI::Cellgraph::Widget::ColorDisplay;
+use App::GUI::Cellgraph::Widget::PositionMarker;
 
 use Graphics::Toolkit::Color qw/color/;
 
@@ -20,16 +21,15 @@ sub new {
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'rule_square_size'} = 20;
-    $self->{'state_count'} = 2;
+    $self->{'rule_square_size'} = 34;
+    $self->{'last_state'} = 8;   # max pos
+    $self->{'state_count'} = 2;  # nr of currently used
     $self->{'current_state'} = 1;
 
     $self->{'state_colors'}       = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
-    $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. 8;
-    $self->{'state_selector'}[0]  = Wx::RadioButton->new($self, -1, '0', [-1,-1], [-1,-1], &Wx::wxRB_GROUP);
-    $self->{'state_selector'}[$_] = Wx::RadioButton->new($self, -1, ' '.$_, [-1,-1], [-1,-1], 0, ) for 1 .. 8;
-    $self->{'state_selector'}[1]->SetValue(1);
-    $self->{'state_pic'}[$_]      = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, 20, 25, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. 8;
+    $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
+    $self->{'state_marker'}       = [ map { App::GUI::Cellgraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 ..$self->{'last_state'} ];
+    $self->{'state_pic'}[$_]      = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'last_state'};
     $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
@@ -57,16 +57,16 @@ sub new {
     $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
-    Wx::Event::EVT_RADIOBUTTON( $self->{'state_selector'}[$_], $self->{'state_selector'}[$_], sub {
-        $self->select_state( $_[0]->GetLabel+0 );
-    }) for 0 .. $self->{'state_count'} - 1;
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->SetToolTip("select state color you want to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_marker'}[$_]->SetToolTip("select state color you want to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
 
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. 8;
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
         $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
-        $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. 8;
-        $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. 8;
+        $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
+        $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
         $self->select_state();
     });
 
@@ -86,11 +86,11 @@ sub new {
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
     $state_sizer->AddSpacer( 7 );
     my @option_sizer;
-    for my $state (0 .. 8){
+    for my $state (0 .. $self->{'last_state'}){
         $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
         $option_sizer[$state]->AddSpacer( 2 );
         $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 3);
-        $option_sizer[$state]->Add( $self->{'state_selector'}[$state], 0, $all_attr, 3);
+        $option_sizer[$state]->Add( $self->{'state_marker'}[$state], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 5);
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -118,19 +118,33 @@ sub new {
 
     $self->SetSizer( $main_sizer );
     #$self->init;
-    $self->select_state;
+    $self->set_state_count( $self->{'state_count'} );
+    $self->select_state ( $self->{'current_state'} );
     $self;
 }
 
-sub regenerate_states {
+sub set_state_count {
     my ($self, $count) = @_;
-
+    $self->{'state_count'} = $count;
+    $self->{'state_marker'}[$_]->set_state('passive') for 0 .. $self->{'state_count'} - 1;
+    $self->{'state_marker'}[$_]->set_state('disabled') for $self->{'state_count'} .. $self->{'last_state'};
+    $self->{'state_marker'}[ $self->{'current_state'} ]->set_state('active');
 }
 
 sub SetCallBack {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;
+}
+
+sub select_state {
+    my ($self, $state) = @_;
+    $state //= $self->{'current_state'};
+    my $old_marker_state = ($self->{'current_state'} < $self->{'state_count'}) ? 'passive' : 'disabled';
+    $self->{'state_marker'}[$self->{'current_state'}]->set_state( $old_marker_state );
+    $self->{'state_marker'}[ $state ]->set_state('active');
+    $self->{'current_state'} = $state;
+    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
 }
 
 sub init { $_[0]->set_data( { value => ['FFFFFF', '000000'], dynamics => 1, delta_S => 0, delta_L => 0 } ) }
@@ -169,22 +183,13 @@ sub set_all_colors {
     return unless @color == 9;
     map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
     @{$self->{'state_colors'}} = @color;
-    $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. 8;
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. 8;
+    # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
     $self->select_state;
 }
 
-sub select_state {
-    my ($self, $state) = @_;
-    $state //= $self->{'current_state'};
-    $self->{'current_state'} = $state > $self->{'state_count'} - 1 ? $self->{'state_count'} - 1 : $state;
-    $self->{'state_selector'}[$self->{'current_state'}]->SetValue(1);
-    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
-}
+sub get_all_colors { @{$_[0]->{'state_colors'}} }
 
-sub update_settings {
-
-}
 
 sub update_config {
     my ($self) = @_;
