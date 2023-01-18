@@ -45,13 +45,12 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'set_index'}++; $self->update_display });
     Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $parent->set_all_colors( $self->get_current_color_set )  });
     Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
-        delete $self->{'sets'}{ $self->current_color_name };
+        delete $self->{'sets'}{ $self->current_set_name };
         $self->update_select();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
-        my $set_name = $self->{'set_names'}[ $self->{'set_index'} ];
-        my @colornames = map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors;
-        $self->{'sets'}{ $set_name } = \@colornames;
+        $self->{'sets'}{ $self->current_set_name } = [map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors];
+        $self->{'set_index'}-- if $self->{'set_index'};
         $self->update_display();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'new'}, sub {
@@ -64,11 +63,10 @@ sub new {
         }
         $self->{'sets'}{ $name } = [ map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors ];
         $self->{'set_names'} = [ sort keys %{$self->{'sets'}} ];
-        $self->update_select();
         for (0 .. $#{$self->{'set_names'}}){
             $self->{'set_index'} = $_ if $name eq $self->{'set_names'}[$_];
         }
-        $self->update_display();
+        $self->update_select();
     });
 
     my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -109,6 +107,7 @@ sub update_select {
     $self->{'set_names'} = [ sort keys %{$self->{'sets'}} ];
     $self->{'select'}->Clear ();
     $self->{'select'}->Append( $_) for @{$self->{'set_names'}};
+    $self->update_display();
 }
 
 sub update_display {

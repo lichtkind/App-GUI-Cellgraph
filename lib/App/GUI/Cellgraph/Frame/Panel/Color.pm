@@ -44,9 +44,9 @@ sub new {
     $self->{'btn'}{'gray'}       = Wx::Button->new( $self, -1, 'Gray',       [-1,-1], [45, 35] );
     $self->{'btn'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 35] );
     $self->{'btn'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 35] );
-    $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet");
-    $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color");
-    $self->{'btn'}{'complement'}->SetToolTip("set from first up to current color as complementary colors");
+    $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet. Adheres to count of needed colors and current dynamics settings.");
+    $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color. Adheres to dynamics settings.");
+    $self->{'btn'}{'complement'}->SetToolTip("Create color set from first up to current color as complementary colors. Adheres to both delta values.");
     $self->{'dynamics'}->SetToolTip("dynamics of gradient (1 = linear) and also of gray scale");
     $self->{'Sdelta'}->SetToolTip("max. satuaration deviation when computing complement colors ( -100 .. 100)");
     $self->{'Ldelta'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
@@ -64,9 +64,22 @@ sub new {
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}) ];
+        $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}, $self->{'dynamics'}->GetValue) ];
         $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
         $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
+        $self->select_state();
+    });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
+        my @new_colors = $self->{'state_colors'}[0]->gradient_to( $self->{'state_colors'}[$self->{'current_state'}], $self->{'current_state'}+1, $self->{'dynamics'}->GetValue);
+        $self->{'state_colors'}[$_] = $new_colors[$_] for 0 .. $#new_colors;
+        $self->{'state_pic'}[$_]->set_color( $new_colors[$_]->rgb_hash ) for 0 .. $#new_colors;
+        $self->select_state();
+    });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'complement'}, sub {
+        my @new_colors = $self->{'state_colors'}[ $self->{'current_state'} ]->complementary( $self->{'current_state'}+1, $self->{'Sdelta'}->GetValue, $self->{'Ldelta'}->GetValue);
+        push @new_colors, shift @new_colors;
+        $self->{'state_colors'}[$_] = $new_colors[$_] for 0 .. $#new_colors;
+        $self->{'state_pic'}[$_]->set_color( $new_colors[$_]->rgb_hash ) for 0 .. $#new_colors;
         $self->select_state();
     });
 
