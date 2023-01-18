@@ -8,6 +8,7 @@ use Wx::AUI;
 
 package App::GUI::Cellgraph::Frame;
 use base qw/Wx::Frame/;
+use App::GUI::Cellgraph::Widget::ProgressBar;
 use App::GUI::Cellgraph::Frame::Panel::Global;
 use App::GUI::Cellgraph::Frame::Panel::Start;
 use App::GUI::Cellgraph::Frame::Panel::Rules;
@@ -46,6 +47,7 @@ sub new {
     $self->{'tabs'}{'type'} = 0;
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
+    $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
 
     #$self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     #$self->{'color'}{'startio'} = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Color IO', $self->{'config'}->get_value('color') , 162, 1);
@@ -55,6 +57,7 @@ sub new {
     # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
     # $self->{'dialog'}{'function'}  = App::GUI::Cellgraph::Dialog::Function->new();
     $self->{'panel'}{$_}->SetCallBack( sub { $self->draw( ) } ) for @{$self->{'panel_names'}};
+    $self->{'btn'}{'draw'} = $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[50, 40] );
 
     Wx::Event::EVT_AUINOTEBOOK_PAGE_CHANGED( $self, $self->{'tabs'}, sub {
         $self->{'tabs'}{'type'} = $self->{'tabs'}->GetSelection unless $self->{'tabs'}->GetSelection == $self->{'tabs'}->GetPageCount - 1;
@@ -132,26 +135,24 @@ sub new {
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
 
-    #my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    #$pen_sizer->AddSpacer(5);
-    #$pen_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
-    #$pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    #$pen_sizer->AddSpacer(10);
-    #$pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'Start Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
-    #$pen_sizer->Add( $self->{'color'}{'start'},   0, $vert_attr, 0);
-    #$pen_sizer->AddSpacer( 5);
-    #$pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    #$pen_sizer->AddSpacer( 5);
-    #$pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
-    #$pen_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    #$self->{'tab'}{'pen'}->SetSizer( $pen_sizer );
-
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
+
+    my $cmd_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    my $paint_lbl = Wx::StaticText->new( $self, -1, 'Grid Status:' );
+    $cmd_sizer->Add( $paint_lbl,     0, $all_attr, 15 );
+    $cmd_sizer->Add( $self->{'progress'},         1, $all_attr, 10 );
+    $cmd_sizer->AddSpacer(5);
+    $cmd_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
+    $cmd_sizer->AddSpacer(5);
+
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $setting_sizer->Add( $self->{'tabs'}, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $setting_sizer->AddSpacer(5);
+    $setting_sizer->Add( $cmd_sizer,      0,  0, 0);
+    $setting_sizer->AddSpacer(5);
     #$setting_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );

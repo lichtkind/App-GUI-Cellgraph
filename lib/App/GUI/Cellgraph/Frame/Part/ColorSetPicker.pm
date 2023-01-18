@@ -46,11 +46,11 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $parent->set_all_colors( $self->get_current_color_set )  });
     Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
         delete $self->{'sets'}{ $self->current_set_name };
+        $self->{'set_index'}-- if $self->{'set_index'};
         $self->update_select();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
         $self->{'sets'}{ $self->current_set_name } = [map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors];
-        $self->{'set_index'}-- if $self->{'set_index'};
         $self->update_display();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'new'}, sub {
