@@ -87,10 +87,11 @@ sub new {
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL;
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $f_sizer->AddSpacer( 10 );
+    $f_sizer->AddSpacer( 5 );
     $f_sizer->Add( $self->{'btn'}{'gray'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'btn'}{'gradient'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'dynamics'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->AddSpacer( 25 );
     $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'Sdelta'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'Ldelta'}, 0, $std_attr|&Wx::wxALL, 5 );
@@ -105,6 +106,7 @@ sub new {
         $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 3);
         $option_sizer[$state]->Add( $self->{'state_marker'}[$state], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 5);
+        $state_sizer->AddSpacer( 2 );
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -160,22 +162,32 @@ sub select_state {
     $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
 }
 
-sub init { $_[0]->set_data( { value => ['FFFFFF', '000000'], dynamics => 1, delta_S => 0, delta_L => 0 } ) }
+sub init { $_[0]->set_data( { 0 => '#FFFFFF', 1 => '#000000', dynamics => 1, delta_S => 0, delta_L => 0 } ) }
 
 sub get_data {
     my ($self) = @_;
-    {
-        value => [],
-        dynamics => 1,
-        delta_S => 0,
-        delta_L => 0
-    }
+    my $data = {
+        objects => $self->{'state_colors'},
+        dynamics => $self->{'dynamics'}->GetValue,
+        delta_S => $self->{'Sdelta'}->GetValue,
+        delta_L => $self->{'Ldelta'}->GetValue,
+    };
+    $data->{$_} = $self->{'state_colors'}[$_]->string for 0 .. $self->{'last_state'};
+    $data;
 }
 
 sub set_data {
     my ($self, $data) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'nr'};
-    #$self->set_rule( $data->{'nr'} );
+    return unless ref $data eq 'HASH' and exists $data->{'dynamics'};
+    $self->{'dynamics'}->SetValue( $data->{'dynamics'} );
+    $self->{'Sdelta'}->SetValue( $data->{'delta_S'} );
+    $self->{'Ldelta'}->SetValue( $data->{'delta_L'} );
+    for (0 .. $self->{'last_state'}){
+        $data->{$_} = $default_color_def unless exists $data->{$_};
+    }
+    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'};
+    $self->set_all_colors( @{$self->{'state_colors'}} );
+    $self->{'objects'} = $self->{'state_colors'};
 }
 
 sub get_current_color {

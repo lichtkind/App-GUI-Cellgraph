@@ -27,32 +27,32 @@ sub new {
         $self->{'y_pos'} = $self->GetPosition->y;
 
         if (exists $self->{'data'}{'new'}) {
-            $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'}, 
-                                       $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'}, 
+            $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'},
+                                       $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'},
                                        $self->paint( Wx::PaintDC->new( $self ), $self->{'size'}{'x'}, $self->{'size'}{'y'} ), 0, 0);
         } else {
-            Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'}, 
-                                                   $self->{'size'}{'y'} + $self->{'menu_size'}, 
-                                                   $self->{'dc'}, 
+            Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'},
+                                                   $self->{'size'}{'y'} + $self->{'menu_size'},
+                                                   $self->{'dc'},
                                                    $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
     }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
-    
+
     return $self;
 }
 
 sub draw {
-    my( $self, $data ) = @_;
-    return unless ref $data eq 'HASH';
-    $self->set_data( $data );
+    my( $self, $settings ) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->set_data( $settings );
     $self->Refresh;
 }
 
 sub set_data {
-    my( $self, $data ) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{'data'} = $data;
+    my( $self, $settings ) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->{'data'} = $settings;
     $self->{'data'}{'new'} = 1;
 }
 
@@ -66,10 +66,10 @@ sub paint {
     my( $self, $dc, $width, $height ) = @_;
 
     $self->{'size'}{'cell'} = $self->{'data'}{'global'}{'cell_size'} // 3;
-    $self->{'cells'}{'x'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no') 
+    $self->{'cells'}{'x'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no')
                           ? int (  $width      /  $self->{'size'}{'cell'}      )
                           : int ( ($width - 1) / ($self->{'size'}{'cell'} + 1) );
-    $self->{'cells'}{'y'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no') 
+    $self->{'cells'}{'y'} = ($self->{'data'}{'global'}{'grid_type'} eq 'no')
                           ? int (  $height      /  $self->{'size'}{'cell'}      )
                           : int ( ($height - 1) / ($self->{'size'}{'cell'} + 1) );
     $self->{'seed_cell'}  = int   $self->{'cells'}{'x'} / 2;
@@ -77,11 +77,11 @@ sub paint {
     my $grid_d =  ($self->{'data'}{'global'}{'grid_type'} eq 'no')  ? $cell_size : $cell_size + 1;
     my $grid_max_x = $grid_d * $self->{'cells'}{'x'};
     my $grid_max_y = $grid_d * $self->{'cells'}{'y'};
-    
+
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
-    my @color = map { Wx::Colour->new( $_->rgb ) } color('white')->gradient_to('black', $self->{'data'}{'global'}{'state_count'});
+    my @color = map { Wx::Colour->new( $_->rgb ) } @{$self->{'data'}{'color'}{'objects'}};
     my @pen = map {Wx::Pen->new( $_, 1, &Wx::wxPENSTYLE_SOLID )} @color;
     my @brush = map { Wx::Brush->new( $_, &Wx::wxBRUSHSTYLE_SOLID ) } @color;
     $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 170, 170, 170 ), 1, &Wx::wxPENSTYLE_SOLID ) );
@@ -91,7 +91,7 @@ sub paint {
         $dc->DrawLine( $grid_d * $_,            0, $grid_d * $_, $grid_max_y ) for 1 .. $self->{'cells'}{'x'};
         $dc->DrawLine(            0, $grid_d * $_,  $grid_max_x, $grid_d * $_) for 1 .. $self->{'cells'}{'y'};
     }
- 
+
     my $color = Wx::Colour->new( 0, 0, 0 );
     $dc->SetPen( Wx::Pen->new( $color, 1, &Wx::wxPENSTYLE_SOLID ) );
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
@@ -134,7 +134,7 @@ sub paint {
                         ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
                         $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
                     }
-                        
+
                 }
             }
         }
@@ -172,7 +172,7 @@ sub save_file {
     my( $self, $file_name, $width, $height ) = @_;
     my $file_end = lc substr( $file_name, -3 );
     if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
-    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) } 
+    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) }
     else { return "unknown file ending: '$file_end'" }
 }
 

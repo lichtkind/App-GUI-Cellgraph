@@ -18,12 +18,12 @@ sub new {
     $self->{'init'} = $init_color;
     $self->{'call_back'} = sub {};
 
-    $self->{'red'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' R  ', "red part of $type color",    0, 255,  $init_color->red);
-    $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' G  ', "green part of $type color",  0, 255,  $init_color->green);
-    $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' B  ', "blue part of $type color",   0, 255,  $init_color->blue);
-    $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 170, ' H  ', "hue of $type color",         0, 359,  $init_color->hue);
-    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 174, ' S   ', "saturation of $type color",  0, 100,  $init_color->saturation);
-    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 174, ' L   ', "lightness of $type color",   0, 100,  $init_color->lightness);
+    $self->{'red'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 290, ' R  ', "red part of $type color",    0, 255,  $init_color->red);
+    $self->{'green'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 290, ' G  ', "green part of $type color",  0, 255,  $init_color->green);
+    $self->{'blue'}  =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 290, ' B  ', "blue part of $type color",   0, 255,  $init_color->blue);
+    $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 290, ' H  ', "hue of $type color",         0, 359,  $init_color->hue);
+    $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 294, ' S   ', "saturation of $type color",  0, 100,  $init_color->saturation);
+    $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 294, ' L   ', "lightness of $type color",   0, 100,  $init_color->lightness);
    # $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
    # $self->{'display'}->SetToolTip("$type color monitor");
 

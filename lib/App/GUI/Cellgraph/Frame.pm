@@ -29,7 +29,6 @@ sub new {
     #$self->SetStatusWidths(2, 800, 100);
     Wx::InitAllImageHandlers();
     $self->{'config'} = App::GUI::Cellgraph::Config->new();
-# say $self->{'config'}->get_value('color');
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
@@ -49,9 +48,6 @@ sub new {
     $self->{'img_format'} = 'png';
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
 
-    #$self->{'color'}{'start'}   = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
-    #$self->{'color'}{'startio'} = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Color IO', $self->{'config'}->get_value('color') , 162, 1);
-
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 800, 800 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
@@ -63,11 +59,8 @@ sub new {
         $self->{'tabs'}{'type'} = $self->{'tabs'}->GetSelection unless $self->{'tabs'}->GetSelection == $self->{'tabs'}->GetPageCount - 1;
     });
     Wx::Event::EVT_CLOSE( $self, sub {
-       # my $all_color = $self->{'config'}->get_value('color');
-       # my $startc = $self->{'color'}{'startio'}->get_data;
-       # for my $name (keys %$startc){
-       #     $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
-       # }
+        $self->{'panel'}{'color'}->update_config;
+        $self->{'config'}->save();
         $self->{'dialog'}{$_}->Destroy() for qw/about/; # interface function
         $_[1]->Skip(1)
     });
@@ -121,13 +114,6 @@ sub new {
     Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
 
-    Wx::Event::EVT_CLOSE( $self, sub {
-        $self->{'panel'}{'color'}->update_config;
-        $self->{'config'}->save();
-       # $self->{'dialog'}{$_}->Destroy() for qw/interface function about/;
-        $_[1]->Skip(1)
-    });
-
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -146,7 +132,7 @@ sub new {
     $cmd_sizer->Add( $self->{'progress'},         1, $all_attr, 10 );
     $cmd_sizer->AddSpacer(5);
     $cmd_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
-    $cmd_sizer->AddSpacer(5);
+    $cmd_sizer->AddSpacer(10);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $setting_sizer->Add( $self->{'tabs'}, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -175,7 +161,6 @@ sub new {
 
 sub init {
     my ($self) = @_;
-    #$self->{'color'}{$_}->init() for qw/start/;
     $self->{'panel'}{ $_ }->init() for @{$self->{'panel_names'}};
     $self->draw( );
     $self->SetStatusText( "all settings are set to default", 0);
@@ -195,13 +180,13 @@ sub set_data {
 
 sub draw {
     my ($self) = @_;
-    my $config = $self->get_data;
-    $self->{'panel'}{'rules'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $config->{'global'}{'input_size'}, $config->{'global'}{'state_count'} );
-    $self->{'panel'}{'start'}->regenerate_cells( $config );
-    $self->{'panel'}{'color'}->set_state_count( $config->{'global'}{'state_count'} );
-    $config = $self->get_data;
-    $self->{'board'}->draw( $config );
+    my $settings = $self->get_data;
+    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
+    $self->{'panel'}{'start'}->regenerate_cells( $settings );
+    $self->{'panel'}{'color'}->set_state_count( $settings->{'global'}{'state_count'} );
+    $settings = $self->get_data;
+    $self->{'board'}->draw( $settings );
 }
 
 sub open_settings_dialog {
@@ -286,7 +271,12 @@ sub update_recent_settings_menu {
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $ret = App::GUI::Cellgraph::Settings::write( $file, $self->get_data );
+    my $data = $self->get_data;
+    delete $data->{'rules'}{'f'};
+    delete $data->{'mobile'}{'f'};
+    delete $data->{'start'}{'list'};
+    delete $data->{'color'}{'objects'};
+    my $ret = App::GUI::Cellgraph::Settings::write( $file, $data );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     {
         $self->update_recent_settings_menu();
