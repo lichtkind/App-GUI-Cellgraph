@@ -59,8 +59,8 @@ sub new {
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'1'},sub { $self->init_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'2'},sub { $self->grid_action; $self->{'call_back'}->() } );
@@ -87,9 +87,9 @@ sub SetCallBack {
     $self->{'call_back'} = $code;
 }
 
-sub init { $_[0]->set_data( { nr => 22222222 } ) }
+sub init { $_[0]->set_settings( { nr => 22222222 } ) }
 
-sub get_data {
+sub get_settings {
     my ($self) = @_;
     {
         nr => $self->{'action_nr'}->GetValue,
@@ -99,10 +99,10 @@ sub get_data {
     }
 }
 
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'nr'};
-    $self->set_action( $data->{'nr'} );
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
+    $self->set_action( $settings->{'nr'} );
 }
 
 sub get_action_number { join '', reverse $_[0]->get_action_list }

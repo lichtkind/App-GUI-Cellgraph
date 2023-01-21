@@ -73,8 +73,8 @@ sub new {
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub { $self->set_data( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_rule; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->next_rule; $self->{'call_back'}->() } );
@@ -185,9 +185,9 @@ sub set_rule {
     $self->{'rule_nr'}->SetValue( $rule );
 }
 
-sub init { $_[0]->set_data( { nr => 18, size => 3, avg => 0 } ) }
+sub init { $_[0]->set_settings( { nr => 18, size => 3, avg => 0 } ) }
 
-sub get_data {
+sub get_settings {
     my ($self) = @_;
     {
         f => [$self->get_output_list],
@@ -197,10 +197,10 @@ sub get_data {
     }
 }
 
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'nr'};
-    $self->set_rule( $data->{'nr'} );
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
+    $self->set_rule( $settings->{'nr'} );
 }
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }

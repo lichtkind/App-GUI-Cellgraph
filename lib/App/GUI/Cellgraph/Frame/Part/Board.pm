@@ -37,21 +37,26 @@ sub new {
                                                    $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
-    }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
-
+    });
     return $self;
 }
 
 sub draw {
     my( $self, $settings ) = @_;
-    return unless ref $settings eq 'HASH';
-    $self->set_data( $settings );
+    return unless $self->set_settings( $settings );
     $self->Refresh;
 }
 
-sub set_data {
+sub sketch {
     my( $self, $settings ) = @_;
-    return unless ref $settings eq 'HASH';
+    return unless $self->set_settings( $settings );
+    $self->{'data'}{'sketch'} = 1;
+    $self->Refresh;
+}
+
+sub set_settings {
+    my( $self, $settings ) = @_;
+    return 0 unless ref $settings eq 'HASH';
     $self->{'data'} = $settings;
     $self->{'data'}{'new'} = 1;
 }
@@ -165,6 +170,7 @@ sub paint {
         }
     }
     delete $self->{'data'}{'new'};
+    delete $self->{'data'}{'sketch'};
     $dc;
 }
 

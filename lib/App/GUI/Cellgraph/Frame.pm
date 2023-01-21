@@ -52,7 +52,6 @@ sub new {
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     # $self->{'dialog'}{'interface'} = App::GUI::Cellgraph::Dialog::Interface->new();
     # $self->{'dialog'}{'function'}  = App::GUI::Cellgraph::Dialog::Function->new();
-    $self->{'panel'}{$_}->SetCallBack( sub { $self->draw( ) } ) for @{$self->{'panel_names'}};
     $self->{'btn'}{'draw'} = $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[50, 40] );
 
     Wx::Event::EVT_AUINOTEBOOK_PAGE_CHANGED( $self, $self->{'tabs'}, sub {
@@ -64,6 +63,8 @@ sub new {
         $self->{'dialog'}{$_}->Destroy() for qw/about/; # interface function
         $_[1]->Skip(1)
     });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'}, sub { $self->draw });
+    $self->{'panel'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'panel_names'}};
 
     # GUI layout assembly
 
@@ -155,7 +156,7 @@ sub new {
 
     $self->init();
     $self->SetStatusText( "settings in init state", 0 );
-    $self->{'last_file_settings'} = $self->get_data;
+    $self->{'last_file_settings'} = $self->get_settings;
     $self;
 }
 
@@ -166,27 +167,41 @@ sub init {
     $self->SetStatusText( "all settings are set to default", 0);
 }
 
-sub get_data {
+sub get_settings {
     my $self = shift;
-    my %data = map { $_ => $self->{'panel'}{$_}->get_data } @{$self->{'panel_names'}};
-    \%data;
+    my %settings = map { $_ => $self->{'panel'}{$_}->get_settings } @{$self->{'panel_names'}};
+    \%settings;
 }
 
-sub set_data {
-    my ($self, $data) = @_;
-    # $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start/;
-    $self->{'panel'}{ $_ }->set_data( $data->{ $_ } ) for @{$self->{'panel_names'}};
+sub set_settings {
+    my ($self, $settings) = @_;
+    $self->{'panel'}{ $_ }->set_settings( $settings->{ $_ } ) for @{$self->{'panel_names'}};
+}
+
+sub spread_setting_changes {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'panel'}{'start'};
+    $self->{'panel'}{'start'}->update_cell_colors( [@{$settings->{'color'}{'objects'}}[0 .. $settings->{'global'}{'state_count'}-1]] );
+    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
+    $self->{'panel'}{'color'}->set_state_count( $settings->{'global'}{'state_count'} );
+}
+
+sub sketch {
+    my ($self) = @_;
+    my $settings = $self->get_settings;
+    $self->spread_setting_changes( $settings );
+    $settings = $self->get_settings;
+    $self->{'board'}->sketch( $settings );
 }
 
 sub draw {
     my ($self) = @_;
-    my $settings = $self->get_data;
-    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
-    $self->{'panel'}{'start'}->regenerate_cells( $settings );
-    $self->{'panel'}{'color'}->set_state_count( $settings->{'global'}{'state_count'} );
-    $settings = $self->get_data;
+    my $settings = $self->get_settings;
+    $self->spread_setting_changes( $settings );
+    $settings = $self->get_settings;
     $self->{'board'}->draw( $settings );
+    #$self->{'progress'}->add_percentage( 100 );
 }
 
 sub open_settings_dialog {
@@ -239,16 +254,16 @@ sub save_image_dialog {
 
 sub open_setting_file {
     my ($self, $file ) = @_;
-    my $data = App::GUI::Cellgraph::Settings::load( $file );
-    if (ref $data) {
-        $self->set_data( $data );
+    my $settings = App::GUI::Cellgraph::Settings::load( $file );
+    if (ref $settings) {
+        $self->set_settings( $settings );
         $self->draw;
         my $dir = App::GUI::Cellgraph::Settings::extract_dir( $file );
         $self->SetStatusText( "loaded settings from ".$file, 0) ;
         $self->update_recent_settings_menu();
-        $data;
+        $settings;
     } else {
-         $self->SetStatusText( $data, 0);
+         $self->SetStatusText( $settings, 0);
     }
 }
 
@@ -266,17 +281,16 @@ sub update_recent_settings_menu {
   #      Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
    # }
     #$self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
-
 }
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $data = $self->get_data;
-    delete $data->{'rules'}{'f'};
-    delete $data->{'mobile'}{'f'};
-    delete $data->{'start'}{'list'};
-    delete $data->{'color'}{'objects'};
-    my $ret = App::GUI::Cellgraph::Settings::write( $file, $data );
+    my $settings = $self->get_settings;
+    delete $settings->{'rules'}{'f'};
+    delete $settings->{'mobile'}{'f'};
+    delete $settings->{'start'}{'list'};
+    delete $settings->{'color'}{'objects'};
+    my $ret = App::GUI::Cellgraph::Settings::write( $file, $settings );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     {
         $self->update_recent_settings_menu();

@@ -15,7 +15,7 @@ sub new {
     my $x = ($cell_size + 1) * $cell_count + 1;
     my $y = $cell_size + 2;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
-  
+
     Wx::Event::EVT_PAINT( $self, sub {
         my( $cpanel, $event ) = @_;
         my $dc = Wx::PaintDC->new( $cpanel );
@@ -36,6 +36,17 @@ sub new {
         }
     } );
     $self;
+}
+
+
+sub SetColors {
+    my ( $self, $colors ) = @_;
+    return unless ref $colors eq 'ARRAY' and @$colors > 1;
+    for (@$colors){ return unless ref $_ eq 'ARRAY' and @$_ == 3 }
+    $self->{'colors'} = $colors;
+    $self->{'init'} = $#$colors if $self->{'init'} > $#$colors;
+    $self->SetValue( $#$colors ) if $self->{'value'} > $#$colors;
+    $self->Refresh;
 }
 
 

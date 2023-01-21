@@ -10,9 +10,9 @@ sub new {
     my ( $class, $parent ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'call_back'} = sub {};
-    
-    
-    $self->{'data_keys'} = [qw/grid_type cell_size paint_direction circular_grid state_count input_size/];#action_values action_threshold
+
+
+    $self->{'settings_keys'} = [qw/grid_type cell_size paint_direction circular_grid state_count input_size/];#action_values action_threshold
     $self->{'grid_lbl'} = Wx::StaticText->new( $self, -1, 'Grid Style:');
     $self->{'cell_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
     $self->{'direction_lbl'} = Wx::StaticText->new( $self, -1, 'Direction :');
@@ -28,7 +28,7 @@ sub new {
     $self->{'input_size'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     # $self->{'action_values'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[75, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
     # $self->{'action_threshold'} = Wx::ComboBox->new( $self, -1, '1', [-1,-1],[75, -1], [qw/0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2/], &Wx::wxTE_READONLY);
-    
+
     $self->{'grid_lbl'}->SetToolTip('how to display the cell map');
     $self->{'grid_type'}->SetToolTip('how to display the cell map');
     $self->{'cell_size_lbl'}->SetToolTip('visual size of the cells in pixel');
@@ -42,10 +42,10 @@ sub new {
     $self->{'circular_grid'}->SetToolTip('using cells on the endges as neighbours to each other');
     # $self->{'action_values'}->SetToolTip('how many action values between 0 and 1 a cell can emit to itself and neighbours?');
     # $self->{'action_threshold'}->SetToolTip('when action value of a cell is equal or higher the cell will be active?');
-    
+
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/circular_grid/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for @{$self->{'data_keys'}};
-    
+
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
     my $all_attr = $std_attr | &Wx::wxALL;
@@ -85,7 +85,7 @@ sub new {
     $action_sizer->Add( $self->{'threshhold_lbl'}, 0, $all_attr, 7);
     $action_sizer->Add( $self->{'action_threshold'}, 0, $row_attr, 8);
     $action_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-   
+
     my $row_space = 20;
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( $row_space );
@@ -107,19 +107,19 @@ sub new {
     $self;
 }
 
-sub init        { $_[0]->set_data({ grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
-                                    state_count => 2, input_size => 3, circular_grid => 0}) } #action_values => 2, action_threshold => 1 
+sub init        { $_[0]->set_settings({ grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
+                                    state_count => 2, input_size => 3, circular_grid => 0}) } #action_values => 2, action_threshold => 1
 
-sub get_data {
+sub get_settings {
     my ($self) = @_;
-    my $data = { map { $_ => $self->{$_}->GetValue } @{$self->{'data_keys'}} };
-    $data;
+    my $settings = { map { $_ => $self->{$_}->GetValue } @{$self->{'settings_keys'}} };
+    $settings;
 }
 
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{$_}->SetValue( $data->{$_} ) for @{$self->{'data_keys'}};
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->{$_}->SetValue( $settings->{$_} ) for @{$self->{'settings_keys'}};
 }
 
 sub SetCallBack {

@@ -47,7 +47,7 @@ sub new {
     $self;
 }
 
-sub init { $_[0]->SetValue( $_[0]->{'init'} ) }    
+sub init { $_[0]->SetValue( $_[0]->{'init'} ) }
 
 sub GetValue { $_[0]->{'value'} }
 sub SetValue {
@@ -66,9 +66,11 @@ sub SetColors {
     $self->{'colors'} = $colors;
     $self->{'init'} = $#$colors if $self->{'init'} > $#$colors;
     $self->SetValue( $#$colors ) if $self->{'value'} > $#$colors;
+    $self->{'value'} = 0 if $self->{'value'} > $#{$self->{'colors'}};
+    $self->Refresh;
 }
 
-sub SetCallBack {    
+sub SetCallBack {
     my ( $self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'callback'} = $code;

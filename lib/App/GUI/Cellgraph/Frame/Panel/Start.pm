@@ -5,7 +5,6 @@ use Wx;
 package App::GUI::Cellgraph::Frame::Panel::Start;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::ColorToggle;
-use App::GUI::Cellgraph::Widget::SliderCombo;
 use Graphics::Toolkit::Color qw/color/;
 
 sub new {
@@ -75,14 +74,27 @@ sub new {
     $self;
 }
 
-sub regenerate_cells {
-    my ($self, $data) = @_;
-    return if ref $data eq 'HASH' and $self->{'state_count'} == $data->{'global'}{'state_count'};
-    $self->{'state_count'} = $data->{'global'}{'state_count'};
-    $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
-    $self->{'switch'}[$_]->SetColors( $self->{'state_colors'} ) for 0 .. $self->{'length'} - 1;
+sub update_cell_colors {
+    my ($self, $settings) = @_;
+    return if ref $settings ne 'HASH';
+    unless ($self->{'state_count'} == $settings->{'global'}{'state_count'}){
+        $self->{'state_count'} = $settings->{'global'}{'state_count'};
+
+    }
+    $self->SetColors( $settings->{'color'}{'objects'} );
 }
 
+sub SetColors {
+    my ( $self, $colors ) = @_;
+    return unless ref $colors eq 'ARRAY';
+    for (@$colors){
+        return unless ref $_ eq '';
+    }
+    $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
+    $self->{'switch'}[$_]->SetColors( $self->{'state_colors'} ) for 0 .. $self->{'length'} - 1;
+    $self->{'switch'}
+
+}
 
 sub get_number {
     my ($self) = @_;
@@ -104,10 +116,10 @@ sub get_list {
 }
 
 
-sub init        { $_[0]->set_data({ value => 1 }) }
+sub init        { $_[0]->set_settings({ value => 1 }) }
 sub reset_start { $_[0]->set_start_row(1) }
 
-sub get_data {
+sub get_settings {
     my ($self) = @_;
     {
         list => [$self->get_list],
@@ -116,10 +128,10 @@ sub get_data {
     }
 }
 
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH';
-    $self->set_start_row( $data->{'value'} );
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->set_start_row( $settings->{'value'} );
 }
 
 sub set_start_row {
