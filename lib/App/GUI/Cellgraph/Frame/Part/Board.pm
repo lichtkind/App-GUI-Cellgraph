@@ -108,19 +108,20 @@ sub paint {
         if ($self->{'cells'}{'x'} % 2){
             for my $y (1 .. ($sketch_length ? $sketch_length : $mid)) {
                 for my $x ($mid - $y .. $mid -1 + $y){
-                    if ($grid->[$y][$x]){
-                        $dc->SetPen( $pen[$grid->[$y][$x]] );
-                        $dc->SetBrush( $brush[$grid->[$y][$x]] );
-                        my ($nx, $ny) = ($x, $mid + $y);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - $y);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($mid - $y, $x);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($mid + $y, $self->{'cells'}{'y'} - 1 - $x);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                    }
+                    $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                    my ($nx, $ny) = ($x, $mid + $y);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - $y);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($mid - $y, $x);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($mid + $y, $self->{'cells'}{'y'} - 1 - $x);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
                 }
+                $dc->SetPen( $pen[ $grid->[0][$mid] ] );
+                $dc->SetBrush( $brush[ $grid->[0][$mid] ] );
+
                 $dc->DrawRectangle( 1 + ($mid * $grid_d), 1 + ($mid * $grid_d), $cell_size, $cell_size )
                     if $grid->[0][$mid];
             }
@@ -128,19 +129,16 @@ sub paint {
             for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1))) {
                 last if $y >= $mid;
                 for my $x ($mid - $y .. $mid + $y){
-                    if ($grid->[$y][$x]){
-                        $dc->SetPen( $pen[$grid->[$y][$x]] );
-                        $dc->SetBrush( $brush[$grid->[$y][$x]] );
-                        my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($x, $mid + $y);
-                        $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($mid - 1 - $y, $x);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($x * $grid_d), $cell_size, $cell_size );
-                        ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
-                        $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                    }
-
+                    $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                    my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($x, $mid + $y);
+                    $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($mid - 1 - $y, $x);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($x * $grid_d), $cell_size, $cell_size );
+                    ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
+                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
                 }
             }
         }
@@ -148,25 +146,21 @@ sub paint {
         for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1)) ) {
             last if $y >= $self->{'cells'}{'x'} - 2 - $y;
             for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
-                if ($grid->[$y][$x]){
-                    $dc->SetPen( $pen[$grid->[$y][$x]] );
-                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
-                    my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $self->{'cells'}{'y'} - 1 - $y);
-                    $dc->DrawRectangle( 1 + ( $x * $grid_d), 1 + ( $y * $grid_d), $cell_size, $cell_size );
-                    $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
-                    $dc->DrawRectangle( 1 + ( $y * $grid_d), 1 + ($nx * $grid_d), $cell_size, $cell_size );
-                    $dc->DrawRectangle( 1 + ($ny * $grid_d), 1 + ( $x * $grid_d), $cell_size, $cell_size );
-                }
+                $dc->SetPen( $pen[$grid->[$y][$x]] );
+                $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $self->{'cells'}{'y'} - 1 - $y);
+                $dc->DrawRectangle( 1 + ( $x * $grid_d), 1 + ( $y * $grid_d), $cell_size, $cell_size );
+                $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                $dc->DrawRectangle( 1 + ( $y * $grid_d), 1 + ($nx * $grid_d), $cell_size, $cell_size );
+                $dc->DrawRectangle( 1 + ($ny * $grid_d), 1 + ( $x * $grid_d), $cell_size, $cell_size );
             }
         }
     } else {
         for my $y (0 .. ($sketch_length ? $sketch_length : $self->{'cells'}{'y'} - 1)) {
             for my $x (0 .. $self->{'cells'}{'x'} - 1){
-                if ($grid->[$y][$x]){
-                    $dc->SetPen( $pen[$grid->[$y][$x]] );
-                    $dc->SetBrush( $brush[$grid->[$y][$x]] );
-                    $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size );
-                }
+                $dc->SetPen( $pen[$grid->[$y][$x]] );
+                $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size );
             }
         }
     }

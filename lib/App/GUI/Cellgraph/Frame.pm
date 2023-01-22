@@ -29,6 +29,8 @@ sub new {
     #$self->SetStatusWidths(2, 800, 100);
     Wx::InitAllImageHandlers();
     $self->{'config'} = App::GUI::Cellgraph::Config->new();
+    $self->{'img_size'} = 700;
+    $self->{'img_format'} = 'png';
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
@@ -44,9 +46,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Action');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'color'}, 'Color');
     $self->{'tabs'}{'type'} = 0;
-    $self->{'img_size'} = 700;
-    $self->{'img_format'} = 'png';
-    $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
 
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 800, 800 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
@@ -64,7 +64,7 @@ sub new {
         $_[1]->Skip(1)
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'}, sub { $self->draw });
-    $self->{'panel'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'panel_names'}};
+    $self->{'panel'}{$_}->SetCallBack( sub { $self->sketch( $_[0] ) } ) for @{$self->{'panel_names'}};
 
     # GUI layout assembly
 
@@ -180,11 +180,13 @@ sub set_settings {
 
 sub spread_setting_changes {
     my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'panel'}{'start'};
-    $self->{'panel'}{'start'}->update_cell_colors( [@{$settings->{'color'}{'objects'}}[0 .. $settings->{'global'}{'state_count'}-1]] );
-    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'} );
+    return unless ref $settings eq 'HASH' and exists $settings->{'global'};
     $self->{'panel'}{'color'}->set_state_count( $settings->{'global'}{'state_count'} );
+    my @needed_colors = $self->{'panel'}{'color'}->get_active_colors;
+    $self->{'progress'}->set_colors( @needed_colors );
+    $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
+    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'}, @needed_colors );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'}, @needed_colors );
 }
 
 sub sketch {
@@ -193,6 +195,7 @@ sub sketch {
     $self->spread_setting_changes( $settings );
     $settings = $self->get_settings;
     $self->{'board'}->sketch( $settings );
+    $self->{'progress'}->reset;
 }
 
 sub draw {
@@ -201,7 +204,7 @@ sub draw {
     $self->spread_setting_changes( $settings );
     $settings = $self->get_settings;
     $self->{'board'}->draw( $settings );
-    #$self->{'progress'}->add_percentage( 100 );
+    $self->{'progress'}->full;
 }
 
 sub open_settings_dialog {

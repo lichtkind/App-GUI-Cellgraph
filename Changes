@@ -1,3 +1,10 @@
+0.2  2023-01-23  lichtkind
+-------
+    * = colors
+    * * new Color panel with many functions (see Color sections in POD)
+    * + setting changes trigger only a sketch for faster interactions
+    * + draw button for full images
+
 0.1  2022-12-25  lichtkind
 -------
     * = multi level fix
@@ -26,4 +33,3 @@
 TODO:
 
   meta settings for action rules
-  chanable colors

@@ -19,7 +19,7 @@ sub new {
     my ( $class, $parent, $config ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'call_back'}  = sub {};
+    $self->{'set_back'}  = sub {};
     $self->{'config'}     = $config;
     $self->{'rule_square_size'} = 34;
     $self->{'last_state'} = 8;   # max pos
@@ -59,8 +59,8 @@ sub new {
 
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->SetToolTip("select state color you want to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
-    $self->{'state_marker'}[$_]->SetToolTip("select state color you want to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_marker'}[$_]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
@@ -201,6 +201,7 @@ sub set_current_color {
     $self->{'state_colors'}[$self->{'current_state'}] = color( $color );
     $self->{'state_pic'}[$self->{'current_state'}]->set_color( $color );
     $self->{'browser'}->set_data( $color );
+    $self->{'call_back'}->('color');
 }
 
 sub set_all_colors {
@@ -211,10 +212,11 @@ sub set_all_colors {
     # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
     $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
     $self->select_state;
+    $self->{'call_back'}->('color');
 }
 
 sub get_all_colors { @{$_[0]->{'state_colors'}} }
-
+sub get_active_colors { @{$_[0]->{'state_colors'}}[ 0 .. $_[0]->{'state_count'} - 1] }
 
 sub update_config {
     my ($self) = @_;

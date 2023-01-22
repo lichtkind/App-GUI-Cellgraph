@@ -46,13 +46,17 @@ push buttons and see patterns change
 
 =item 3.
 
-choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
-(choose image size  in menu beforehand)
+push button I<Draw> in right bottom corner to get a full picture
 
 =item 4.
 
+choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
+(choose image size  in menu beforehand)
+
+=item 5.
+
 choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
-INI file for tweaking them later
+INI file for loading in and tweaking the parameters later
 
 =back
 
@@ -103,7 +107,7 @@ at the bottom that appear while browsing the menu.
 =head2 Global
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIglobal.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal.png"   alt=""  width="630" height="410">
 </p>
 
 The first tab contains the general (meta) settings.
@@ -138,7 +142,7 @@ is not part of its own neighbourhood.
 =head2 Start
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIstart.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart.png"   alt=""  width="630" height="410">
 </p>
 
 The second tab contains settings for the starting values (states).
@@ -153,7 +157,7 @@ are just increment or decrement the numeric value of the starting sequence.
 =head2 Rules
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIrules.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules.png"   alt=""  width="630" height="410">
 </p>
 
 On the third tab you can set the individual partial rules.
@@ -173,7 +177,7 @@ The button I<"?"> again selects a random rule.
 =head2 Action
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIaction.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIaction.png"   alt=""  width="630" height="410">
 </p>
 
 Here are listed the same sub rule inputs as before (every possible
@@ -190,19 +194,29 @@ The first buttom set the inverted distribution of action propagation.
 =head2 Color
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/GUIcolor.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolor.png"   alt=""  width="630" height="410">
 </p>
 
-Here are listed the same sub rule inputs as before (every possible
-neighbourhood configuration) on the left hand side of the =&gt;.
-The reults of these action rules control which cell are allowed to change
-during the next round (only neighbours marked with a circle).
-Behind the result of each subrule input is here a result for the action
-propagation. The circles show if the cell or its neighbours can do the
-transfer function next cycle. These settings are again combined in a
-singular action value (behind the label "Active:"). Here are also four
-buttons to select the init state, a grid patter or a random state.
-The first buttom set the inverted distribution of action propagation.
+This panel help to set custom colors for each automaton state and it is
+divided into five sections by horizontal lines. This will be a
+description section by section from top to bottom.
+
+The first section is for storing and loading complete sets of state colors.
+Just select a set you want to load either in the drop down menu or by
+skipping to it with the buttons '<' and '>'. Below this selector you can
+see a preview of the selected set. It gets loaded by pushing C<Load>.
+Then you can see the colors in large boxes two sections below since there
+are the currently used colors. If you want to save the colors, which are
+displayed there into the currently selected set push C<Save>. Please
+keep in mind this will overwrite whatever was there before. To prefent
+this push C<New> to save the currently used colors into a new set.
+Its name will be asked for by a dialog. If you type in an already used
+name it will ask again, til the name is unique or you press C<Cancel>.
+C<Del> just deletes the currently selected color set.
+
+
+
+
 
 =head2 Menu
 

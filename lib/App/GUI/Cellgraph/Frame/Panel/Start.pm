@@ -75,25 +75,18 @@ sub new {
 }
 
 sub update_cell_colors {
-    my ($self, $settings) = @_;
-    return if ref $settings ne 'HASH';
-    unless ($self->{'state_count'} == $settings->{'global'}{'state_count'}){
-        $self->{'state_count'} = $settings->{'global'}{'state_count'};
-
+    my ($self, @colors) = @_;
+    return if @colors < 2;
+    my $do_recolor = @colors == $self->{'state_count'} ? 0 : 1;
+    for my $i (0 .. $#colors) {
+        return unless ref $colors[$i] eq 'Graphics::Toolkit::Color';
+        if (exists $self->{'state_colors'}[$i]) {
+            my @rgb = $colors[$i]->rgb;
+            $do_recolor += !( $rgb[$_] == $self->{'state_colors'}[$i][$_]) for 0 .. 2;
+        } else { $do_recolor++ }
     }
-    $self->SetColors( $settings->{'color'}{'objects'} );
-}
-
-sub SetColors {
-    my ( $self, $colors ) = @_;
-    return unless ref $colors eq 'ARRAY';
-    for (@$colors){
-        return unless ref $_ eq '';
-    }
-    $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
-    $self->{'switch'}[$_]->SetColors( $self->{'state_colors'} ) for 0 .. $self->{'length'} - 1;
-    $self->{'switch'}
-
+    return unless $do_recolor;
+    $self->{'switch'}[$_]->SetColors( [map {[$_->rgb]} @colors] ) for 0 .. $self->{'length'} - 1;
 }
 
 sub get_number {
