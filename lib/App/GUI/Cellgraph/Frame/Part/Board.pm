@@ -50,7 +50,7 @@ sub draw {
 sub sketch {
     my( $self, $settings ) = @_;
     return unless $self->set_settings( $settings );
-    $self->{'data'}{'sketch'} = 1;
+    $self->{'data'}{'sketch'} = 5;
     $self->Refresh;
 }
 
@@ -102,10 +102,11 @@ sub paint {
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
     my $grid = App::GUI::Cellgraph::Grid::get( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'data'} );
 
+    my $sketch_length = exists $self->{'data'}{'sketch'} ? $self->{'data'}{'sketch'} : 0;
     if ($self->{'data'}{'global'}{'paint_direction'} eq 'inside_out') {
         my $mid = int($self->{'cells'}{'x'} / 2);
         if ($self->{'cells'}{'x'} % 2){
-            for my $y (1 .. $mid) {
+            for my $y (1 .. ($sketch_length ? $sketch_length : $mid)) {
                 for my $x ($mid - $y .. $mid -1 + $y){
                     if ($grid->[$y][$x]){
                         $dc->SetPen( $pen[$grid->[$y][$x]] );
@@ -124,7 +125,7 @@ sub paint {
                     if $grid->[0][$mid];
             }
         } else {
-            for my $y (0 .. int($self->{'cells'}{'y'} / 2) + 1) {
+            for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1))) {
                 last if $y >= $mid;
                 for my $x ($mid - $y .. $mid + $y){
                     if ($grid->[$y][$x]){
@@ -144,7 +145,7 @@ sub paint {
             }
         }
     } elsif ($self->{'data'}{'global'}{'paint_direction'} eq 'outside_in') {
-        for my $y (0 .. int($self->{'cells'}{'y'} / 2) + 1) {
+        for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1)) ) {
             last if $y >= $self->{'cells'}{'x'} - 2 - $y;
             for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
                 if ($grid->[$y][$x]){
@@ -159,8 +160,8 @@ sub paint {
             }
         }
     } else {
-        for my $x (0 .. $self->{'cells'}{'x'} - 1){
-            for my $y (0 .. $self->{'cells'}{'y'} - 1) {
+        for my $y (0 .. ($sketch_length ? $sketch_length : $self->{'cells'}{'y'} - 1)) {
+            for my $x (0 .. $self->{'cells'}{'x'} - 1){
                 if ($grid->[$y][$x]){
                     $dc->SetPen( $pen[$grid->[$y][$x]] );
                     $dc->SetBrush( $brush[$grid->[$y][$x]] );
