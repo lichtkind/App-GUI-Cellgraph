@@ -214,9 +214,45 @@ Its name will be asked for by a dialog. If you type in an already used
 name it will ask again, til the name is unique or you press C<Cancel>.
 C<Del> just deletes the currently selected color set.
 
+The second section from top contains three buttons that are just functions
+calculating new colors based up the colors in the section below. The result
+will be also inserted in the row below. The three values beside the buttons
+are just arguments to the functions. The gap in this row is by intention,
+since both buttons on the left part have this one value as argument and
+the third button on the right has the two arguments on the right.
+C<Gray> is the is the simplest function, since it produces just a gray
+gradient from white as (the leftmost) color 0 to black, stretching over
+all currently used states. The only argument (dynamics) has the default
+value of 1, which results in a linear gradient. Larger values let it lean
+to the right and smaller to the left - meaning that the difference between
+the first and second color on the left is the largest, becoming smaller
+and smaller toward the left end. C<Gradient> does almost the same, but
+uses the leftmost and current (highlighted by arrow) color as input
+and computes such a gradient between them. C<Complement> computes
+complementary colors to the currently highlighted and does also fill
+them into the positions from the left most to the current. The two
+arguments are maximal variation in saturation and lightness.
 
+As already mentioned the third sections displays the currently used colors.
+The left most color represents state 0, the one right beside is state 1
+and so on. Colored squares with an big I<X> below are not currently used.
+(Set the amount of currently used states in the I<Global> panel.)
+Any click on a color square will select this color as the current one.
+It gets highlighted by an arrow below and the next sections always refer
+to this current color.
 
+The fourth section allows you to tweak the current color by changing its
+red, green or blue component (rows I<R> I<G> and I<B>). The next three
+rows are about H(ue) (which color on rainbow), S(saturation) (from grey
+to most colorful) and L(ightness) (black to color to white). In each
+row you can either insert the value numbers directly by double clicking
+the number display and typing it. This value can be incresed or decreased
+by clicking the C<+> and C<-> buttons or by moving the slider on the right.
 
+The fifth section works almost like the first. It is a store for single
+colors, that loads or stores the currently highlighted color. The only
+difference is that there is no C<New> button, since every saved color
+will always get a new name.
 
 =head2 Menu
 

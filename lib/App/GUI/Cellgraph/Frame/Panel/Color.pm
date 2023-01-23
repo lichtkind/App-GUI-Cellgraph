@@ -201,7 +201,7 @@ sub set_current_color {
     $self->{'state_colors'}[$self->{'current_state'}] = color( $color );
     $self->{'state_pic'}[$self->{'current_state'}]->set_color( $color );
     $self->{'browser'}->set_data( $color );
-    $self->{'call_back'}->('color');
+    $self->{'call_back'}->( 'color' ); # update whole app
 }
 
 sub set_all_colors {
@@ -209,10 +209,10 @@ sub set_all_colors {
     return unless @color == 9;
     map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
     @{$self->{'state_colors'}} = @color;
-    # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
     $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
+    # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
     $self->select_state;
-    $self->{'call_back'}->('color');
+    $self->{'call_back'}->( 'color' ); # update whole app
 }
 
 sub get_all_colors { @{$_[0]->{'state_colors'}} }
