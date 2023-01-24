@@ -11,13 +11,12 @@ sub new {
     my ( $class, $parent ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-
     $self->{'state_count'} = 2;
     $self->{'length'} = my $length = 20;
     $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
+    $self->{'call_back'} = sub {};
 
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
-
     my $rule_cell_size = 20;
     $self->{'switch'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
     $self->{'start_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
@@ -31,10 +30,13 @@ sub new {
     #$self->{'rule_type_lbl'} = Wx::StaticText->new( $self, -1, 'Rules :');
     #$self->{'rule_size'} = Wx::ComboBox->new( $self, -1, 3,        [-1,-1],[65, -1], [2, 3, 4, 5], &Wx::wxTE_READONLY);
     #$self->{'rule_type'} = Wx::ComboBox->new( $self, -1, 'pattern', [-1,-1],[110, -1], [qw/pattern average median/], &Wx::wxTE_READONLY);
-    $self->{'call_back'} = sub {};
 
     $self->{'switch'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
     $self->{'repeat_start'}->SetToolTip('repeat this pattern as the starting row is long');
+    $self->{'btn'}{'one'}->SetToolTip('reset cell states in starting row to initial values');
+    $self->{'btn'}{'rnd'}->SetToolTip('choose random cell states in starting row');
+    $self->{'btn'}{'next'}->SetToolTip('increment number that summarizes all cell states of starting row');
+    $self->{'btn'}{'prev'}->SetToolTip('decrement number that summarizes all cell states of starting row');
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->next_start;  $self->{'call_back'}->() }) ;
@@ -120,8 +122,7 @@ sub get_number {
 sub get_list {
     my ($self) = @_;
     my @list = map { $self->{'switch'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
-    pop @list while @list and not $list[-1];
-    # remove starting 0
+    pop @list while @list and not $list[-1];    # remove starting 0
     unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
     @list;
 }
@@ -150,7 +151,7 @@ sub SetCallBack {
     $self->{'call_back'} = $code;
 }
 
-sub random_start { $_[0]->{'start_int'}->SetValue( int rand $_[0]->{'max_value'} ) }
+sub random_start { $_[0]->set_number( int rand $_[0]->{'max_value'} ) }
 sub next_start { $_[0]->set_number( $_[0]->{'start_int'}->GetValue + 1 ) }
 sub prev_start {
     my ($self) = @_;
