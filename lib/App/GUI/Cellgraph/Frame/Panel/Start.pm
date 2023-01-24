@@ -13,12 +13,14 @@ sub new {
 
 
     $self->{'state_count'} = 2;
+    $self->{'length'} = my $length = 20;
+    $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
+
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
 
     my $rule_cell_size = 20;
-    $self->{'length'} = my $length = 20;
     $self->{'switch'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
-    $self->{'start_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 78, -1] );
+    $self->{'start_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
     $self->{'start_int'}->SetToolTip('condensed content of start row');
     $self->{'repeat_start'} = Wx::CheckBox->new( $self, -1, '  Repeat');
     $self->{'btn'}{'prev'}  = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
@@ -31,11 +33,12 @@ sub new {
     #$self->{'rule_type'} = Wx::ComboBox->new( $self, -1, 'pattern', [-1,-1],[110, -1], [qw/pattern average median/], &Wx::wxTE_READONLY);
     $self->{'call_back'} = sub {};
 
-    #$self->{'rule_type'}->SetToolTip('set rule type');
+    $self->{'switch'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
+    $self->{'repeat_start'}->SetToolTip('repeat this pattern as the starting row is long');
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->next_start;  $self->{'call_back'}->() }) ;
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'one'},  sub { $self->reset_start; $self->{'call_back'}->() }) ;
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'one'},  sub { $self->init;        $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->random_start;$self->{'call_back'}->() }) ;
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_start/;
     $_->SetCallBack( sub { $self->{'start_int'}->SetValue( $self->get_number ); $self->{'call_back'}->() }) for @{$self->{'switch'}};
@@ -67,11 +70,60 @@ sub new {
     $main_sizer->Add( $self->{'repeat_start'}, 0, $all_attr, 23);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, 20 );
 
- #   $main_sizer->Add( $self->{'rule_size'}, 0, $row_attr, 23);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
     $self->init;
     $self;
+}
+
+sub init        { $_[0]->set_settings({ value => 1 }) }
+
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->set_number( $settings->{'value'} );
+}
+
+sub get_settings {
+    my ($self) = @_;
+    {
+        list => [$self->get_list],
+        value => $self->{'start_int'}->GetValue ? 1 : 0,
+        repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
+    }
+}
+
+sub set_number {
+    my ($self, $number) = @_;
+    my $max = ($self->{'state_count'} ** $self->{'length'}) - 1;
+    $number = $self->{'max_value'} if $number > $self->{'max_value'};
+    $number =    0 if $number < 0;
+    $self->{'start_int'}->SetValue( $number );
+    for my $i ( 0 .. $self->{'length'} - 1 ) {
+        my $v = $number % $self->{'state_count'};
+        $self->{'switch'}[$i]->SetValue( $v );
+        $number -= $v;
+        $number /= $self->{'state_count'};
+    }
+}
+
+sub get_number {
+    my ($self) = @_;
+    my $number = 0;
+    for (reverse $self->get_list){
+        $number *= $self->{'state_count'};
+        $number += $_;
+    }
+    $number;
+}
+
+sub get_list {
+    my ($self) = @_;
+    my @list = map { $self->{'switch'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
+    pop @list while @list and not $list[-1];
+    # remove starting 0
+    unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
+    @list;
 }
 
 sub update_cell_colors {
@@ -86,58 +138,10 @@ sub update_cell_colors {
         } else { $do_recolor++ }
     }
     return unless $do_recolor;
-    $self->{'switch'}[$_]->SetColors( [map {[$_->rgb]} @colors] ) for 0 .. $self->{'length'} - 1;
-}
-
-sub get_number {
-    my ($self) = @_;
-    my $number = 0;
-    for (reverse $self->get_list){
-        $number <<= 1;
-        $number++ if $_;
-    }
-    $number;
-}
-
-sub get_list {
-    my ($self) = @_;
-    my @list = map { $self->{'switch'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
-    pop @list while @list and not $list[-1];
-    # remove starting 0
-    unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
-    @list;
-}
-
-
-sub init        { $_[0]->set_settings({ value => 1 }) }
-sub reset_start { $_[0]->set_start_row(1) }
-
-sub get_settings {
-    my ($self) = @_;
-    {
-        list => [$self->get_list],
-        value => $self->{'start_int'}->GetValue ? 1 : 0,
-        repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
-    }
-}
-
-sub set_settings {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH';
-    $self->set_start_row( $settings->{'value'} );
-}
-
-sub set_start_row {
-    my ($self, $int) = @_;
-    $self->{'start_int'}->SetValue( $int );
-    my $max = (2 ** $self->{'length'}) - 1;
-    $int = int $int;
-    $int = $max if $int > $max;
-    $int =    0 if $int < 0;
-    for my $i ( 0 .. $self->{'length'} - 1 ) {
-        $self->{'switch'}[$i]->SetValue($int & 1);
-        $int >>= 1;
-    }
+    my @rgb = map {[$_->rgb]} @colors;
+    $self->{'switch'}[$_]->SetColors( \@rgb ) for 0 .. $self->{'length'} - 1;
+    $self->{'state_count'} = @colors;
+    $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
 }
 
 sub SetCallBack {
@@ -146,30 +150,13 @@ sub SetCallBack {
     $self->{'call_back'} = $code;
 }
 
-sub random_start {
-    my ($self) = @_;
-    my $int = 0;
-    for my $i ( 0 .. $self->{'length'} - 1 ) {
-        my $v = int rand 2;
-        $self->{'switch'}[$i]->SetValue( $v );
-        $int <<= 1;
-        $int++ if $v;
-    }
-    $self->{'start_int'}->SetValue( $int );
-}
-
+sub random_start { $_[0]->{'start_int'}->SetValue( int rand $_[0]->{'max_value'} ) }
+sub next_start { $_[0]->set_number( $_[0]->{'start_int'}->GetValue + 1 ) }
 sub prev_start {
     my ($self) = @_;
     my $int = $self->{'start_int'}->GetValue;
     $int-- if $int > 1;
-    $self->set_start_row( $int );
-}
-
-sub next_start {
-    my ($self) = @_;
-    my $int = $self->{'start_int'}->GetValue;
-    $int++;
-    $self->set_start_row( $int );
+    $self->set_number( $int );
 }
 
 1;
