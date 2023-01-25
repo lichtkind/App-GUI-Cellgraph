@@ -140,7 +140,7 @@ sub update_cell_colors {
     }
     return unless $do_recolor;
     my @rgb = map {[$_->rgb]} @colors;
-    $self->{'switch'}[$_]->SetColors( \@rgb ) for 0 .. $self->{'length'} - 1;
+    $self->{'switch'}[$_]->SetColors( @rgb ) for 0 .. $self->{'length'} - 1;
     $self->{'state_count'} = @colors;
     $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
 }

@@ -6,9 +6,9 @@ package App::GUI::Cellgraph::RuleGenerator;
 
 sub new {
     my ($pkg, $size, $alphabet) = @_;
-    my $self = { size => $size, states => $alphabet, input_list => [], 
+    my $self = { size => $size, states => $alphabet, input_list => [],
                  avg => 0, parts => $alphabet ** $size }; # count of partial rules
-    
+
     my @input = (0) x $size;
     $self->{'input_list'}[0] = [@input];
     $self->{'input_pattern'}  [0] = join '', @input;
@@ -31,7 +31,7 @@ sub new {
             }
             $self->{'input_list'}[$i]    = [reverse @input];
             $self->{'input_pattern'}[$i] = join '', @input;
-        }            
+        }
     }
     $self->{'part_iterator'} = [ 0 .. $self->{'parts'} - 1];
     for my $i (@{$self->{'part_iterator'}}){
@@ -48,10 +48,14 @@ sub new {
 
 sub part_rule_iterator { @{$_[0]->{'part_iterator'}} }
 
+sub sum_mode { $_[0]->{'avg'} }
+
+sub input_list { @{$_[0]->{'input_list'}} }
+
 sub nr_from_input_list {
     my ($self) = shift;
     my $pattern = join '', @_;
-    $self->{'index_from_pattern'}{ $pattern } if exists $self->{'index_from_pattern'}{ $pattern };    
+    $self->{'index_from_pattern'}{ $pattern } if exists $self->{'index_from_pattern'}{ $pattern };
 }
 
 sub input_list_from_nr {
@@ -120,13 +124,13 @@ sub symmetric_nr {
 }
 
 
-sub inverted_nr { 
+sub inverted_nr {
     my ($self, $nr) = @_;
     $nr //= 0;
     $self->{'max_nr'} - $nr
 }
 
-sub random_nr { 
+sub random_nr {
     my ($self) = @_;
     int rand $self->{'max_nr'} + 1;
 }

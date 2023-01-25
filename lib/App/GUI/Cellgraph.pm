@@ -285,7 +285,7 @@ Herbert Breunung (lichtkind@cpan.org)
 
 =head1 COPYRIGHT
 
-Copyright(c) 2022 by Herbert Breunung
+Copyright(c) 2022-23 by Herbert Breunung
 
 All rights reserved.
 This program is free software and can be used and distributed

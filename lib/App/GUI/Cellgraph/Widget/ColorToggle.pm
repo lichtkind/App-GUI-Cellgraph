@@ -60,13 +60,12 @@ sub SetValue {
 sub GetMaxValue { $#{$_[0]->{'colors'} } }
 
 sub SetColors {
-    my ( $self, $colors ) = @_;
-    return unless ref $colors eq 'ARRAY' and @$colors > 1;
-    for (@$colors){ return unless ref $_ eq 'ARRAY' and @$_ == 3 }
-    $self->{'colors'} = $colors;
-    $self->{'init'} = $#$colors if $self->{'init'} > $#$colors;
-    $self->SetValue( $#$colors ) if $self->{'value'} > $#$colors;
-    $self->{'value'} = 0 if $self->{'value'} > $#{$self->{'colors'}};
+    my ( $self, @colors ) = @_;
+    return unless @colors > 1;
+    for (@colors){ return unless ref $_ eq 'ARRAY' and @$_ == 3 }
+    $self->{'colors'} = \@colors;
+    $self->{'init'} = $#colors if $self->{'init'} > $#colors;
+    $self->SetValue( $#colors ) if $self->{'value'} > $#colors;
     $self->Refresh;
 }
 

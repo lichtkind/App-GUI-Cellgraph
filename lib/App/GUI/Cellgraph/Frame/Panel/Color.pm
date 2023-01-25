@@ -70,7 +70,7 @@ sub new {
         $self->select_state();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
-        my @new_colors = $self->{'state_colors'}[0]->gradient_to( $self->{'state_colors'}[$self->{'current_state'}], $self->{'current_state'}+1, $self->{'dynamics'}->GetValue);
+        my @new_colors = $self->{'state_colors'}[0]->rgb_gradient_to( $self->{'state_colors'}[$self->{'current_state'}], $self->{'current_state'}+1, $self->{'dynamics'}->GetValue);
         $self->{'state_colors'}[$_] = $new_colors[$_] for 0 .. $#new_colors;
         $self->{'state_pic'}[$_]->set_color( $new_colors[$_]->rgb_hash ) for 0 .. $#new_colors;
         $self->select_state();

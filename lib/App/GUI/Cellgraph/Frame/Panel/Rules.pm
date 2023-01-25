@@ -67,7 +67,6 @@ sub new {
     $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 5 );
     $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
-    #$main_sizer->AddSpacer( 10 );
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
 
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
@@ -118,16 +117,18 @@ sub regenerate_rules {
     $self->{'input_size'} = $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @input_colors = map {[map { $self->{'state_colors'}[$_] } @$_ ]} @{$self->{'rules'}{'input_list'}};
+    my @$cell_size = $self->{'rules'}->input_list;
+
+say "reg $do_regenerate color $do_recolor";
 
     if ($do_regenerate){
         my $refresh = 0;
-        if (exists $self->{'rule_img'}){
+        if (exists $self->{'rule_input'}){
             $self->{'plate_sizer'}->Clear(1);
-            $self->{'rule_img'} = [];
+            $self->{'rule_input'} = [];
             $self->{'arrow'} = [];
             $self->{'rule_result'} = [];
-            # map { $_->Destroy} @{$self->{'rule_img'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
+            # map { $_->Destroy} @{$self->{'rule_input'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
             $refresh = 1;
         } else {
             $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -135,9 +136,10 @@ sub regenerate_rules {
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
         for my $rule_index ($self->{'rules'}->part_rule_iterator){
-            $self->{'rule_img'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new(
-                                               $self->{'rule_plate'}, $self->{'rule_square_size'}, $input_colors[$rule_index] );
-            $self->{'rule_img'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+            $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
+                                      $self->{'rule_plate'}, $self->{'rule_square_size'},
+                                      $cell_size[$rule_index], $self->{'state_colors'},  $self->{'rules'}->sum_mode );
+            $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
 
             $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new(
                                              $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'},
@@ -152,7 +154,7 @@ sub regenerate_rules {
         for my $rule_index ($self->{'rules'}->part_rule_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);
-            $row_sizer->Add( $self->{'rule_img'}[$rule_index], 0, &Wx::wxGROW);
+            $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
             $row_sizer->AddSpacer(15);
             $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
             $row_sizer->AddSpacer(15);
@@ -164,12 +166,21 @@ sub regenerate_rules {
         }
         $self->Layout if $refresh;
     } elsif ($do_recolor) {
-
+say "recolor";
+        my @rgb = map {[$_->rgb]} @colors;
+        $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
+        $self->{'rule_result'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
     }
 
 }
 
 sub init { $_[0]->set_settings( { nr => 18, avg => 0 } ) }
+
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
+    $self->set_rule( $settings->{'nr'} );
+}
 
 sub get_settings {
     my ($self) = @_;
@@ -178,12 +189,6 @@ sub get_settings {
         nr => $self->{'rule_nr'}->GetValue,
         avg => $self->{'rules'}{'avg'},
     }
-}
-
-sub set_settings {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    $self->set_rule( $settings->{'nr'} );
 }
 
 sub get_output_list {

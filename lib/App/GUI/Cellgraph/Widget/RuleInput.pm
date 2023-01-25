@@ -7,14 +7,18 @@ package App::GUI::Cellgraph::Widget::RuleInput; # passive image
 use base qw/Wx::Panel/;
 
 sub new {
-    my ( $class, $parent, $cell_size, $colors) = @_;
+    my ( $class, $parent, $cell_size, $pattern, $colors, $type ) = @_;
 
-    return unless ref $colors eq 'ARRAY' and @$colors;
+    return unless ref $pattern eq 'ARRAY' and ref $colors eq 'ARRAY'
+              and @$colors and  @$pattern == @$colors;
     for (@$colors){ return unless ref $_ eq 'ARRAY' and @$_ == 3}
-    my $cell_count = @$colors;
+    $self->{'colors'} = $colors;
+    $self->{'sum_type'} = $type;
+    my $cell_count = @$pattern;
     my $x = ($cell_size + 1) * $cell_count + 1;
     my $y = $cell_size + 2;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
+    $self->{'pattern'} = $pattern;
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $cpanel, $event ) = @_;
