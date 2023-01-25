@@ -117,9 +117,7 @@ sub regenerate_rules {
     $self->{'input_size'} = $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @$cell_size = $self->{'rules'}->input_list;
-
-say "reg $do_regenerate color $do_recolor";
+    my @sub_rule_pattern = ($self->{'rules'}->input_list);
 
     if ($do_regenerate){
         my $refresh = 0;
@@ -138,7 +136,8 @@ say "reg $do_regenerate color $do_recolor";
         for my $rule_index ($self->{'rules'}->part_rule_iterator){
             $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
                                       $self->{'rule_plate'}, $self->{'rule_square_size'},
-                                      $cell_size[$rule_index], $self->{'state_colors'},  $self->{'rules'}->sum_mode );
+                                      $sub_rule_pattern[$rule_index], $self->{'state_colors'}, $self->{'rules'}->sum_mode );
+
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
 
             $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new(
@@ -162,16 +161,14 @@ say "reg $do_regenerate color $do_recolor";
             $row_sizer->AddSpacer(40);
             $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
-            $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10); # ->Insert(4,
+            $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10);
         }
         $self->Layout if $refresh;
     } elsif ($do_recolor) {
-say "recolor";
         my @rgb = map {[$_->rgb]} @colors;
         $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
         $self->{'rule_result'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
     }
-
 }
 
 sub init { $_[0]->set_settings( { nr => 18, avg => 0 } ) }

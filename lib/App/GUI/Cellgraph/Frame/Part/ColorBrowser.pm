@@ -24,7 +24,6 @@ sub new {
     $self->{'hue'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 290, ' H  ', "hue of $type color",         0, 359,  $init_color->hue);
     $self->{'sat'}   =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 294, ' S   ', "saturation of $type color",  0, 100,  $init_color->saturation);
     $self->{'light'} =  App::GUI::Cellgraph::Widget::SliderCombo->new( $self, 294, ' L   ', "lightness of $type color",   0, 100,  $init_color->lightness);
-   # $self->{'display'}= App::GUI::Cellgraph::Widget::ColorDisplay->new( $self, 25, 10, $init);
    # $self->{'display'}->SetToolTip("$type color monitor");
 
     my $rgb2hsl = sub {
@@ -33,7 +32,6 @@ sub new {
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
-        # $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
         $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
@@ -42,7 +40,6 @@ sub new {
         $self->{'red'}->SetValue( $rgb[0], 1 );
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
-        #$self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
         $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     $self->{'red'}->SetCallBack( $rgb2hsl );
@@ -75,12 +72,12 @@ sub init {
 sub get_data { $_[0]->{'display'}->get_color( ) }
 
 sub set_data {
-    my ( $self, $data ) = @_;
+    my ( $self, $data, $silent ) = @_;
     return unless ref $data eq 'HASH'
         and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
     $self->{'red'}->SetValue( $data->{'red'}, 1);
     $self->{'green'}->SetValue( $data->{'green'}, 1);
-    $self->{'blue'}->SetValue( $data->{'blue'} );
+    $self->{'blue'}->SetValue( $data->{'blue'}, $silent );
 }
 
 sub SetCallBack {

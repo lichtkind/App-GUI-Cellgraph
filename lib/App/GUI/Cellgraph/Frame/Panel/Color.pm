@@ -159,7 +159,7 @@ sub select_state {
     $self->{'state_marker'}[$self->{'current_state'}]->set_state( $old_marker_state );
     $self->{'state_marker'}[ $state ]->set_state('active');
     $self->{'current_state'} = $state;
-    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash );
+    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash, 'silent' );
 }
 
 sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#000000', dynamics => 1, delta_S => 0, delta_L => 0 } ) }
