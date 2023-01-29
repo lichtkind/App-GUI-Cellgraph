@@ -184,7 +184,7 @@ sub get_settings {
     {
         f => [$self->get_output_list],
         nr => $self->{'rule_nr'}->GetValue,
-        avg => $self->{'rules'}{'avg'},
+        sum_mode => $self->{'rules'}->sum_mode,
     }
 }
 

@@ -63,8 +63,7 @@ sub now {
 sub compile_iterator {
     my ($settings, $comp_size_x) = @_;
     my $transfer_function = $settings->{'rules'}{'f'}; # state transfer
-# say '--'; say for @$transfer_function;
-    my $action_function = $settings->{'mobile'}{'f'};  #
+    my $action_function = $settings->{'mobile'}{'f'};  # action state transfer function
     my $rule_size = $settings->{'global'}{'input_size'};
     my $act_size = 3;
     my $states = $settings->{'global'}{'state_count'};
@@ -72,73 +71,59 @@ sub compile_iterator {
     my $action_count = $states ** $act_size;
     my $x_skew_factor = int $rule_size / 2; # propagation skew
     my $a_skew_factor = 1;
-    my $ignore_current_cell = $rule_size % 2;
+    my $ignore_current_cell = !($rule_size % 2);
+    my $sum_mode = $settings->{'rules'}{'sum_mode'};
     my $last_x_index = $comp_size_x - 1;
+    my $row_stop = $last_x_index - $x_skew_factor; # end of normal processing
+    my $self_factor = $sum_mode ? 1 : $states ** ($x_skew_factor-1); # helper to remove self state value
+    my $circular_grid = $settings->{'global'}{'circular_grid'};
+
+    # eval code macros
+    my $shift_val = $sum_mode ? '' : '$state *= '.$states.';';
+    my $crop_val  = $sum_mode ? '$state -= $state_row->[$cell_i - '.($x_skew_factor+1).'];' : '$state %= '.$subrule_count.';';
 
     # eval code head
     my $code = 'sub { my ($state_row, $action_row) = @_;'."\n";
     $code .= 'my ($new_state_row, $new_action_row, $arow) = ([], [(0) x $comp_size_x], [(0) x $comp_size_x]);'."\n";
     $code .= 'my $state = 0; my $active = 0;'."\n";
-    # row start #say "tf -> ", int @$transfer_function, "  take avg ",$settings->{'rules'}{'avg'};
-    my $shift_val = $settings->{'rules'}{'avg'} ? '' : '$state *= '.$states.';';
-    my $crop_val = '$state %= '.$subrule_count.';';
-    if ($settings->{'global'}{'circular_grid'}){
+    # compute state rules - row start, first element
+    if ($circular_grid){
         $code .= $shift_val.'$state += $state_row->['.$_.'];'."\n" for $comp_size_x - $x_skew_factor .. $last_x_index;
     }
-    $code .= $shift_val.'$state += $state_row->[0];' if $ignore_current_cell;
+    $code .= $shift_val.'$state += $state_row->[0];' unless $ignore_current_cell;
     $code .= $shift_val.'$state += $state_row->['.$_.'];'."\n" for reverse 1 .. $x_skew_factor;
     $code .= '$new_state_row->[0] = $transfer_function->[$state];'."\n";
     $code .= '$arow->[0] = $action_function->[$state];'."\n";
-    for my $cell_i( 1 .. $x_skew_factor - 1){
-        $code .= $settings->{'rules'}{'avg'}
-              ? '$state -= $state_row->['.($comp_size_x - $x_skew_factor + $cell_i).'];'."\n"
-              : $shift_val . $crop_val."\n";
-        unless ($ignore_current_cell){
-            $code .= $settings->{'rules'}{'avg'}
-                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'."\n"
-                   : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);'."\n";
-        }
-        $code .= '$state += $state_row->['.($cell_i + $x_skew_factor).'];';
+    # - next elements (without state value crop)
+    for my $cell_i ( 1 .. $x_skew_factor ){
+        $code .= '$state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
+        $code .= $shift_val . '$state += $state_row->['.($cell_i + $x_skew_factor).'];';
         $code .= '$new_state_row->['.$cell_i.'] = $transfer_function->[$state];';
         $code .= '$arow->['.$cell_i.'] = $action_function->[$state];';
     }
-    my $plus_factor = $states ** ($x_skew_factor);
-    my $minus_factor = $states ** ($x_skew_factor-1);
-    my $row_stop = $last_x_index - $x_skew_factor;
-    # main loop
-    $code .= 'for my $cell_i'." ($x_skew_factor .. $row_stop){"."\n";
-
-    unless ($ignore_current_cell){
-        $code .= $settings->{'rules'}{'avg'}
-               ? '  $state += $state_row->[$cell_i - 1] - $state_row->[$cell_i];'."\n"
-               : '  $state += ( $state_row->[$cell_i - 1] * $plus_factor) - ($state_row->[$cell_i] * $minus_factor);'."\n";
-    }
-    $code .= $shift_val unless $settings->{'rules'}{'avg'};
-    $code .= '  $state += $state_row->[$cell_i + '.$x_skew_factor.'];'."\n";
-    $code .= $settings->{'rules'}{'avg'} ? '$state -= $state_row->[$cell_i - $x_skew_factor - 1];'."\n" : $crop_val;
+    # - main loop
+    $code .= '  for my $cell_i ('.($x_skew_factor + 1)." .. $row_stop ){\n";
+    $code .= '  $state += '.$self_factor.' * ($state_row->[$cell_i - 1] - $state_row->[$cell_i]);'."\n" if $ignore_current_cell;
+    $code .= $shift_val.' $state += $state_row->[$cell_i + '.$x_skew_factor.'];'."\n";
+    $code .= $crop_val;
     $code .= '  $new_state_row->[$cell_i] = $transfer_function->[$state];'."\n";
     $code .= '  $arow->[$cell_i] = $action_function->[$state];';
     $code .= '}'."\n";
-    # loop tail
-    for my $cell_i( $comp_size_x - $x_skew_factor .. $last_x_index){
-        $code .= $settings->{'rules'}{'avg'}
-              ? '$state -= $state_row->['.($cell_i - $x_skew_factor - 1).'];'."\n"
-              : $shift_val . $crop_val."\n";
-        unless ($ignore_current_cell){
-            $code .= $settings->{'rules'}{'avg'}
-                   ? '$state += $state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.'];'."\n"
-                   : '$state += ( $state_row->['.($cell_i - 1).'] * $plus_factor) - ($state_row->['.$cell_i.'] * $minus_factor);'."\n";
-        }
-        $code .= '$state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];' if $settings->{'global'}{'circular_grid'};
+    # - last elements (only add next state val if circular)
+    for my $cell_i ( $row_stop + 1 .. $last_x_index){
+        $code .= '$state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
+        $code .= $shift_val;
+        $code .= '$state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];'."\n" if $circular_grid;
         $code .= '$new_state_row->['.$cell_i.'] = $transfer_function->[$state];'."\n";
         $code .= '$arow->['.$cell_i.'] = $action_function->[$state];';
     };
+
     # compute action rules
     $code .= '$new_action_row->['.$last_x_index.'] |= 1 if $arow->[0] & 4;'."\n" if $settings->{'global'}{'circular_grid'};
     $code .= '$new_action_row->[0] |= 1 if $arow->[0] & 2;'."\n";
     $code .= '$new_action_row->[1] |= 1 if $arow->[0] & 1;'."\n";
 
-    $code .= 'for my $cell_i ( 1 ..'.($last_x_index - 1)."){\n";
+    $code .= 'for my $cell_i ( 1 .. '.($last_x_index - 1)." ){\n";
     $code .= '  $active = $arow->[$cell_i];'."\n";
     $code .= '  $new_action_row->[$cell_i - 1 ] |= 1 if $active & 4;'."\n";
     $code .= '  $new_action_row->[$cell_i     ] |= 1 if $active & 2;'."\n";
@@ -150,10 +135,11 @@ sub compile_iterator {
     $code .= '$new_action_row->[ 0 ] |= 1                     if $active & 1;'."\n" if $settings->{'global'}{'circular_grid'};
 
     # apply action rules
-    $code .= 'for ( 0 ..'.$last_x_index."){\n";
+    $code .= 'for ( 0 .. '.$last_x_index." ){\n";
     $code .= '    $new_state_row->[$_] = $state_row->[$_] unless $action_row->[$_];'."\n";
     $code .= "}\n".'($new_state_row, $new_action_row) }'; # return solution
-    eval $code; # say $code;
+    # say $code;
+    eval $code;
 }
 
 1;

@@ -4,7 +4,7 @@ use Wx;
 
 package App::GUI::Cellgraph::Frame::Panel::Mobile;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::RuleGenerator;
+use App::GUI::Cellgraph::Compute::Rule;
 use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
@@ -170,7 +170,7 @@ sub regenerate_rules {
     return unless $do_regenerate or $do_recolor;
     $self->{'state_count'} = $state_count;
     $self->{'input_size'} = $input_size;
-    $self->{'rules'} = App::GUI::Cellgraph::RuleGenerator->new( $self->{'input_size'}, $self->{'state_count'} );
+    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
     my @sub_rule_pattern = ($self->{'rules'}->input_list);
     if ($do_regenerate){
