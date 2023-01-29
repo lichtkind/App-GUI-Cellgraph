@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::RuleGenerator;
+package App::GUI::Cellgraph::Compute::Rule;
 
 sub new {
     my ($pkg, $size, $alphabet) = @_;

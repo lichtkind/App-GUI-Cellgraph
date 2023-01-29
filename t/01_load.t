@@ -4,8 +4,8 @@ use lib 'lib';
 use Test::More tests => 21;
 
 use_ok( 'App::GUI::Cellgraph::Settings' );
-use_ok( 'App::GUI::Cellgraph::Grid' );
-use_ok( 'App::GUI::Cellgraph::RuleGenerator' );
+use_ok( 'App::GUI::Cellgraph::Compute::Grid' );
+use_ok( 'App::GUI::Cellgraph::Compute::Rule' );
 use_ok( 'App::GUI::Cellgraph::Dialog::About' );
 use_ok( 'App::GUI::Cellgraph::Widget::Action' );
 use_ok( 'App::GUI::Cellgraph::Widget::ColorDisplay' );

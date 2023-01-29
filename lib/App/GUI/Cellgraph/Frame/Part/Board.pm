@@ -4,10 +4,9 @@ use Wx;
 
 package App::GUI::Cellgraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
-my $TAU = 6.283185307;
 
+use App::GUI::Cellgraph::Compute::Grid;
 use Graphics::Toolkit::Color qw/color/;
-use App::GUI::Cellgraph::Grid;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -100,7 +99,7 @@ sub paint {
     my $color = Wx::Colour->new( 0, 0, 0 );
     $dc->SetPen( Wx::Pen->new( $color, 1, &Wx::wxPENSTYLE_SOLID ) );
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
-    my $grid = App::GUI::Cellgraph::Grid::get( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'data'} );
+    my $grid = App::GUI::Cellgraph::Compute::Grid::now( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'data'} );
 
     my $sketch_length = exists $self->{'data'}{'sketch'} ? $self->{'data'}{'sketch'} : 0;
     if ($self->{'data'}{'global'}{'paint_direction'} eq 'inside_out') {

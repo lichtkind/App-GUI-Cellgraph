@@ -64,23 +64,18 @@ sub new {
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->{'state_colors'} = [ color('white')->gradient_to('black', $self->{'state_count'}, $self->{'dynamics'}->GetValue) ];
-        $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-        $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
-        $self->select_state();
+        $self->set_all_colors( color('white')->gradient_to( 'black', $self->{'state_count'}, $self->{'dynamics'}->GetValue) );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
-        my @new_colors = $self->{'state_colors'}[0]->rgb_gradient_to( $self->{'state_colors'}[$self->{'current_state'}], $self->{'current_state'}+1, $self->{'dynamics'}->GetValue);
-        $self->{'state_colors'}[$_] = $new_colors[$_] for 0 .. $#new_colors;
-        $self->{'state_pic'}[$_]->set_color( $new_colors[$_]->rgb_hash ) for 0 .. $#new_colors;
-        $self->select_state();
+        my @c = $self->get_all_colors;
+        my @new_colors = $c[0]->rgb_gradient_to( $c[ $self->{'current_state'} ], $self->{'current_state'}+1, $self->{'dynamics'}->GetValue);
+        $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'complement'}, sub {
-        my @new_colors = $self->{'state_colors'}[ $self->{'current_state'} ]->complementary( $self->{'current_state'}+1, $self->{'Sdelta'}->GetValue, $self->{'Ldelta'}->GetValue);
+        my @c = $self->get_all_colors;
+        my @new_colors = $c[ $self->{'current_state'} ]->complementary( $self->{'current_state'}+1, $self->{'Sdelta'}->GetValue, $self->{'Ldelta'}->GetValue);
         push @new_colors, shift @new_colors;
-        $self->{'state_colors'}[$_] = $new_colors[$_] for 0 .. $#new_colors;
-        $self->{'state_pic'}[$_]->set_color( $new_colors[$_]->rgb_hash ) for 0 .. $#new_colors;
-        $self->select_state();
+        $self->set_all_colors( @new_colors );
     });
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
@@ -206,11 +201,11 @@ sub set_current_color {
 
 sub set_all_colors {
     my ($self, @color) = @_;
-    return unless @color == 9;
+    return unless @color;
     map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
-    @{$self->{'state_colors'}} = @color;
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
+    $self->{'state_colors'}[$_] = $color[$_] for 0 .. $#color;
     # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
     $self->select_state;
     $self->{'call_back'}->( 'color' ); # update whole app
 }
