@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.2';
+our $VERSION = '0.25';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -74,8 +74,11 @@ Other drawing  directions are optional and explained as part of the
 I<Global> panel.
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/126.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/30.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/kreuz.png"    alt=""  width="300" height="300">
 </p>
 
 
@@ -279,10 +282,13 @@ If you want larger squares, please change that in the settings.
 
 =head1 SEE ALSO
 
-L<App::GUI::Harmonograph>
+L<App::GUI::Chaosgraph>
 
 L<App::GUI::Dynagraph>
 
+L<App::GUI::Harmonograph>
+
+L<App::GUI::Sierpingraph>
 
 =head1 AUTHOR
 
