@@ -77,7 +77,11 @@ sub set_data {
         and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
     $self->{'red'}->SetValue( $data->{'red'}, 1);
     $self->{'green'}->SetValue( $data->{'green'}, 1);
-    $self->{'blue'}->SetValue( $data->{'blue'}, $silent );
+    $self->{'blue'}->SetValue( $data->{'blue'}, 1 );
+    my @hsl = Graphics::Toolkit::Color::Value::hsl_from_rgb( @$data{qw/red green blue/} );
+    $self->{'hue'}->SetValue( $hsl[0], 1 );
+    $self->{'sat'}->SetValue( $hsl[1], 1 );
+    $self->{'light'}->SetValue( $hsl[2], 1 );
 }
 
 sub SetCallBack {

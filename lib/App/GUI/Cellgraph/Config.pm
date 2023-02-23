@@ -5,7 +5,8 @@ use File::Spec;
 
 package App::GUI::Cellgraph::Config;
 
-my $file = '.cellgraph';
+my $file_name = File::Spec->catfile( File::HomeDir->my_home, '.config', 'cellgraph');
+
 my $dir = '';
 my $default = {
     file_base_dir => '~',
@@ -179,15 +180,10 @@ my $default = {
 
 sub new {
     my ($pkg) = @_;
-    for my $d ('.', File::HomeDir->my_home, File::HomeDir->my_documents){
-        my $path = File::Spec->catfile( $d, $file );
-        $dir = $d, last if -r $path;
-    }
-    my $data = $dir
-             ? load( $pkg, File::Spec->catfile( $dir, $file ) )
+    my $data = -r $file_name
+             ? load( $pkg, $file_name )
              : $default;
-    $dir ||= File::HomeDir->my_home;
-    bless { path => File::Spec->catfile( $dir, $file ), data => $data };
+    bless { path => $file_name, data => $data };
 }
 
 sub load {

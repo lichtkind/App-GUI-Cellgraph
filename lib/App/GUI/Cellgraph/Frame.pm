@@ -44,7 +44,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Action');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'color'}, 'Color');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'color'},  'Color');
     $self->{'tabs'}{'type'} = 0;
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
 
@@ -176,34 +176,32 @@ sub get_settings {
 sub set_settings {
     my ($self, $settings) = @_;
     $self->{'panel'}{ $_ }->set_settings( $settings->{ $_ } ) for @{$self->{'panel_names'}};
+    $self->spread_setting_changes;
+    $self->{'panel'}{ $_ }->set_settings( $settings->{ $_ } ) for @{$self->{'panel_names'}};
 }
 
 sub spread_setting_changes {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'global'};
-    $self->{'panel'}{'color'}->set_state_count( $settings->{'global'}{'state_count'} );
+    my ($self) = @_;
+    my $global = $self->{'panel'}{'global'}->get_settings;
+    $self->{'panel'}{'color'}->set_state_count( $global->{'state_count'} );
     my @needed_colors = $self->{'panel'}{'color'}->get_active_colors;
     $self->{'progress'}->set_colors( @needed_colors );
     $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
-    $self->{'panel'}{'rules'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'}, @needed_colors );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $settings->{'global'}{'input_size'}, $settings->{'global'}{'state_count'}, @needed_colors );
+    $self->{'panel'}{'rules'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
+    $self->{'panel'}{'mobile'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
 }
 
 sub sketch {
     my ($self) = @_;
-    my $settings = $self->get_settings;
-    $self->spread_setting_changes( $settings );
-    $settings = $self->get_settings;
-    $self->{'board'}->sketch( $settings );
+    $self->spread_setting_changes();
+    $self->{'board'}->sketch( $self->get_settings );
     $self->{'progress'}->reset;
 }
 
 sub draw {
     my ($self) = @_;
-    my $settings = $self->get_settings;
-    $self->spread_setting_changes( $settings );
-    $settings = $self->get_settings;
-    $self->{'board'}->draw( $settings );
+    $self->spread_setting_changes();
+    $self->{'board'}->draw( $self->get_settings );
     $self->{'progress'}->full;
 }
 

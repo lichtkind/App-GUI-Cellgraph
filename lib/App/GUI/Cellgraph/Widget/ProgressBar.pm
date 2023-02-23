@@ -26,12 +26,12 @@ sub new {
 
         my $l_pos = 0;
         my $l_color = Wx::Colour->new( @{$self->{'color'}[0]} );
-        my $width = int( 1 / (@{$self->{'color'}} - 1) * $x);
+        my $stripe_width = int( 1 / $#{$self->{'color'}} * $x);
         if ($self->{'percentage'}){
             for my $i (1 .. $#{$self->{'color'}}){
-                my $r_pos = $l_pos + $width;
+                my $r_pos = $l_pos + $stripe_width;
                 my $r_color = Wx::Colour->new( @{$self->{'color'}[$i]} );
-                $dc->GradientFillLinear( Wx::Rect->new( $l_pos, 0, $r_pos, $y ), $l_color, $r_color );
+                $dc->GradientFillLinear( Wx::Rect->new( $l_pos, 0, $stripe_width, $y ), $l_color, $r_color, &Wx::wxRIGHT );
                 $l_pos = $r_pos;
                 $l_color = $r_color;
             }

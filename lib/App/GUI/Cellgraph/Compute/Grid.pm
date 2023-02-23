@@ -25,6 +25,7 @@ sub now {
     my $action_grid  = [ [(1) x $comp_size_x] ];
     my $state_grid   = [ [] ];
     my $iterator = compile_iterator($settings, $comp_size_x);
+    die "comile error $@" if $@;
 
     my @start_states = @{ $settings->{'start'}{'list'} }; # init state values
     if ($settings->{'start'}{'repeat'}) {
@@ -79,65 +80,72 @@ sub compile_iterator {
     my $circular_grid = $settings->{'global'}{'circular_grid'};
 
     # eval code macros
-    my $shift_val = $sum_mode ? '' : '$state *= '.$states.';';
-    my $crop_val  = $sum_mode ? '$state -= $state_row->[$cell_i - '.($x_skew_factor+1).'];' : '$state %= '.$subrule_count.';';
+    my $shift_val = $sum_mode ? '' : '  $state *= '.$states.';'."\n";
 
     # eval code head
-    my $code = 'sub { my ($state_row, $action_row) = @_;'."\n";
-    $code .= 'my ($new_state_row, $new_action_row, $arow) = ([], [(0) x $comp_size_x], [(0) x $comp_size_x]);'."\n";
-    $code .= 'my $state = 0; my $active = 0;'."\n";
+    my $code = "sub { \n".'  my ($state_row, $action_row) = @_;'."\n";
+    $code .= '  my ($new_state_row, $new_action_row, $arow) = ([], [(0) x $comp_size_x], [(0) x $comp_size_x]);'."\n";
+    $code .= '  my $state = 0; my $active = 0;'."\n";
     # compute state rules - row start, first element
     if ($circular_grid){
-        $code .= $shift_val.'$state += $state_row->['.$_.'];'."\n" for $comp_size_x - $x_skew_factor .. $last_x_index;
+        $code .= $shift_val.'  $state += $state_row->['.$_.'];'."\n" for $comp_size_x - $x_skew_factor .. $last_x_index;
     }
-    $code .= $shift_val.'$state += $state_row->[0];' unless $ignore_current_cell;
-    $code .= $shift_val.'$state += $state_row->['.$_.'];'."\n" for reverse 1 .. $x_skew_factor;
-    $code .= '$new_state_row->[0] = $transfer_function->[$state];'."\n";
-    $code .= '$arow->[0] = $action_function->[$state];'."\n";
+    $code .= $shift_val.'  $state += $state_row->[0];'."\n" unless $ignore_current_cell;
+    $code .= $shift_val.'  $state += $state_row->['.$_.'];'."\n" for reverse 1 .. $x_skew_factor;
+    $code .= '  $new_state_row->[0] = $transfer_function->[$state];'."\n";
+    $code .= '  $arow->[0] = $action_function->[$state];'."\n";
     # - next elements (without state value crop)
     for my $cell_i ( 1 .. $x_skew_factor ){
-        $code .= '$state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
-        $code .= $shift_val . '$state += $state_row->['.($cell_i + $x_skew_factor).'];';
-        $code .= '$new_state_row->['.$cell_i.'] = $transfer_function->[$state];';
-        $code .= '$arow->['.$cell_i.'] = $action_function->[$state];';
+        $code .= '  $state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
+        $code .=    $shift_val . '  $state += $state_row->['.($cell_i + $x_skew_factor).'];'."\n";
+        if ($circular_grid) {
+            $code .= $sum_mode
+                   ? '    $state -= $state_row->['.($cell_i + $last_x_index - $x_skew_factor).'];'
+                   : '    $state %= '.$subrule_count.';'."\n";
+        }
+        $code .= '  $new_state_row->['.$cell_i.'] = $transfer_function->[$state];'."\n";
+        $code .= '  $arow->['.$cell_i.'] = $action_function->[$state];'."\n";
+
     }
     # - main loop
     $code .= '  for my $cell_i ('.($x_skew_factor + 1)." .. $row_stop ){\n";
-    $code .= '  $state += '.$self_factor.' * ($state_row->[$cell_i - 1] - $state_row->[$cell_i]);'."\n" if $ignore_current_cell;
-    $code .= $shift_val.' $state += $state_row->[$cell_i + '.$x_skew_factor.'];'."\n";
-    $code .= $crop_val;
-    $code .= '  $new_state_row->[$cell_i] = $transfer_function->[$state];'."\n";
-    $code .= '  $arow->[$cell_i] = $action_function->[$state];';
-    $code .= '}'."\n";
+    $code .= '    $state += '.$self_factor.' * ($state_row->[$cell_i - 1] - $state_row->[$cell_i]);'."\n" if $ignore_current_cell;
+    $code .= '  '.$shift_val.'    $state += $state_row->[$cell_i + '.$x_skew_factor.'];'."\n";
+    $code .= $sum_mode
+           ? '    $state -= $state_row->[$cell_i - '.($x_skew_factor+1).'];'."\n"
+           : '    $state %= '.$subrule_count.';'."\n";
+    $code .= '    $new_state_row->[$cell_i] = $transfer_function->[$state];'."\n";
+    $code .= '    $arow->[$cell_i] = $action_function->[$state];'."\n";
+    $code .= '  }'."\n";
     # - last elements (only add next state val if circular)
     for my $cell_i ( $row_stop + 1 .. $last_x_index){
-        $code .= '$state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
-        $code .= $shift_val;
-        $code .= '$state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];'."\n" if $circular_grid;
-        $code .= '$new_state_row->['.$cell_i.'] = $transfer_function->[$state];'."\n";
-        $code .= '$arow->['.$cell_i.'] = $action_function->[$state];';
+        $code .= '  $state += '.$self_factor.' * ($state_row->['.($cell_i - 1).'] - $state_row->['.$cell_i.']);'."\n" if $ignore_current_cell;
+        $code .=    $shift_val;
+        $code .= '  $state += $state_row->['.($cell_i - $comp_size_x + $x_skew_factor).'];'."\n" if $circular_grid;
+        $code .= '  $new_state_row->['.$cell_i.'] = $transfer_function->[$state];'."\n";
+        $code .= '  $arow->['.$cell_i.'] = $action_function->[$state];'."\n";
     };
 
     # compute action rules
-    $code .= '$new_action_row->['.$last_x_index.'] |= 1 if $arow->[0] & 4;'."\n" if $settings->{'global'}{'circular_grid'};
-    $code .= '$new_action_row->[0] |= 1 if $arow->[0] & 2;'."\n";
-    $code .= '$new_action_row->[1] |= 1 if $arow->[0] & 1;'."\n";
+    $code .= '  $new_action_row->['.$last_x_index.'] = 1 if $arow->[0] & 4;'."\n" if $settings->{'global'}{'circular_grid'};
+    $code .= '  $new_action_row->[0] = 1 if $arow->[0] & 2;'."\n";
+    $code .= '  $new_action_row->[1] = 1 if $arow->[0] & 1;'."\n";
 
-    $code .= 'for my $cell_i ( 1 .. '.($last_x_index - 1)." ){\n";
-    $code .= '  $active = $arow->[$cell_i];'."\n";
-    $code .= '  $new_action_row->[$cell_i - 1 ] |= 1 if $active & 4;'."\n";
-    $code .= '  $new_action_row->[$cell_i     ] |= 1 if $active & 2;'."\n";
-    $code .= '  $new_action_row->[$cell_i + 1 ] |= 1 if $active & 1;'."\n";
-    $code .= "}\n";
-    $code .= '$active = $arow->['.$last_x_index.'];'."\n";
-    $code .= '$new_action_row->['.($last_x_index - 1).'] |= 1 if $active & 4;'."\n";
-    $code .= '$new_action_row->['.$last_x_index.']       |= 1 if $active & 2;'."\n";
-    $code .= '$new_action_row->[ 0 ] |= 1                     if $active & 1;'."\n" if $settings->{'global'}{'circular_grid'};
+    $code .= '  for my $cell_i ( 1 .. '.($last_x_index - 1)." ){\n";
+    $code .= '    $active = $arow->[$cell_i];'."\n";
+    $code .= '    $new_action_row->[$cell_i - 1 ] = 1 if $active & 4;'."\n";
+    $code .= '    $new_action_row->[$cell_i     ] = 1 if $active & 2;'."\n";
+    $code .= '    $new_action_row->[$cell_i + 1 ] = 1 if $active & 1;'."\n";
+    $code .= "  }\n";
+    $code .= '  $active = $arow->['.$last_x_index.'];'."\n";
+    $code .= '  $new_action_row->['.($last_x_index - 1).'] = 1 if $active & 4;'."\n";
+    $code .= '  $new_action_row->['.$last_x_index.']       = 1 if $active & 2;'."\n";
+    $code .= '  $new_action_row->[ 0 ] = 1                     if $active & 1;'."\n" if $settings->{'global'}{'circular_grid'};
 
     # apply action rules
-    $code .= 'for ( 0 .. '.$last_x_index." ){\n";
+    $code .= '  for ( 0 .. '.$last_x_index." ){\n";
     $code .= '    $new_state_row->[$_] = $state_row->[$_] unless $action_row->[$_];'."\n";
-    $code .= "}\n".'($new_state_row, $new_action_row) }'; # return solution
+    $code .= "  }\n".'  ($new_state_row, $new_action_row)'."\n}"; # return solution
     # say $code;
     eval $code;
 }

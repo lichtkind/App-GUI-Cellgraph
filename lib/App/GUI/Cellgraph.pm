@@ -58,6 +58,11 @@ choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / S
 choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
 INI file for loading in and tweaking the parameters later
 
+After first use of the program, a config file will be created under
+I<~/.config/cellgraph> in your home directory. It contains mainly
+stored colors and dirs where to load and store setting files.
+You may change it manually or deleted it to reset defaults.
+
 =back
 
 =head1 DESCRIPTION
