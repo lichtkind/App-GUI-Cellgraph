@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -38,22 +38,26 @@ App::GUI::Cellgraph - draw pattern by cellular automata
 
 =item 1.
 
-start the program (cellgraph)
+read this POD
 
 =item 2.
 
-push buttons and see patterns change
+start the program (cellgraph)
 
 =item 3.
 
-push button I<Draw> in right bottom corner to get a full picture
+push buttons and see patterns change
 
 =item 4.
+
+push button I<Draw> in right bottom corner to get a full picture
+
+=item 5.
 
 choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
 (choose image size  in menu beforehand)
 
-=item 5.
+=item 6.
 
 choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
 INI file for loading in and tweaking the parameters later
@@ -75,10 +79,11 @@ I<Global> panel.
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png" alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/kreuz.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/badewand.png" alt=""  width="300" height="300">
 </p>
 
 
