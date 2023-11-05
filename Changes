@@ -1,7 +1,13 @@
-0.27 2023-09-30  lichtkind
+0.30 2023-11-05  lichtkind
 -------
-    * = bug fix
+    * = minor feature and bug fix release
+    * + show if settings are saved in status (*)
+    * + draw item in image menu
+    * + recent settings menu
+    * ~ start with sketch
     * ? little POD update, new screengrab
+    * ! some old GTC API
+    * ! all dialogs remember dir
 
 0.26 2023-09-30  lichtkind
 -------

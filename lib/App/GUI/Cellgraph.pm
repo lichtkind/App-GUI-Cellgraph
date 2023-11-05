@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.27';
+our $VERSION = '0.30';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -287,13 +287,16 @@ If you want larger squares, please change that in the settings.
 
 =head1 SEE ALSO
 
+L<App::GUI::Harmonograph>
+
+L<App::GUI::Juliagraph>
+
 L<App::GUI::Chaosgraph>
 
 L<App::GUI::Dynagraph>
 
-L<App::GUI::Harmonograph>
-
 L<App::GUI::Sierpingraph>
+
 
 =head1 AUTHOR
 

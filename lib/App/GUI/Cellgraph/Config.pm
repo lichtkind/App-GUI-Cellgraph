@@ -190,15 +190,19 @@ sub load {
     my ($self, $file) = @_;
     my $data = {};
     open my $FH, '<', $file or return "could not read $file: $!";
-    my $cat = '';
+    my $category = '';
     while (<$FH>) {
         chomp;
         next unless $_ or substr( $_, 0, 1) eq '#';
-        if    (/^\s*(\w+):/)              { $cat = $1 }
+        if    (/^\s*(\w+):\s*$/)          { $category = $1; $data->{$category} = []; }
+        elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$category}}, $1;          }
+        elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/)
+                                          { $data->{$category} = {} if ref $data->{$category} ne 'HASH';
+                                            $data->{$category}{$1} = [$2, $3, $4];   }
         elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(.+)\s*\]/)
-                                          { $data->{$cat}{$1} = [map {tr/ //d; $_} split /,/, $2] }
-        elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1;          }
-        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = ''         }
+                                          { $data->{$category} = {} if ref $data->{$category} ne 'HASH';
+                                            $data->{$category}{$1} = [map {tr/ //d; $_} split /,/, $2] }
+        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $category =  '';}
     }
     close $FH;
     $data;
