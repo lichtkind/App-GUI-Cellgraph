@@ -17,8 +17,13 @@ my $default = {
     write_dir => '~',
     last_settings => [],
     color_set => {
-        grey => ['#FFF', '#BBB', '#888', '#444','#000' ],
-        basic => ['#FFF', '#F00', '#0F0', '#00F','#000' ],
+        grey => ['#FFF', '#DDD', '#BBB', '#999', '#777','#555', '#333', '#111' ],
+        sunset => ['#FFF', '#F9E595', '#A1680C', '#B63A3E' ],
+        basic  => ['#FFF', '#F00', '#0F0', '#00F', '#FF0', '#0FF', '#F0F','#000' ],
+        dawn   => [ 'white', '#f9d87b', '#936d1a', '#bf3136', '#8f1416', '#99158b', '#1d1d7c', '#111111', 'black' ],
+        day    => [ 'white', '#ffcf3d', '#e25555', '#e65c60', '#4acfab', '#48614a', 'gray20',  '#111111', 'black' ],
+        skye   => [ 'white', '#ffcf3d', '#173fab', '#8e8e8e', '#8e8e8e', '#8e8e8e', '#8e8e8e', '#8e8e8e', 'black' ],
+        sunset => [ 'white', '#f9d87b', '#936d1a', '#bf3136', '#94148e', '#c3baee', '#1d1d7c', '#111111', 'black' ],
     },
     color => {
         bright_blue      => [  98, 156, 249],

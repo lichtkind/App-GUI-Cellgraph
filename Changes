@@ -1,6 +1,14 @@
-0.31 2023-11-05  lichtkind
+0.32 2023-11-17  lichtkind
 -------
-    * = minor feature and bug fix release
+    * = bug fix release
+    * / more color sets
+    * ? new screengrab
+    * ! missing dependencie in dist.ini
+    * ! bad date in Changes
+
+0.31 2023-11-17  lichtkind
+-------
+    * = bug fix release
     * / removed unused dialog classes
     * ! fix link in about dialog
     * ! fix deps in dist ini
