@@ -1,3 +1,10 @@
+0.31 2023-11-05  lichtkind
+-------
+    * = minor feature and bug fix release
+    * / removed unused dialog classes
+    * ! fix link in about dialog
+    * ! fix deps in dist ini
+
 0.30 2023-11-05  lichtkind
 -------
     * = minor feature and bug fix release
@@ -6,7 +13,7 @@
     * + recent settings menu
     * ~ start with sketch
     * ? little POD update, new screengrab
-    * ! some old GTC API
+    * ! deleted some old GTC API
     * ! all dialogs remember dir
 
 0.26 2023-09-30  lichtkind

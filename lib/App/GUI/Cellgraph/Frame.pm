@@ -30,7 +30,6 @@ sub new {
     $self->{'config'} = App::GUI::Cellgraph::Config->new();
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
-    $self->{'saved'} = 1;
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
@@ -155,6 +154,22 @@ sub new {
     $self;
 }
 
+sub update_recent_settings_menu {
+    my ($self) = @_;
+    my $recent = $self->{'config'}->get_value('last_settings');
+    return unless ref $recent eq 'ARRAY';
+    my $set_menu_ID = 11300;
+    $self->{'setting_menu'}->Destroy( $set_menu_ID );
+    my $Recent_ID = $set_menu_ID + 1;
+    $self->{'recent_menu'} = Wx::Menu->new();
+    for (reverse @$recent){
+        my $path = $_;
+        $self->{'recent_menu'}->Append($Recent_ID, $path);
+        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
+    }
+    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
+}
+
 sub init {
     my ($self) = @_;
     $self->{'panel'}{ $_ }->init() for @{$self->{'panel_names'}};
@@ -245,7 +260,13 @@ sub save_image_dialog {
     my ($self) = @_;
     my @wildcard = ( 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg');
     my $wildcard = '|All files (*.*)|*.*';
-    $wildcard = ( join '|', @wildcard[1,0,2]) . $wildcard;
+    my $default_ending = $self->{'config'}->get_value('file_base_ending');
+    $wildcard = ($default_ending eq 'jpg') ? ( join '|', @wildcard[2,1,0]) . $wildcard :
+                ($default_ending eq 'png') ? ( join '|', @wildcard[1,0,2]) . $wildcard :
+                                             ( join '|', @wildcard[0,1,2]) . $wildcard ;
+    my @wildcard_ending = ($default_ending eq 'jpg') ? (qw/jpg png svg/) :
+                          ($default_ending eq 'png') ? (qw/png svg jpg/) :
+                                                       (qw/svg jpg png/) ;
 
     my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '', $wildcard, &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
@@ -253,12 +274,15 @@ sub save_image_dialog {
     return if -e $path and
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
+    my $file_ending = lc substr ($path, -4);
+    unless ($dialog->GetFilterIndex == 3 or # filter set to all endings
+            ($file_ending eq '.jpg' or $file_ending eq '.png' or $file_ending eq '.svg')){
+            $path .= '.' . $wildcard_ending[$dialog->GetFilterIndex];
+    }
     my $ret = $self->write_image( $path );
-    my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
-    $self->{'config'}->set_value('save_dir', $dir);
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
+    else     { $self->{'config'}->set_value('save_dir', App::GUI::Cellgraph::Settings::extract_dir( $path )) }
 }
-
 
 sub open_setting_file {
     my ($self, $file ) = @_;
@@ -275,22 +299,6 @@ sub open_setting_file {
     } else {
          $self->SetStatusText( $settings, 0);
     }
-}
-
-sub update_recent_settings_menu {
-    my ($self) = @_;
-    my $recent = $self->{'config'}->get_value('last_settings');
-    return unless ref $recent eq 'ARRAY';
-    my $set_menu_ID = 11300;
-    $self->{'setting_menu'}->Destroy( $set_menu_ID );
-    my $Recent_ID = $set_menu_ID + 1;
-    $self->{'recent_menu'} = Wx::Menu->new();
-    for (reverse @$recent){
-        my $path = $_;
-        $self->{'recent_menu'}->Append($Recent_ID, $path);
-        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
-    }
-    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
 }
 
 sub write_settings_file {
