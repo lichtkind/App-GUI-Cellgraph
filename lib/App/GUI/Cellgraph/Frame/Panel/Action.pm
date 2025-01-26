@@ -31,20 +31,24 @@ sub new {
     $self->{'btn'}{'2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
     $self->{'btn'}{'!'}  = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'?'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
+    $self->{'btn'}{'1'}->SetToolTip('cells always in active action state (default)');
+    $self->{'btn'}{'2'}->SetToolTip('cells always in toggeling action state');
+    $self->{'btn'}{'!'}->SetToolTip('toggle resulting action states');
+    $self->{'btn'}{'?'}->SetToolTip('set resulting action states to random new values');
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
     my $act_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $act_sizer->AddSpacer( 12 );
-    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Active :' ), 0, $all_attr, 10 );
-    $act_sizer->AddSpacer( 15 );
+    $act_sizer->AddSpacer( 10 );
+    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'State :' ), 0, $all_attr, 10 );
+    $act_sizer->AddSpacer( 0 );
+    $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
+    $act_sizer->AddSpacer( 10 );
     $act_sizer->Add( $self->{'btn'}{'!'}, 0, $all_attr, 5 );
     $act_sizer->Add( $self->{'btn'}{'1'}, 0, $all_attr, 5 );
     $act_sizer->Add( $self->{'btn'}{'2'}, 0, $all_attr, 5 );
     $act_sizer->Add( $self->{'btn'}{'?'}, 0, $all_attr, 5 );
-    $act_sizer->AddSpacer( 15 );
-    $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
     $act_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -97,6 +101,7 @@ sub get_settings {
         threshold => 1,
     }
 }
+sub get_state { $_[0]->get_settings() }
 
 sub set_settings {
     my ($self, $settings) = @_;

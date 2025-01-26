@@ -6,10 +6,10 @@ package App::GUI::Cellgraph::Compute::Grid;
 
 
 sub now {
-    my ($size, $settings) = @_;
-    return unless ref $settings eq 'HASH';
-    my $rule_size = $settings->{'global'}{'input_size'};
-    my $cylinder_grid = $settings->{'global'}{'circular_grid'};
+    my ($size, $state) = @_;
+    return unless ref $state eq 'HASH';
+    my $rule_size = $state->{'global'}{'input_size'};
+    my $cylinder_grid = $state->{'global'}{'circular_grid'};
     my ($size_x, $size_y);  # set grid size 3x * y
     if (ref $size eq 'ARRAY'){
         $size_x = $size->[0];
@@ -24,11 +24,11 @@ sub now {
 
     my $action_grid  = [ [(1) x $comp_size_x] ];
     my $state_grid   = [ [] ];
-    my $iterator = compile_iterator($settings, $comp_size_x);
+    my $iterator = compile_iterator($state, $comp_size_x);
     die "comile error $@" if $@;
 
-    my @start_states = @{ $settings->{'start'}{'list'} }; # init state values
-    if ($settings->{'start'}{'repeat'}) {
+    my @start_states = @{ $state->{'start'}{'list'} }; # init state values
+    if ($state->{'start'}{'repeat'}) {
         my @repeat = @start_states;
         my $prepend_length = int( ($comp_size_x - @start_states) / 2);
         unshift @start_states, @repeat for 1 .. $prepend_length / @repeat;
@@ -46,7 +46,7 @@ sub now {
     }
 
     $state_grid->[0] = \@start_states;
-    my $last_row =  exists $settings->{'sketch'} ? $settings->{'sketch'} : $size_y - 1;
+    my $last_row =  exists $state->{'sketch'} ? $state->{'sketch'} : $size_y - 1;
     for my $row_i (1 .. $last_row) { # compute next row
         ($state_grid->[$row_i], $action_grid->[$row_i])
             = $iterator->( $state_grid->[$row_i - 1], $action_grid->[$row_i - 1]);
@@ -62,23 +62,23 @@ sub now {
 }
 
 sub compile_iterator {
-    my ($settings, $comp_size_x) = @_;
-    my $transfer_function = $settings->{'rules'}{'f'}; # state transfer
-    my $action_function = $settings->{'action'}{'f'};  # action state transfer function
-    my $rule_size = $settings->{'global'}{'input_size'};
+    my ($state, $comp_size_x) = @_;
+    my $transfer_function = $state->{'rules'}{'f'}; # state transfer
+    my $action_function = $state->{'action'}{'f'};  # action state transfer function
+    my $rule_size = $state->{'global'}{'input_size'};
     my $act_size = 3;
-    my $states = $settings->{'global'}{'state_count'};
+    my $states = $state->{'global'}{'state_count'};
     my $subrule_count = $states ** $rule_size;
     my $action_count = $states ** $act_size;
     my $x_skew_width = int $rule_size / 2; # propagation skew
     my $a_skew_width = 1;
     my $x_skew_distance = $x_skew_width + 1;
     my $ignore_current_cell = !($rule_size % 2);
-    my $sum_mode = $settings->{'rules'}{'sum_mode'};
+    my $sum_mode = $state->{'rules'}{'sum_mode'};
     my $last_x_index = $comp_size_x - 1;
     my $row_stop = $last_x_index - $x_skew_width; # end of normal processing
     my $self_factor = $sum_mode ? 1 : $states ** ($x_skew_width-1); # helper to remove self state value
-    my $circular_grid = $settings->{'global'}{'circular_grid'};
+    my $circular_grid = $state->{'global'}{'circular_grid'};
 
     # eval code macros
     my $shift_val = $sum_mode ? '' : '  $state *= '.$states.';'."\n";
@@ -132,7 +132,7 @@ sub compile_iterator {
     };
 
     # compute action rules
-    $code .= '  $new_action_row->['.$last_x_index.'] = 1 if $arow->[0] & 4;'."\n" if $settings->{'global'}{'circular_grid'};
+    $code .= '  $new_action_row->['.$last_x_index.'] = 1 if $arow->[0] & 4;'."\n" if $state->{'global'}{'circular_grid'};
     $code .= '  $new_action_row->[0] = 1 if $arow->[0] & 2;'."\n";
     $code .= '  $new_action_row->[1] = 1 if $arow->[0] & 1;'."\n";
 
@@ -146,7 +146,7 @@ sub compile_iterator {
     $code .= '  say $state unless defined $active;'."\n";
     $code .= '  $new_action_row->['.($last_x_index - 1).'] = 1 if $active & 4;'."\n";
     $code .= '  $new_action_row->['.$last_x_index.']       = 1 if $active & 2;'."\n";
-    $code .= '  $new_action_row->[ 0 ] = 1                     if $active & 1;'."\n" if $settings->{'global'}{'circular_grid'};
+    $code .= '  $new_action_row->[ 0 ] = 1                     if $active & 1;'."\n" if $state->{'global'}{'circular_grid'};
 
     # apply action rules
     $code .= '  for ( 0 .. '.$last_x_index." ){\n";

@@ -48,13 +48,16 @@ sub new {
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
     my $all_attr = $std_attr | &Wx::wxALL;
+    my $tb_attr  = $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
 
     my $int_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $int_sizer->AddSpacer( 7 );
+    $int_sizer->AddSpacer( 10 );
     $int_sizer->Add( Wx::StaticText->new( $self, -1, 'First Row: ' ), 0, &Wx::wxGROW | &Wx::wxALL, 10 );
     $int_sizer->Add( $self->{'start_int'}, 0, $all_attr, 5 );
-    $int_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
-    $int_sizer->Add( $self->{'btn'}{'next'}, 0, $all_attr, 5 );
+    $int_sizer->AddSpacer( 10 );
+    $int_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );
+    $int_sizer->Add( $self->{'btn'}{'next'}, 0, $tb_attr, 5 );
+    $int_sizer->AddSpacer( 5 );
     $int_sizer->Add( $self->{'btn'}{'one'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );
     $int_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -94,6 +97,7 @@ sub get_settings {
         repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
     }
 }
+sub get_state { $_[0]->get_settings() }
 
 sub set_number {
     my ($self, $number) = @_;

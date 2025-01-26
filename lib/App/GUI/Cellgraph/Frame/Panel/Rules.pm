@@ -25,7 +25,7 @@ sub new {
     $self->{'state_count'} = 0;
 
 
-    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 75, -1], &Wx::wxTE_PROCESS_ENTER );
+    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 85, -1], &Wx::wxTE_PROCESS_ENTER );
     $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
     $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
@@ -36,6 +36,10 @@ sub new {
     $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
 
+    $self->{'btn'}{'prev'}->SetToolTip('decrease rule number by one');
+    $self->{'btn'}{'next'}->SetToolTip('increase rule number by one');
+    $self->{'btn'}{'sh_l'}->SetToolTip('shift binary rule number one to left');
+    $self->{'btn'}{'sh_r'}->SetToolTip('shift binary rule number one to right');
     $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
     $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
@@ -43,20 +47,23 @@ sub new {
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
+    my $tb_attr  = $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
 
     my $rule_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $rule_sizer->AddSpacer( 20 );
+    $rule_sizer->AddSpacer( 10 );
     $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
-    $rule_sizer->AddSpacer( 15 );
-    $rule_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $all_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
+    $rule_sizer->AddSpacer( 5 );
     $rule_sizer->Add( $self->{'rule_nr'},     0, $all_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'next'}, 0, $all_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $all_attr, 5 );
+    $rule_sizer->AddSpacer( 5 );
+    $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'btn'}{'next'}, 0, $tb_attr, 5 );
+    $rule_sizer->AddSpacer( 10 );
+    $rule_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $tb_attr, 5 );
     $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rf_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $rf_sizer->AddSpacer( 135 );
+    $rf_sizer->AddSpacer( 155 );
     $rf_sizer->Add( $self->{'btn'}{'inv'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'sym'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'opp'}, 0, $all_attr, 5 );
@@ -189,6 +196,7 @@ sub get_settings {
         sum_mode => $self->{'rules'}->sum_mode,
     }
 }
+sub get_state { $_[0]->get_settings() }
 
 sub get_output_list {
     my ($self) = @_;

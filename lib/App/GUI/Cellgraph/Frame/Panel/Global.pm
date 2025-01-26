@@ -8,16 +8,18 @@ use Wx;
 use base qw/Wx::Panel/;
 # use App::GUI::Cellgraph::Widget::SliderCombo;
 
+my @settings_keys = (qw/grid_type cell_size paint_direction circular_grid state_count input_size/);#action_values action_threshold
+
 sub new {
     my ( $class, $parent ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'call_back'} = sub {};
 
-
-    $self->{'settings_keys'} = [qw/grid_type cell_size paint_direction circular_grid state_count input_size/];#action_values action_threshold
+    $self->{'visuals_lbl'} = Wx::StaticText->new($self, -1, 'Visual Settings' );
     $self->{'grid_lbl'} = Wx::StaticText->new( $self, -1, 'Grid Style:');
     $self->{'cell_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
     $self->{'direction_lbl'} = Wx::StaticText->new( $self, -1, 'Direction :');
+    $self->{'logic_lbl'} = Wx::StaticText->new($self, -1, 'Logical Settings' );
     $self->{'input_size_lbl'} = Wx::StaticText->new( $self, -1, 'Rule Input :');
     $self->{'state_ab_lbl'} = Wx::StaticText->new( $self, -1, 'Cell States :');
     $self->{'circular_grid'} = Wx::CheckBox->new( $self, -1, '  Circular');
@@ -88,19 +90,22 @@ sub new {
     $action_sizer->Add( $self->{'action_threshold'}, 0, $row_attr, 8);
     $action_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $row_space = 20;
+    my $row_space = 10;
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( $row_space );
-    $main_sizer->Add( $grid_sizer, 0, $std_attr, 0);
-    $main_sizer->AddSpacer( $row_space );
-    $main_sizer->Add( $paint_sizer, 0, $std_attr, 0);
-    $main_sizer->AddSpacer( $row_space );
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, $row_space );
+    $main_sizer->Add( $self->{'logic_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
     $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( $rule_sizer, 0, $std_attr, 0);
     $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, $row_space );
     $main_sizer->AddSpacer( $row_space );
+    $main_sizer->Add( $self->{'visuals_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->AddSpacer( 10 );
+    $main_sizer->Add( $grid_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( $row_space );
+    $main_sizer->Add( $paint_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( $row_space );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, $row_space );
     $main_sizer->Add( $action_sizer, 0, $std_attr, 0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -109,19 +114,24 @@ sub new {
     $self;
 }
 
-sub init        { $_[0]->set_settings({ grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
-                                    state_count => 2, input_size => 3, circular_grid => 0}) } #action_values => 2, action_threshold => 1
+sub init        {
+    $_[0]->set_settings({
+        grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
+        state_count => 2, input_size => 3, circular_grid => 0
+    }); # action_values => 2, action_threshold => 1
+}
 
 sub get_settings {
     my ($self) = @_;
-    my $settings = { map { $_ => $self->{$_}->GetValue } @{$self->{'settings_keys'}} };
+    my $settings = { map { $_ => $self->{$_}->GetValue } @settings_keys };
     $settings;
 }
+sub get_state { $_[0]->get_settings() }
 
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
-    $self->{$_}->SetValue( $settings->{$_} ) for @{$self->{'settings_keys'}};
+    $self->{$_}->SetValue( $settings->{$_} ) for @settings_keys;
 }
 
 sub SetCallBack {

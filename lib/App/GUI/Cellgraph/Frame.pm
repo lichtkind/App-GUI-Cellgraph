@@ -39,14 +39,14 @@ sub new {
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'} );
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
-    $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
     $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'} );
+    $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
     $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'panel_names'} = [qw/global start rules action color/];
+    $self->{'panel_names'} = [qw/global start action rules color/];
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'action'}, 'Action');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'color'},  'Color');
     $self->{'tabs'}{'type'} = 0;
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
@@ -182,6 +182,12 @@ sub init {
     $self->set_settings_save(1);
 }
 
+sub get_state {
+    my $self = shift;
+    my %state = map { $_ => $self->{'panel'}{$_}->get_state } @{$self->{'panel_names'}};
+    \%state;
+}
+
 sub get_settings {
     my $self = shift;
     my %settings = map { $_ => $self->{'panel'}{$_}->get_settings } @{$self->{'panel_names'}};
@@ -215,7 +221,7 @@ sub spread_setting_changes {
 sub sketch {
     my ($self) = @_;
     $self->spread_setting_changes();
-    $self->{'board'}->sketch( $self->get_settings );
+    $self->{'board'}->sketch( $self->get_state );
     $self->{'progress'}->reset;
     $self->set_settings_save( 0 );
 }
@@ -223,7 +229,7 @@ sub sketch {
 sub draw {
     my ($self) = @_;
     $self->spread_setting_changes();
-    $self->{'board'}->draw( $self->get_settings );
+    $self->{'board'}->draw( $self->get_state );
     $self->{'progress'}->full;
 }
 

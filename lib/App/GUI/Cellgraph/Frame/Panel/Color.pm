@@ -1,3 +1,6 @@
+
+# color panel tab
+
 use v5.12;
 use warnings;
 use Wx;
@@ -174,6 +177,7 @@ sub get_settings {
     $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'};
     $data;
 }
+sub get_state { $_[0]->get_settings() }
 
 sub set_settings {
     my ($self, $data) = @_;
