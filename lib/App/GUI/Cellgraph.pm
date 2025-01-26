@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.32';
+our $VERSION = '0.34';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -82,7 +82,7 @@ I<Global> panel.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png" alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/kreuz.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/redsquare.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/badeblau.png" alt=""  width="300" height="300">
 </p>
 
@@ -291,9 +291,7 @@ L<App::GUI::Harmonograph>
 
 L<App::GUI::Juliagraph>
 
-L<App::GUI::Chaosgraph>
-
-L<App::GUI::Dynagraph>
+L<App::GUI::Spirograph>
 
 L<App::GUI::Sierpingraph>
 
