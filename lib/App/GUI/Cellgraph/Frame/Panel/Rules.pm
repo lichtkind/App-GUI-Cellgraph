@@ -1,8 +1,10 @@
+
+# rules panel
+
+package App::GUI::Cellgraph::Frame::Panel::Rules;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Cellgraph::Frame::Panel::Rules;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Compute::Rule;
 use App::GUI::Cellgraph::Widget::RuleInput;

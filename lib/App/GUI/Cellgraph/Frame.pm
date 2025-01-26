@@ -1,10 +1,10 @@
+
+# main window, functions and logic
+
 use v5.12;
 use warnings;
 use utf8;
 use Wx::AUI;
-# fast preview
-# modular conections
-# X Y sync ? , undo ?
 
 package App::GUI::Cellgraph::Frame;
 use base qw/Wx::Frame/;
@@ -12,12 +12,16 @@ use App::GUI::Cellgraph::Widget::ProgressBar;
 use App::GUI::Cellgraph::Frame::Panel::Global;
 use App::GUI::Cellgraph::Frame::Panel::Start;
 use App::GUI::Cellgraph::Frame::Panel::Rules;
-use App::GUI::Cellgraph::Frame::Panel::Mobile;
+use App::GUI::Cellgraph::Frame::Panel::Action;
 use App::GUI::Cellgraph::Frame::Panel::Color;
 use App::GUI::Cellgraph::Frame::Part::Board;
 use App::GUI::Cellgraph::Dialog::About;
 use App::GUI::Cellgraph::Settings;
 use App::GUI::Cellgraph::Config;
+
+# fast preview
+# modular conections
+# X Y sync ? , undo ?
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -36,13 +40,13 @@ sub new {
     $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'} );
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
-    $self->{'panel'}{'mobile'} = App::GUI::Cellgraph::Frame::Panel::Mobile->new( $self->{'tabs'} );
+    $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'} );
     $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'panel_names'} = [qw/global start rules mobile color/];
+    $self->{'panel_names'} = [qw/global start rules action color/];
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'mobile'}, 'Action');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'action'}, 'Action');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'color'},  'Color');
     $self->{'tabs'}{'type'} = 0;
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
@@ -205,7 +209,7 @@ sub spread_setting_changes {
     $self->{'progress'}->set_colors( @needed_colors );
     $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
     $self->{'panel'}{'rules'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
-    $self->{'panel'}{'mobile'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
+    $self->{'panel'}{'action'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
 }
 
 sub sketch {
@@ -304,7 +308,7 @@ sub write_settings_file {
     $file = substr ($file, 0, -4) if lc substr ($file, -4) eq '.ini';
     $file .= '.ini' unless lc substr ($file, -4) eq '.ini';
     delete $settings->{'rules'}{'f'};
-    delete $settings->{'mobile'}{'f'};
+    delete $settings->{'action'}{'f'};
     delete $settings->{'start'}{'list'};
     delete $settings->{'color'}{'objects'};
     my $ret = App::GUI::Cellgraph::Settings::write( $file, $settings );

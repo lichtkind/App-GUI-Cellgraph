@@ -1,8 +1,10 @@
+
+# action rules panel
+
+package App::GUI::Cellgraph::Frame::Panel::Action;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Cellgraph::Frame::Panel::Mobile;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Compute::Rule;
 use App::GUI::Cellgraph::Widget::RuleInput;
@@ -29,8 +31,6 @@ sub new {
     $self->{'btn'}{'2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
     $self->{'btn'}{'!'}  = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'?'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-
-    #$self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every rule swaps result with symmetric partner)');
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;

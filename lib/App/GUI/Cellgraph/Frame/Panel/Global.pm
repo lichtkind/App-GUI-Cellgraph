@@ -1,8 +1,10 @@
+
+# global settings panel
+
+package App::GUI::Cellgraph::Frame::Panel::Global;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Cellgraph::Frame::Panel::Global;
 use base qw/Wx::Panel/;
 # use App::GUI::Cellgraph::Widget::SliderCombo;
 

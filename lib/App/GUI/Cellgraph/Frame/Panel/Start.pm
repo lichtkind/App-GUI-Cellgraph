@@ -52,8 +52,8 @@ sub new {
     my $int_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $int_sizer->AddSpacer( 7 );
     $int_sizer->Add( Wx::StaticText->new( $self, -1, 'First Row: ' ), 0, &Wx::wxGROW | &Wx::wxALL, 10 );
-    $int_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'start_int'}, 0, $all_attr, 5 );
+    $int_sizer->Add( $self->{'btn'}{'prev'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'btn'}{'next'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'btn'}{'one'}, 0, $all_attr, 5 );
     $int_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );

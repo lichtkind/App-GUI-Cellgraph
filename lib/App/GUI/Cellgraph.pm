@@ -1,11 +1,13 @@
+
+# gui main loop and main documentation
+
+package App::GUI::Cellgraph;
 use v5.12;
 use warnings;
 use Wx;
 use utf8;
-
-package App::GUI::Cellgraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.34';
+our $VERSION = '0.4';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;

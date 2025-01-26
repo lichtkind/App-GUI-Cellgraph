@@ -64,7 +64,7 @@ sub now {
 sub compile_iterator {
     my ($settings, $comp_size_x) = @_;
     my $transfer_function = $settings->{'rules'}{'f'}; # state transfer
-    my $action_function = $settings->{'mobile'}{'f'};  # action state transfer function
+    my $action_function = $settings->{'action'}{'f'};  # action state transfer function
     my $rule_size = $settings->{'global'}{'input_size'};
     my $act_size = 3;
     my $states = $settings->{'global'}{'state_count'};
