@@ -39,15 +39,15 @@ sub new {
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'} );
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
-    $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'} );
+    $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'} );
     $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'panel_names'} = [qw/global start action rules color/];
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Start');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'action'}, 'Action');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'Rules');
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'color'},  'Color');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global Settings');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Starting Row');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'State Rules');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'action'}, 'Action Rules');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'color'},  'Colors');
     $self->{'tabs'}{'type'} = 0;
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
 

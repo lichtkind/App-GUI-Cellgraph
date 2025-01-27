@@ -13,7 +13,6 @@ use App::GUI::Cellgraph::Frame::Part::ColorPicker;
 use App::GUI::Cellgraph::Frame::Part::ColorSetPicker;
 use App::GUI::Cellgraph::Widget::ColorDisplay;
 use App::GUI::Cellgraph::Widget::PositionMarker;
-
 use Graphics::Toolkit::Color qw/color/;
 
 our $default_color_def = $App::GUI::Cellgraph::Frame::Part::ColorSetPicker::default_color;

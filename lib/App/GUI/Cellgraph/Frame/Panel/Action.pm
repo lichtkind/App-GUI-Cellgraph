@@ -41,7 +41,7 @@ sub new {
 
     my $act_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $act_sizer->AddSpacer( 10 );
-    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'State :' ), 0, $all_attr, 10 );
+    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
     $act_sizer->AddSpacer( 0 );
     $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
     $act_sizer->AddSpacer( 10 );

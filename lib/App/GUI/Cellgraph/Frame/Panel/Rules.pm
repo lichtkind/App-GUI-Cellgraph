@@ -52,7 +52,7 @@ sub new {
     my $rule_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $rule_sizer->AddSpacer( 10 );
     $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
-    $rule_sizer->AddSpacer( 5 );
+    #$rule_sizer->AddSpacer( 5 );
     $rule_sizer->Add( $self->{'rule_nr'},     0, $all_attr, 5 );
     $rule_sizer->AddSpacer( 5 );
     $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );

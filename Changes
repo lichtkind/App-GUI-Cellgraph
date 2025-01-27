@@ -1,6 +1,8 @@
-0.4 2025-01-26  lichtkind
+0.4 2025-01-27  lichtkind
 -------
     * = minor feature release
+    * + adding symmetric rules only mode
+    * + making summing rules optional
     * ? increase GUI based documentation
     * & code cleanup
 
@@ -85,3 +87,4 @@
 TODO:
 
   meta settings for action rules
+  start line for action rules
