@@ -191,12 +191,17 @@ sub set_settings {
 sub get_settings {
     my ($self) = @_;
     {
+        nr => $self->{'rule_nr'}->GetValue,
+    }
+}
+sub get_state {
+    my ($self) = @_;
+    {
         f => [$self->get_output_list],
         nr => $self->{'rule_nr'}->GetValue,
         sum_mode => $self->{'rules'}->sum_mode,
     }
 }
-sub get_state { $_[0]->get_settings() }
 
 sub get_output_list {
     my ($self) = @_;

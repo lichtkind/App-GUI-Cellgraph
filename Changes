@@ -1,8 +1,11 @@
-0.4 2025-01-27  lichtkind
+0.5 2025-01-27  lichtkind
 -------
-    * = minor feature release
+    * = major feature release
+    * + setting starting row of action rules
+    * + making action rules optional
     * + adding symmetric rules only mode
     * + making summing rules optional
+    * / GUI overhaul
     * ? increase GUI based documentation
     * & code cleanup
 
@@ -41,7 +44,7 @@
 0.26 2023-09-30  lichtkind
 -------
     * = bug fix
-    * adopt code to new GTC API
+    * & adopt code to new GTC API
 
 0.25 2023-02-23  lichtkind
 -------

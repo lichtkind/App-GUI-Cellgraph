@@ -5,16 +5,17 @@ use Wx;
 package App::GUI::Cellgraph::Compute::Rule;
 
 sub new {
-    my ($pkg, $size, $alphabet) = @_;
-    my $self = { size => $size, states => $alphabet, input_list => [],
-                 avg => 0, parts => $alphabet ** $size }; # count of partial rules
+    my ($pkg, $input_size, $alphabet, $kind) = @_;
+    my $self = { size => $input_size, states => $alphabet, kind => $kind,
+                 input_list => [],
+                 avg => 0, parts => $alphabet ** $input_size }; # count of partial rules
 
-    my @input = (0) x $size;
+    my @input = (0) x $input_size;
     $self->{'input_list'}[0] = [@input];
     $self->{'input_pattern'}  [0] = join '', @input;
-    if ($self->{'parts'} > 30 ) {
-        $self->{'parts'} = ($alphabet-1) * $size + 1;
-        $self->{'avg'} = 1; # here we do averaging to min amount of pastial rules
+    if ($kind eq 'summing' ) {
+        $self->{'parts'} = ($alphabet-1) * $input_size + 1;
+        $self->{'avg'} = 1; # here we do averaging to min amount of partial rules
         my $cursor_pos = 0;
         for my $i (1 .. $self->{'parts'} - 1){
             $cursor_pos++ if $input[$cursor_pos] == $alphabet - 1;
@@ -24,7 +25,7 @@ sub new {
         }
     } else {
         for my $i (1 .. $self->{'parts'} - 1){
-            for my $cp (0 .. $size - 1){
+            for my $cp (0 .. $input_size - 1){
                 $input[$cp]++;
                 last if $input[$cp] < $alphabet;
                 $input[$cp] = 0;
@@ -48,7 +49,7 @@ sub new {
 
 sub part_rule_iterator { @{$_[0]->{'part_iterator'}} }
 
-sub sum_mode { $_[0]->{'avg'} }
+sub kind { $_[0]->{'kind'} }
 
 sub input_list { @{$_[0]->{'input_list'}} }
 
