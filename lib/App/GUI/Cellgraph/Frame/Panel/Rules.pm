@@ -6,15 +6,17 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::Compute::Rule;
 use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::ColorToggle;
 use Graphics::Toolkit::Color qw/color/;
 
+# undo redo
+
 sub new {
-    my ( $class, $parent, $state, $act_state ) = @_;
+    my ( $class, $parent, $rule_calculator ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
+    $self->{'rule_calc'} = $rule_calculator;
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
@@ -124,7 +126,7 @@ sub regenerate_rules {
     return unless $do_regenerate or $do_recolor;
     $self->{'state_count'} = $state_count;
     $self->{'input_size'} = $input_size;
-    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'} );
+    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'}, 'all' );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
     my @sub_rule_pattern = ($self->{'rules'}->input_list);
 
@@ -238,9 +240,9 @@ sub shift_rule_right { $_[0]->set_rule( $_[0]->{'rules'}->shift_nr_right( $_[0]-
 sub opposite_rule  { $_[0]->set_rule( $_[0]->{'rules'}->opposite_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
 sub symmetric_rule { $_[0]->set_rule( $_[0]->{'rules'}->symmetric_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
 sub invert_rule    { $_[0]->set_rule( $_[0]->{'rules'}->inverted_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub random_rule    { $_[0]->set_rule( $_[0]->{'rules'}->random_nr ) }
+sub random_rule    { $_[0]->set_rule( $_[0]->{'rule_calc'}->random_nr ) }
 
-sub SetCallBack {
+sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;

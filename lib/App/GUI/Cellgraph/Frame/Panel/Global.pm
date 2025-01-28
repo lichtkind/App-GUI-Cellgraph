@@ -6,10 +6,15 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
+use App::GUI::Cellgraph::Compute::Rule;
+
+# action threshhold , value
 
 sub new {
     my ( $class, $parent ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
+
+    $self->{'rule_calc'} = App::GUI::Cellgraph::Compute::Rule->new( 3, 2, 'all' );
     $self->{'call_back'} = sub {};
 
     $self->create_label( 'logicals', 'State Rules' );
@@ -48,7 +53,7 @@ sub new {
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/circular_grid/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/grid_type cell_size paint_direction/;
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->compute_cell_count; $self->{'call_back'}->() }) for qw/state_count input_size rule_kind/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->compute_subrule_count; $self->{'call_back'}->() }) for qw/state_count input_size rule_kind/;
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
@@ -120,7 +125,6 @@ sub new {
     $main_sizer->Add( $visual2_sizer, 0, $std_attr, 0);
     $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-
     $self->SetSizer( $main_sizer );
     $self->init;
     $self;
@@ -134,6 +138,12 @@ sub init        {
         grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
     });
 }
+sub rule_calculator { $_[0]->{'rule_calc'} }
+sub set_callback {
+    my ($self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'call_back'} = $code;
+}
 
 sub get_settings {
     my ($self) = @_;
@@ -145,13 +155,23 @@ sub get_state { $_[0]->get_settings() }
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
-    $self->{'widget'}{$_}->SetValue( $settings->{$_} ) for keys %{$self->{'widget'}};
+    my $change = 0;
+    for my $key (keys %{$self->{'widget'}}) {
+        next if $settings->{$key} eq $self->{'widget'}{$key}->GetValue;
+        $self->{'widget'}{$key}->SetValue( $settings->{$key} );
+        $change++;
+    }
+    $self->compute_subrule_count if $change;
 }
 
-sub SetCallBack {
-    my ($self, $code) = @_;
-    return unless ref $code eq 'CODE';
-    $self->{'call_back'} = $code;
+sub compute_subrule_count {
+    my ($self) = @_;
+    $self->{'rule_calc'}->renew(
+        $self->{'widget'}{'input_size'}->GetValue,
+        $self->{'widget'}{'state_count'}->GetValue,
+        $self->{'widget'}{'rule_kind'}->GetValue
+    );
+    $self->{'widget'}{'rule_count'}->SetValue( $self->{'rule_calc'}->independent_subrules );
 }
 
 sub create_label {
@@ -160,18 +180,6 @@ sub create_label {
     $self->{'label'}{ $id } = Wx::StaticText->new( $self, -1, $text );
     $self->{'label'}{ $id }->SetToolTip('how to paint gaps between cell squares') if defined $help and $help;
     $self->{'label'}{ $id }
-}
-
-sub compute_cell_count {
-    my ($self) = @_;
-    my $input = $self->{'widget'}{'input_size'}->GetValue;
-    my $states = $self->{'widget'}{'state_count'}->GetValue;
-    my $val = ($self->{'widget'}{'rule_kind'}->GetValue eq 'all')
-            ? $states ** $self->{'widget'}{'input_size'}->GetValue
-            : ($self->{'widget'}{'rule_kind'}->GetValue eq 'symmetric')
-            ? $states ** $self->{'widget'}{'input_size'}->GetValue  / 2
-            : ($states-1) * ($input + 1);
-    $self->{'widget'}{'rule_count'}->SetValue( $val );
 }
 
 1;

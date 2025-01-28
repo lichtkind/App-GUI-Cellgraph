@@ -149,7 +149,7 @@ sub update_cell_colors {
     $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
 }
 
-sub SetCallBack {
+sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;

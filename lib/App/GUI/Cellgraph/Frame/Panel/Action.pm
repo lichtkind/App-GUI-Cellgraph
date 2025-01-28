@@ -6,16 +6,18 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::Compute::Rule;
 use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::Action;
 use App::GUI::Cellgraph::Widget::ColorToggle;
 use Graphics::Toolkit::Color qw/color/;
 
+# undo redo
+
 sub new {
-    my ( $class, $parent, $state, $act_state ) = @_;
+    my ( $class, $parent, $rule_calculator ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
+    $self->{'rule_calc'} = $rule_calculator;
     $self->{'rule_square_size'} = 20;
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
@@ -84,7 +86,7 @@ sub new {
     $self;
 }
 
-sub SetCallBack {
+sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;

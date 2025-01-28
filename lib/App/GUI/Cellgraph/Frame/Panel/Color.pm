@@ -147,7 +147,7 @@ sub set_state_count {
     $self->{'state_marker'}[ $self->{'current_state'} ]->set_state('active');
 }
 
-sub SetCallBack {
+sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;
