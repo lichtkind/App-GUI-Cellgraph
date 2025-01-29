@@ -87,18 +87,16 @@ sub set_rule_number {
 }
 
 sub rule_nr_from_output_list {
-    my ($self, @l) = shift;
-    return unless $#l == $self->{'independent_subrules'};
-    my $pattern = join '', reverse @l;
+    my ($self, @l) = @_;
+    return unless @l == $self->{'subrules'}->independent_count;
+    my $pattern = join '', @l;
     $self->{'output_pattern_index'}{ $pattern } if exists $self->{'output_pattern_index'}{ $pattern };
 }
 
 sub output_list_from_rule_nr {
     my ($self, $nr) = @_;
-say "out $self, $nr, ", int(@{$self->{'output_list'}});
     return unless exists $self->{'output_list'}[$nr];
-say "out $self, $nr";
-    @{$self->{'output_list'}[$nr]}
+    reverse @{$self->{'output_list'}[$nr]}
 }
 ########################################################################
 
