@@ -38,11 +38,11 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'} );
+    $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'}, $sr_calc );
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'}, $sr_calc );
     $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'}, $sr_calc );
-    $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new(  $self->{'tabs'}, $sr_calc );
+    $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new(  $self->{'tabs'}, $self->{'config'} );
     $self->{'panel_names'} = [keys %{$self->{'panel'}}];
     $self->{'panel'}{$_}->set_callback( sub { $self->sketch( $_[0] ) } ) for @{$self->{'panel_names'}};
     $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global Settings');
@@ -215,8 +215,8 @@ sub spread_setting_changes {
     my @needed_colors = $self->{'panel'}{'color'}->get_active_colors;
     $self->{'progress'}->set_colors( @needed_colors );
     $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
-    $self->{'panel'}{'rules'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
-    $self->{'panel'}{'action'}->regenerate_rules( $global->{'input_size'}, $global->{'state_count'}, @needed_colors );
+    $self->{'panel'}{'rules'}->regenerate_rules( @needed_colors );
+    $self->{'panel'}{'action'}->regenerate_rules( @needed_colors );
 }
 
 sub sketch {

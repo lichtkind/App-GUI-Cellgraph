@@ -18,16 +18,15 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
 
     $self->{'subrules'} = $subrule_calculator;
-    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $subrule_calculator );
+    $self->{'rules'}    = App::GUI::Cellgraph::Compute::Rule->new( $subrule_calculator );
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
     $self->{'rule_plate'}->SetScrollRate( 1, 1 );
-    $self->{'call_back'}  = sub {};
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 0;
     $self->{'state_count'} = 0;
-
+    $self->{'call_back'}  = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 85, -1], &Wx::wxTE_PROCESS_ENTER );
     $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
@@ -39,6 +38,8 @@ sub new {
     $self->{'btn'}{'inv'}    = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
+    $self->{'btn'}{'undo'}   = Wx::Button->new( $self, -1, '<=',  [-1,-1], [30,25] );
+    $self->{'btn'}{'redo'}   = Wx::Button->new( $self, -1, '=>',  [-1,-1], [30,25] );
 
     $self->{'btn'}{'prev'}->SetToolTip('decrease rule number by one');
     $self->{'btn'}{'next'}->SetToolTip('increase rule number by one');
@@ -48,6 +49,8 @@ sub new {
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
     $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
+    $self->{'btn'}{'undo'}->SetToolTip('undo the last rule changes');
+    $self->{'btn'}{'redo'}->SetToolTip('redo - take back the rule change undo');
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -67,11 +70,14 @@ sub new {
     $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rf_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $rf_sizer->AddSpacer( 155 );
+    $rf_sizer->AddSpacer( 63 );
     $rf_sizer->Add( $self->{'btn'}{'inv'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'sym'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'opp'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );
+    $rf_sizer->AddSpacer( 15 );
+    $rf_sizer->Add( $self->{'btn'}{'undo'}, 0, $tb_attr, 5 );
+    $rf_sizer->Add( $self->{'btn'}{'redo'}, 0, $tb_attr, 5 );
     $rf_sizer->AddSpacer(20);
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -107,7 +113,9 @@ sub new {
 
     });
     $self->regenerate_rules( 3, 2, color('white')->gradient_to('black', 2));
+say "--";
     $self->init;
+say "--";
     $self;
 }
 
@@ -128,7 +136,6 @@ sub regenerate_rules {
     return unless $do_regenerate or $do_recolor;
     $self->{'state_count'} = $state_count;
     $self->{'input_size'} = $input_size;
-    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'}, 'all' );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
     my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
 
@@ -139,31 +146,26 @@ sub regenerate_rules {
             $self->{'rule_input'} = [];
             $self->{'arrow'} = [];
             $self->{'rule_result'} = [];
-            # map { $_->Destroy} @{$self->{'rule_input'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
+            map { $_->Destroy} @{$self->{'rule_input'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
             $refresh = 1;
         } else {
             $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
             $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-        for my $rule_index (0 .. $self->{'subrules'}->independent_count - 1){
-            $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
-                                      $self->{'rule_plate'}, $self->{'rule_square_size'},
-                                      $sub_rule_pattern[$rule_index], $self->{'state_colors'}, $self->{'subrules'}->mode );
-
+        for my $rule_index ($self->{'subrules'}->index_iterator){
+            $self->{'rule_input'}[$rule_index]
+                = App::GUI::Cellgraph::Widget::RuleInput->new ( $self->{'rule_plate'}, $self->{'rule_square_size'},
+                                                                $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-
-            $self->{'rule_result'}[$rule_index] = App::GUI::Cellgraph::Widget::ColorToggle->new(
-                                             $self->{'rule_plate'}, $self->{'rule_square_size'}, $self->{'rule_square_size'},
-                                             $self->{'state_colors'}, 0 );
-            $self->{'rule_result'}[$rule_index]->SetCallBack( sub {
-                    $self->{'rule_nr'}->SetValue( $self->get_rule_number ); $self->{'call_back'}->()
-            });
+            $self->{'rule_result'}[$rule_index]
+                = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
+                                                                 $self->{'rule_square_size'}, $self->{'state_colors'}, 0 );
+            $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
-
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
         }
-        for my $rule_index ($self->{'rules'}->part_rule_iterator){
+        for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);
             $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
@@ -184,14 +186,13 @@ sub regenerate_rules {
     }
 }
 
-sub init { $_[0]->set_settings( { nr => 18, avg => 0 } ) }
+sub init { $_[0]->set_settings( { nr => 18 } ) }
 
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
     $self->set_rule( $settings->{'nr'} );
 }
-
 sub get_settings {
     my ($self) = @_;
     {
@@ -201,36 +202,31 @@ sub get_settings {
 sub get_state {
     my ($self) = @_;
     {
-        f => [$self->get_output_list],
+        calc => $self->{'rules'},
         nr => $self->{'rule_nr'}->GetValue,
-        sum_mode => $self->{'rules'}->sum_mode,
     }
 }
 
 sub get_output_list {
     my ($self) = @_;
-    map { $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
+    map { $self->{'rule_result'}[$_]->GetValue } $self->{'subrules'}->index_iterator;
 }
-sub get_map {
-    my ($self) = @_;
-    my %map = map { $self->{'rules'}->input_pattern_from_nr($_) =>
-                    $self->{'rule_result'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
-    \%map;
-}
-sub get_rule_number { $_[0]->{'rules'}->nr_from_output_list( $_[0]->get_output_list ) }
+sub update_rule_from_output {  $_[0]->set_rule( $_[0]->get_output_list ) }
 
 sub set_rule {
     my ($self) = shift;
-    my ($rule, @list);
+    my ($rule_nr, @list);
     if (@_ == 1) {
-        $rule = shift;
-        @list = $self->{'rules'}->output_list_from_nr( $rule );
+        $rule_nr = shift;
+        @list = $self->{'rules'}->output_list_from_rule_nr( $rule_nr );
+say "set $rule_nr: @list";
     } else {
         @list = @_;
-        $rule = $self->{'rules'}->nr_from_output_list( @list );
+        $rule_nr = $self->{'rules'}->rule_nr_from_output_list( @list );
     }
     $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
-    $self->{'rule_nr'}->SetValue( $rule );
+    $self->{'rules'}->set_rule_number( $rule_nr );
+    $self->{'rule_nr'}->SetValue( $rule_nr );
 }
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }

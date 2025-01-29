@@ -18,7 +18,7 @@ sub new {
 
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
     my $rule_cell_size = 20;
-    $self->{'switch'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
+    $self->{'state_switches'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
     $self->{'start_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
     $self->{'start_int'}->SetToolTip('condensed content of start row');
     $self->{'repeat_start'} = Wx::CheckBox->new( $self, -1, '  Repeat');
@@ -26,24 +26,25 @@ sub new {
     $self->{'btn'}{'next'}  = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
     $self->{'btn'}{'one'}   = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}   = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    #$self->{'rule_size_lbl'} = Wx::StaticText->new( $self, -1, 'Size :');
-    #$self->{'rule_type_lbl'} = Wx::StaticText->new( $self, -1, 'Rules :');
-    #$self->{'rule_size'} = Wx::ComboBox->new( $self, -1, 3,        [-1,-1],[65, -1], [2, 3, 4, 5], &Wx::wxTE_READONLY);
-    #$self->{'rule_type'} = Wx::ComboBox->new( $self, -1, 'pattern', [-1,-1],[110, -1], [qw/pattern average median/], &Wx::wxTE_READONLY);
+    $self->{'label'}{'rules'}  = Wx::StaticText->new( $self, -1, 'Cell States' );
+    $self->{'label'}{'action'}  = Wx::StaticText->new( $self, -1, 'Cell Activity Status' );
+    $self->{'label'}{'rules_int'} = Wx::StaticText->new( $self, -1, 'Summary:' );
 
-    $self->{'switch'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
+
+    $self->{'state_switches'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
     $self->{'repeat_start'}->SetToolTip('repeat this pattern as the starting row is long');
     $self->{'btn'}{'one'}->SetToolTip('reset cell states in starting row to initial values');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random cell states in starting row');
     $self->{'btn'}{'next'}->SetToolTip('increment number that summarizes all cell states of starting row');
     $self->{'btn'}{'prev'}->SetToolTip('decrement number that summarizes all cell states of starting row');
+    $self->{'label'}{'rules_int'}->SetToolTip('ID of current starting row configuration');
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->prev_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->next_start;  $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'one'},  sub { $self->init;        $self->{'call_back'}->() }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->random_start;$self->{'call_back'}->() }) ;
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_start/;
-    $_->SetCallBack( sub { $self->{'start_int'}->SetValue( $self->get_number ); $self->{'call_back'}->() }) for @{$self->{'switch'}};
+    $_->SetCallBack( sub { $self->{'start_int'}->SetValue( $self->get_number ); $self->{'call_back'}->() }) for @{$self->{'state_switches'}};
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $row_attr = $std_attr | &Wx::wxLEFT;
@@ -52,7 +53,7 @@ sub new {
 
     my $int_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $int_sizer->AddSpacer( 10 );
-    $int_sizer->Add( Wx::StaticText->new( $self, -1, 'First Row: ' ), 0, &Wx::wxGROW | &Wx::wxALL, 10 );
+    $int_sizer->Add( $self->{'label'}{'rules_int'}, 0, &Wx::wxGROW | &Wx::wxALL, 10 );
     $int_sizer->Add( $self->{'start_int'}, 0, $all_attr, 5 );
     $int_sizer->AddSpacer( 10 );
     $int_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );
@@ -64,16 +65,20 @@ sub new {
 
     my $io_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $io_sizer->AddSpacer(20);
-    $io_sizer->Add( $self->{'switch'}[$_-1], 0, &Wx::wxGROW ) for 1 .. $self->{'length'};
+    $io_sizer->Add( $self->{'state_switches'}[$_-1], 0, &Wx::wxGROW ) for 1 .. $self->{'length'};
     $io_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $main_sizer->AddSpacer( 15 );
-    $main_sizer->Add( $int_sizer, 0, $std_attr, 20);
-    $main_sizer->AddSpacer(20);
-    $main_sizer->Add( $io_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( 10 );
+    $main_sizer->Add( $self->{'label'}{'rules'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->AddSpacer( 5 );
+    $main_sizer->Add( $int_sizer, 0, $std_attr, 10);
     $main_sizer->Add( $self->{'repeat_start'}, 0, $all_attr, 23);
+    $main_sizer->Add( $io_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer(20);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, 20 );
+    $main_sizer->AddSpacer( 10 );
+    $main_sizer->Add( $self->{'label'}{'action'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
 
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
@@ -88,8 +93,14 @@ sub set_settings {
     return unless ref $settings eq 'HASH';
     $self->set_number( $settings->{'value'} );
 }
-
 sub get_settings {
+    my ($self) = @_;
+    {
+        value => $self->{'start_int'}->GetValue ? $self->{'start_int'}->GetValue : 0,
+        repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
+    }
+}
+sub get_state {
     my ($self) = @_;
     {
         list => [$self->get_list],
@@ -97,7 +108,6 @@ sub get_settings {
         repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
     }
 }
-sub get_state { $_[0]->get_settings() }
 
 sub set_number {
     my ($self, $number) = @_;
@@ -107,7 +117,7 @@ sub set_number {
     $self->{'start_int'}->SetValue( $number );
     for my $i ( 0 .. $self->{'length'} - 1 ) {
         my $v = $number % $self->{'state_count'};
-        $self->{'switch'}[$i]->SetValue( $v );
+        $self->{'state_switches'}[$i]->SetValue( $v );
         $number -= $v;
         $number /= $self->{'state_count'};
     }
@@ -125,7 +135,7 @@ sub get_number {
 
 sub get_list {
     my ($self) = @_;
-    my @list = map { $self->{'switch'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
+    my @list = map { $self->{'state_switches'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
     pop @list while @list and not $list[-1];    # remove starting 0
     unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
     @list;
@@ -144,7 +154,7 @@ sub update_cell_colors {
     }
     return unless $do_recolor;
     my @rgb = map {[$_->rgb]} @colors;
-    $self->{'switch'}[$_]->SetColors( @rgb ) for 0 .. $self->{'length'} - 1;
+    $self->{'state_switches'}[$_]->SetColors( @rgb ) for 0 .. $self->{'length'} - 1;
     $self->{'state_count'} = @colors;
     $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
 }

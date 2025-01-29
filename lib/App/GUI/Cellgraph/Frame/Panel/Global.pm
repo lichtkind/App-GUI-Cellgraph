@@ -37,7 +37,7 @@ sub new {
 
     $self->{'widget'}{'input_size'}  = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
-    $self->{'widget'}{'rule_kind'}  = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[120, -1], [qw/all symmetric summing/], &Wx::wxTE_READONLY);
+    $self->{'widget'}{'rule_kind'}  = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[120, -1], [qw/all symmetric summing/], &Wx::wxTE_READONLY); # median
     $self->{'widget'}{'grid_type'}   = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[90, -1], ['lines', 'gaps', 'no']);
     $self->{'widget'}{'cell_size'}   = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[65, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'paint_direction'} = Wx::ComboBox->new( $self, -1, 'top_down', [-1,-1],[120, -1], [qw/top_down outside_in inside_out/], &Wx::wxTE_READONLY);
@@ -148,7 +148,7 @@ sub set_callback {
 sub get_settings {
     my ($self) = @_;
     my $settings = { map { $_ => $self->{'widget'}{$_}->GetValue } keys %{$self->{'widget'}} };
-    $settings;
+#    $settings;
 }
 sub get_state { $_[0]->get_settings() }
 
@@ -171,7 +171,7 @@ sub compute_subrule_count {
         $self->{'widget'}{'state_count'}->GetValue,
         $self->{'widget'}{'rule_kind'}->GetValue
     );
-    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->independent_subrules );
+    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->independent_count );
 }
 
 sub create_label {

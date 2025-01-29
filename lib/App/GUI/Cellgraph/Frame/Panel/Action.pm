@@ -114,7 +114,7 @@ sub set_settings {
 sub get_action_number { join '', reverse $_[0]->get_action_list }
 sub get_action_list {
     my ($self) = @_;
-    map { $self->{'action'}[$_]->GetValue } $self->{'rules'}->part_rule_iterator;
+   # map { $self->{'action'}[$_]->GetValue } $self->{'subrules'}->index_iterator;
 }
 
 
@@ -130,7 +130,7 @@ sub set_action {
     }
 
     $self->{'action_nr'}->SetValue( $nr );
-    $self->{'action'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
+    #$self->{'action'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
 }
 
 sub init_action {
@@ -179,7 +179,7 @@ sub regenerate_rules {
     $self->{'input_size'} = $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'} );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @sub_rule_pattern = ($self->{'rules'}->input_list);
+    my @sub_rule_pattern = ($self->{'subrules'}->independent_input_patterns);
     if ($do_regenerate){
         my $refresh = 0;
         if (exists $self->{'rule_input'}){
@@ -193,30 +193,30 @@ sub regenerate_rules {
             $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-        for my $rule_index ($self->{'rules'}->part_rule_iterator){
-            $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
-                                      $self->{'rule_plate'}, $self->{'rule_square_size'},
-                                      $sub_rule_pattern[$rule_index], $self->{'state_colors'}, $self->{'rules'}->sum_mode );
+        for my $rule_index ($self->{'subrules'}->index_iterator){
+            #~ $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
+                                      #~ $self->{'rule_plate'}, $self->{'rule_square_size'},
+                                      #~ $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
 
-            $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+            #~ $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
 
-            $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
-            $self->{'action'}[$rule_index]->SetCallBack( sub {
-                    $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
-            });
-            $self->{'action'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
+            #~ $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
+            #~ $self->{'action'}[$rule_index]->SetCallBack( sub {
+                    #~ $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
+            #~ });
+            #~ $self->{'action'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
 
-            $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            #~ $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
         }
-        for my $rule_index ($self->{'rules'}->part_rule_iterator){
+        for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-            $row_sizer->AddSpacer(30);
-            $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
-            $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'action'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+            #~ $row_sizer->AddSpacer(30);
+            #~ $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
+            #~ $row_sizer->AddSpacer(15);
+            #~ $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+            #~ $row_sizer->AddSpacer(15);
+            #~ $row_sizer->Add( $self->{'action'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+            #~ $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
             $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10);
         }

@@ -12,8 +12,9 @@ sub new {
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x+2, $y+2]);
     $self->{'colors'} = $colors;
-    $self->{'init'} = $start // 0;
     $self->{'callback'} = sub {};
+    $self->{'init'} = $start // 0;
+    $self->{'value'} = -1;
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $cpanel, $event ) = @_;
@@ -53,6 +54,7 @@ sub GetValue { $_[0]->{'value'} }
 sub SetValue {
     my ( $self, $value ) = @_;
     return unless defined $value and $value > -1 and $value <= $self->GetMaxValue;
+    return if $self->{'value'} == $value;
     $self->{'value'} = $value;
     $self->Refresh;
 }

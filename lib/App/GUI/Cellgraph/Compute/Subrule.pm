@@ -103,7 +103,7 @@ sub max_count                  { $_[0]->{'subrule_count'} }
 sub independent_count          { $_[0]->{'independent_subrules'} }
 sub input_patterns             { @{$_[0]->{'input_pattern'}} }
 sub independent_input_patterns { @{$_[0]->{'input_indy_pattern'}} }
-
+sub index_iterator             { 0 .. $_[0]->{'independent_subrules'} - 1 }
 ########################################################################
 
 sub independent_pattern_number {
