@@ -6,15 +6,16 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Cellgraph::Compute::Rule;
+use App::GUI::Cellgraph::Compute::Subrule;
 
 # action threshhold , value
 
 sub new {
-    my ( $class, $parent ) = @_;
+    my ( $class, $parent, $subrule_calc ) = @_;
+    return unless ref $subrule_calc eq 'App::GUI::Cellgraph::Compute::Subrule';
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'rule_calc'} = App::GUI::Cellgraph::Compute::Rule->new( 3, 2, 'all' );
+    $self->{'subrules'} = $subrule_calc;
     $self->{'call_back'} = sub {};
 
     $self->create_label( 'logicals', 'State Rules' );
@@ -24,7 +25,7 @@ sub new {
     $self->create_label( 'state_count', 'Cell States :','How many states a cell can have ?' );
 
     $self->create_label( 'rule_kind',   'Rules:',       'Which kind of rules ?' );
-    $self->create_label( 'rule_count',  'Count :',      'Amount of rules resulting current from settings.' );
+    $self->create_label( 'rule_count',  'Count :',      'Amount of subrules resulting from current settings.' );
     $self->create_label( 'grid',        'Grid Style:',  'How to paint gaps between cell squares ?' );
     $self->create_label( 'cell_size',   'Size :',       'Visual size of the cells in pixel.' );
     $self->create_label( 'direction',   'Direction :',  'painting direction and pattern mirroring style' );
@@ -43,7 +44,7 @@ sub new {
 
     $self->{'widget'}{'input_size'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from ?');
     $self->{'widget'}{'state_count'}->SetToolTip('How many states a cell can have?');
-    $self->{'widget'}{'rule_count'}->SetToolTip('amount of rules resulting current from settings');
+    $self->{'widget'}{'rule_count'}->SetToolTip('amount of subrules resulting from current settings');
     $self->{'widget'}{'rule_kind'}->SetToolTip("symmetric = aasymetric rule and it mirror have same result\nsum = all rules with same sum of input states have same result");
     $self->{'widget'}{'use_action_rules'}->SetToolTip( "should action rules determine if a (state) rule gets applied this round");
     $self->{'widget'}{'grid_type'}->SetToolTip('how to paint gaps between cell squares');
@@ -138,7 +139,6 @@ sub init        {
         grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
     });
 }
-sub rule_calculator { $_[0]->{'rule_calc'} }
 sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
@@ -166,12 +166,12 @@ sub set_settings {
 
 sub compute_subrule_count {
     my ($self) = @_;
-    $self->{'rule_calc'}->renew(
+    $self->{'subrules'}->renew(
         $self->{'widget'}{'input_size'}->GetValue,
         $self->{'widget'}{'state_count'}->GetValue,
         $self->{'widget'}{'rule_kind'}->GetValue
     );
-    $self->{'widget'}{'rule_count'}->SetValue( $self->{'rule_calc'}->independent_subrules );
+    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->independent_subrules );
 }
 
 sub create_label {

@@ -8,15 +8,17 @@ use Wx;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::ColorToggle;
+use App::GUI::Cellgraph::Compute::Rule;
 use Graphics::Toolkit::Color qw/color/;
 
 # undo redo
 
 sub new {
-    my ( $class, $parent, $rule_calculator ) = @_;
+    my ( $class, $parent, $subrule_calculator ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'rule_calc'} = $rule_calculator;
+    $self->{'subrules'} = $subrule_calculator;
+    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $subrule_calculator );
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
@@ -128,7 +130,7 @@ sub regenerate_rules {
     $self->{'input_size'} = $input_size;
     $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'}, 'all' );
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @sub_rule_pattern = ($self->{'rules'}->input_list);
+    my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
 
     if ($do_regenerate){
         my $refresh = 0;
@@ -144,10 +146,10 @@ sub regenerate_rules {
             $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-        for my $rule_index ($self->{'rules'}->part_rule_iterator){
+        for my $rule_index (0 .. $self->{'subrules'}->independent_count - 1){
             $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
                                       $self->{'rule_plate'}, $self->{'rule_square_size'},
-                                      $sub_rule_pattern[$rule_index], $self->{'state_colors'}, $self->{'rules'}->sum_mode );
+                                      $sub_rule_pattern[$rule_index], $self->{'state_colors'}, $self->{'subrules'}->mode );
 
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
 

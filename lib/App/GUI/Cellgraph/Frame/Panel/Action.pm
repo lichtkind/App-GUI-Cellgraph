@@ -14,10 +14,10 @@ use Graphics::Toolkit::Color qw/color/;
 # undo redo
 
 sub new {
-    my ( $class, $parent, $rule_calculator ) = @_;
+    my ( $class, $parent, $subrule_calculator ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'rule_calc'} = $rule_calculator;
+    $self->{'subrules'} = $subrule_calculator;
     $self->{'rule_square_size'} = 20;
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
