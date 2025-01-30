@@ -96,12 +96,14 @@ sub new {
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->set_rule( $self->{'rules'}->prev_rule_nr ) });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->set_rule( $self->{'rules'}->next_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_l'}, sub { $self->shift_rule_left; $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_r'}, sub { $self->shift_rule_right; $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sym'},  sub { $self->symmetric_rule; $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->invert_rule; $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->opposite_rule; $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->random_rule; $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_l'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_left ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_r'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_right ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sym'},  sub { $self->set_rule( $self->{'rules'}->symmetric_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->set_rule( $self->{'rules'}->inverted_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->set_rule( $self->{'rules'}->opposite_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->set_rule( $self->{'rules'}->random_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'undo'}, sub { $self->set_rule( $self->{'rules'}->undo_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'redo'}, sub { $self->set_rule( $self->{'rules'}->redo_rule_nr ) });
 
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
         my ($self, $cmd) = @_;
@@ -222,8 +224,8 @@ sub set_rule {
         $rule_nr = $self->{'rules'}->rule_nr_from_output_list( @list );
     }
     $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
-    $self->{'rules'}->set_rule_number( $rule_nr );
     $self->{'rule_nr'}->SetValue( $rule_nr );
+    $self->{'rules'}->set_rule_number( $rule_nr );
 }
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }

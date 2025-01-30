@@ -19,6 +19,7 @@ sub new {
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
     my $rule_cell_size = 20;
     $self->{'state_switches'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
+    # $self->{'state_switches'}[0]->Enable(0);
     $self->{'start_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
     $self->{'start_int'}->SetToolTip('condensed content of start row');
     $self->{'repeat_start'} = Wx::CheckBox->new( $self, -1, '  Repeat');

@@ -80,7 +80,6 @@ sub set_rule_number {
     my ($self, $number) = @_;
     return unless defined $number and $number > -1 and $number < $self->{'max_rule_nr'}
         and $number != $self->{'rule_number'};
-    $self->safe_rule_number( $number );
     $self->{'rule_number'} = $number;
     $self->{'result'} = [@{$self->{'output_list'}[$number]}];
     $number;
@@ -100,18 +99,20 @@ sub output_list_from_rule_nr {
 }
 ########################################################################
 
-sub safe_rule_number {
+sub safe_rule_nr {
     my ($self) = @_;
     $self->{'next_rule_number'} = [];
+    return if $self->{'rule_number'} == -1;
     push @{$self->{'last_rule_number'}}, $self->{'rule_number'};
+    $self->{'rule_number'};
 }
-sub undo_rule_number {
+sub undo_rule_nr {
     my ($self) = @_;
     return unless @{$self->{'last_rule_number'}};
     push @{$self->{'next_rule_number'}}, $self->{'rule_number'};
     $self->set_rule_number( pop @{$self->{'last_rule_number'}} );
 }
-sub redo_rule_number {
+sub redo_rule_nr {
     my ($self) = @_;
     return unless @{$self->{'next_rule_number'}};
     push @{$self->{'last_rule_number'}}, $self->{'rule_number'};
@@ -121,55 +122,55 @@ sub redo_rule_number {
 
 sub prev_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_number;
-    $nr = ($nr < 0) ? ($self->{'max_rule_nr'}-1) : $nr - 1;
+    my $nr = $self->safe_rule_nr;
+    $nr = ($nr < 2) ? ($self->{'max_rule_nr'}-1) : $nr - 1;
     $self->set_rule_number( $nr );
 }
 sub next_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_number;
-    $nr = ($nr >= $self->{'max_rule_nr'}) ? 0 : $nr + 1;
+    my $nr = $self->safe_rule_nr;
+    $nr++;
+    $nr = 1 if $nr >= $self->{'max_rule_nr'};
     $self->set_rule_number( $nr );
 }
 sub shift_rule_nr_left {
     my ($self) = @_;
-    my $nr = $self->safe_rule_number;
+    my $nr = $self->safe_rule_nr;
     $nr = $nr << 1;
     $nr = 0 if $nr >= $self->{'max_rule_nr'};
     $self->set_rule_number( $nr );
 }
 sub shift_rule_nr_right {
     my ($self) = @_;
-    my $nr = $self->safe_rule_number;
+    my $nr = $self->safe_rule_nr;
     $nr = ($nr == 0) ? ($self->{'max_rule_nr'}-1) : $nr >> 1;
     $self->set_rule_number( $nr );
 }
-
 sub opposite_rule_nr {
     my ($self) = @_;
-    my $sub_rules = {'subrules'}->independent_count;
-    my $nr = $self->safe_rule_number;
+    my $sub_rules = $self->{'subrules'}->independent_count;
+    my $nr = $self->safe_rule_nr;
     my @old_list = $self->output_list_from_rule_nr( $nr );
-    my @new_list = map { $old_list[ $sub_rules - $_ - 1] } 0 .. $sub_rules - 1;
-    $self->set_rule_number( $self->rule_nr_from_output_list( @new_list ) );
+    my @new_list = map { $old_list[ $sub_rules - $_ - 1] } $self->{'subrules'}->index_iterator;
+    $self->set_rule_number( $self->rule_nr_from_output_list( @new_list ) ) // $nr;
 }
 sub symmetric_rule_nr {
     my ($self) = @_;
-    return $self->{'rule_number'} unless $self->{'subrules'}{'mode'} eq 'all';
-    my $nr = $self->safe_rule_number;
+    return $self->{'rule_number'} unless $self->{'subrules'}->mode eq 'all';
+    my $nr = $self->safe_rule_nr;
     my @old_list = $self->output_list_from_rule_nr( $nr );
-    my @new_list = map { $old_list[ $self->{'subrules'}{'input_symmetric_partner'}[$_] ] } 0 .. $self->{'subrules'}->independent_count - 1;
-    $self->set_rule_number( $self->rule_nr_from_output_list( @new_list ) );
+    my @new_list = map { $old_list[ $self->{'subrules'}{'input_symmetric_partner'}[$_] ] } $self->{'subrules'}->index_iterator;
+    $self->set_rule_number( $self->rule_nr_from_output_list( @new_list ) ) // $nr;
 }
 sub inverted_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_number;
-    $self->set_rule_number( $self->{'max_rule_nr'} - $nr );# swap color
+    my $nr = $self->safe_rule_nr;
+    $self->set_rule_number( $self->{'max_rule_nr'} - $nr - 1 ) // $nr;# swap color
 }
 
-sub random_nr {
+sub random_rule_nr {
     my ($self) = @_;
-    $self->safe_rule_number;
+    $self->safe_rule_nr;
     my $nr = int rand $self->{'max_rule_nr'} + 1;
     $self->set_rule_number( $nr );
 }

@@ -41,7 +41,7 @@ sub compute_subrules {
     }
     for my $i (0 .. $self->{'subrule_count'} - 1) {
         my $l = $self->{'input_list'}[$i];
-        my $rev_pattern = join '', reverse(@$l);
+        my $rev_pattern = join '', @$l;
         $self->{'input_symmetric_partner'}[$i] = $self->{'input_pattern_index'}{$rev_pattern};
     }
 
