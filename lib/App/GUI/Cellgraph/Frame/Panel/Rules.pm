@@ -43,8 +43,8 @@ sub new {
 
     $self->{'btn'}{'prev'}->SetToolTip('decrease rule number by one');
     $self->{'btn'}{'next'}->SetToolTip('increase rule number by one');
-    $self->{'btn'}{'sh_l'}->SetToolTip('shift binary rule number one to left');
-    $self->{'btn'}{'sh_r'}->SetToolTip('shift binary rule number one to right');
+    $self->{'btn'}{'sh_l'}->SetToolTip('rotate binary rule number one to left');
+    $self->{'btn'}{'sh_r'}->SetToolTip('rotate binary rule number one to right');
     $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
     $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
     $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
@@ -64,9 +64,9 @@ sub new {
     $rule_sizer->AddSpacer( 5 );
     $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );
     $rule_sizer->Add( $self->{'btn'}{'next'}, 0, $tb_attr, 5 );
-    $rule_sizer->AddSpacer( 10 );
-    $rule_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $tb_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $tb_attr, 5 );
+    $rule_sizer->AddSpacer( 23 );
+    $rule_sizer->Add( $self->{'btn'}{'undo'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'btn'}{'redo'}, 0, $tb_attr, 5 );
     $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rf_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
@@ -75,9 +75,9 @@ sub new {
     $rf_sizer->Add( $self->{'btn'}{'sym'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'opp'}, 0, $all_attr, 5 );
     $rf_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );
-    $rf_sizer->AddSpacer( 15 );
-    $rf_sizer->Add( $self->{'btn'}{'undo'}, 0, $tb_attr, 5 );
-    $rf_sizer->Add( $self->{'btn'}{'redo'}, 0, $tb_attr, 5 );
+    $rf_sizer->AddSpacer( 10 );
+    $rf_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $tb_attr, 5 );
+    $rf_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $tb_attr, 5 );
     $rf_sizer->AddSpacer(20);
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -226,6 +226,8 @@ sub set_rule {
     $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
     $self->{'rule_nr'}->SetValue( $rule_nr );
     $self->{'rules'}->set_rule_number( $rule_nr );
+    $self->{'btn'}{'undo'}->Enable( $self->{'rules'}->can_undo );
+    $self->{'btn'}{'redo'}->Enable( $self->{'rules'}->can_redo );
 }
 
 sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }

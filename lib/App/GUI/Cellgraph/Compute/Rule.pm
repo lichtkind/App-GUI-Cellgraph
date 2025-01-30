@@ -80,9 +80,14 @@ sub set_rule_number {
     my ($self, $number) = @_;
     return unless defined $number and $number > -1 and $number < $self->{'max_rule_nr'}
         and $number != $self->{'rule_number'};
+    $self->safe_rule_nr;
     $self->{'rule_number'} = $number;
-    $self->{'result'} = [@{$self->{'output_list'}[$number]}];
+    $self->_update_results;
     $number;
+}
+sub _update_results {
+    my ($self) = @_;
+    $self->{'result'} = [@{$self->{'output_list'}[$self->{'rule_number'}]}];
 }
 
 sub rule_nr_from_output_list {
@@ -110,14 +115,27 @@ sub undo_rule_nr {
     my ($self) = @_;
     return unless @{$self->{'last_rule_number'}};
     push @{$self->{'next_rule_number'}}, $self->{'rule_number'};
-    $self->set_rule_number( pop @{$self->{'last_rule_number'}} );
+    $self->{'rule_number'} = pop @{$self->{'last_rule_number'}};
+    $self->_update_results;
+    $self->{'rule_number'}
 }
 sub redo_rule_nr {
     my ($self) = @_;
     return unless @{$self->{'next_rule_number'}};
     push @{$self->{'last_rule_number'}}, $self->{'rule_number'};
-    $self->set_rule_number( pop @{$self->{'next_rule_number'}} );
+    $self->{'rule_number'} = pop @{$self->{'next_rule_number'}};
+    $self->_update_results;
+    $self->{'rule_number'}
 }
+sub can_undo {
+    my ($self) = @_;
+    int (@{$self->{'last_rule_number'}}) > 0;
+}
+sub can_redo {
+    my ($self) = @_;
+    int (@{$self->{'next_rule_number'}}) > 0;
+}
+
 ########################################################################
 
 sub prev_rule_nr {
@@ -136,15 +154,16 @@ sub next_rule_nr {
 sub shift_rule_nr_left {
     my ($self) = @_;
     my $nr = $self->safe_rule_nr;
-    $nr = $nr << 1;
-    $nr = 0 if $nr >= $self->{'max_rule_nr'};
-    $self->set_rule_number( $nr );
+    my @list = $self->output_list_from_rule_nr( $nr );
+    unshift @list, pop @list;
+    $self->set_rule_number( $self->rule_nr_from_output_list( @list ) ) // $nr;
 }
 sub shift_rule_nr_right {
     my ($self) = @_;
     my $nr = $self->safe_rule_nr;
-    $nr = ($nr == 0) ? ($self->{'max_rule_nr'}-1) : $nr >> 1;
-    $self->set_rule_number( $nr );
+    my @list = $self->output_list_from_rule_nr( $nr );
+    push @list, shift @list;
+    $self->set_rule_number( $self->rule_nr_from_output_list( @list ) ) // $nr;
 }
 sub opposite_rule_nr {
     my ($self) = @_;
