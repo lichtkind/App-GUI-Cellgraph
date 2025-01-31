@@ -26,6 +26,7 @@ sub new {
     $self->{'call_back'} = sub {};
     $self->{'input_size'} = 0;
     $self->{'state_count'} = 0;
+    $self->{'rule_mode'} = '';
 
     $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 95, -1], &Wx::wxTE_PROCESS_ENTER );
 
@@ -64,8 +65,8 @@ sub new {
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'rule_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'1'},sub { $self->init_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'2'},sub { $self->grid_action; $self->{'call_back'}->() } );
@@ -98,12 +99,19 @@ sub get_settings {
     my ($self) = @_;
     {
         nr => $self->{'action_nr'}->GetValue,
+        sum => 0,
+        threshold => 1,
+    }
+}
+sub get_state {
+    my ($self) = @_;
+    {
+        nr => $self->{'action_nr'}->GetValue,
         f => [$self->get_action_list],
         sum => 0,
         threshold => 1,
     }
 }
-sub get_state { $_[0]->get_settings() }
 
 sub set_settings {
     my ($self, $settings) = @_;
@@ -117,76 +125,36 @@ sub get_action_list {
    # map { $self->{'action'}[$_]->GetValue } $self->{'subrules'}->index_iterator;
 }
 
-
-sub set_action {
-    my ($self) = shift;
-    my ($nr, @list);
-    if (@_ == 1) {
-        $nr = shift;
-        @list = $self->list_from_action_nr( $nr );
-    } else {
-        @list = @_;
-        $nr = $self->nr_from_action_list( @list );
-    }
-
-    $self->{'action_nr'}->SetValue( $nr );
-    #$self->{'action'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
-}
-
-sub init_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->init } $self->{'rules'}->part_rule_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub grid_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->grid } $self->{'rules'}->part_rule_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub random_action {
-    my ($self) = @_;
-    my @list =  map { $self->{'action'}[$_]->rand } $self->{'rules'}->part_rule_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub invert_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action'}[$_]->invert } $self->{'rules'}->part_rule_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub list_from_action_nr { reverse split '', $_[1]}
-sub nr_from_action_list { shift @_; join '', reverse @_ }
-
 sub regenerate_rules {
-    my ($self, $input_size, $state_count, @colors) = @_;
+    my ($self, @colors) = @_;
     return if @colors < 2;
     my $do_regenerate = 0;
     my $do_recolor = 0;
-    $do_regenerate += !($self->{'state_count'} == $state_count);
-    $do_regenerate += !($self->{'input_size'} == $input_size);
+    $do_regenerate += ($self->{'input_size'} != $self->{'subrules'}->input_size);
+    $do_regenerate += ($self->{'state_count'} != $self->{'subrules'}->state_count);
+    $do_regenerate += ($self->{'rule_mode'} ne $self->{'subrules'}->mode);
     for my $i (0 .. $#colors) {
         return unless ref $colors[$i] eq 'Graphics::Toolkit::Color';
         if (exists $self->{'state_colors'}[$i]) {
-            my @rgb = $colors[$i]->rgb;
+            my @rgb = $colors[$i]->values('rgb');
             $do_recolor += !( $rgb[$_] == $self->{'state_colors'}[$i][$_]) for 0 .. 2;
         } else { $do_recolor++ }
     }
     return unless $do_regenerate or $do_recolor;
-    $self->{'state_count'} = $state_count;
-    $self->{'input_size'} = $input_size;
-    $self->{'rules'} = App::GUI::Cellgraph::Compute::Rule->new( $self->{'input_size'}, $self->{'state_count'} );
+    $self->{'input_size'} = $self->{'subrules'}->input_size;
+    $self->{'state_count'} = $self->{'subrules'}->state_count;
+    $self->{'rule_mode'}   = $self->{'subrules'}->mode;
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @sub_rule_pattern = ($self->{'subrules'}->independent_input_patterns);
+    my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
+
     if ($do_regenerate){
-        my $refresh = 0;
+        my $refresh = 0;# set back refresh flag
+
         if (exists $self->{'rule_input'}){
             $self->{'plate_sizer'}->Clear(1);
             $self->{'rule_input'} = [];
             $self->{'arrow'} = [];
-            $self->{'action'} = [];
+            $self->{'action_result'} = []; # was action before
             $refresh = 1;
         } else {
             $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -194,38 +162,83 @@ sub regenerate_rules {
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
         for my $rule_index ($self->{'subrules'}->index_iterator){
-            #~ $self->{'rule_input'}[$rule_index] = App::GUI::Cellgraph::Widget::RuleInput->new (
-                                      #~ $self->{'rule_plate'}, $self->{'rule_square_size'},
-                                      #~ $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
+            $self->{'rule_input'}[$rule_index]
+                = App::GUI::Cellgraph::Widget::RuleInput->new (
+                    $self->{'rule_plate'}, $self->{'rule_square_size'},
+                    $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
 
-            #~ $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+            $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+            $self->{'action_result'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
+            $self->{'action_result'}[$rule_index]->SetCallBack( sub {
+                    $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
+            });
+            $self->{'action_result'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
 
-            #~ $self->{'action'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
-            #~ $self->{'action'}[$rule_index]->SetCallBack( sub {
-                    #~ $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
-            #~ });
-            #~ $self->{'action'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
-
-            #~ $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
         }
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-            #~ $row_sizer->AddSpacer(30);
-            #~ $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
-            #~ $row_sizer->AddSpacer(15);
-            #~ $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            #~ $row_sizer->AddSpacer(15);
-            #~ $row_sizer->Add( $self->{'action'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            #~ $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+            $row_sizer->AddSpacer(30);
+            $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
+            $row_sizer->AddSpacer(15);
+            $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+            $row_sizer->AddSpacer(15);
+            $row_sizer->Add( $self->{'action_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+            $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
             $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10);
         }
         $self->Layout if $refresh;
     } elsif ($do_recolor) {
         my @rgb = map {[$_->rgb]} @colors;
-        $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
+        $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'subrules'}->index_iterator;
     }
 }
+
+
+sub set_action {
+    my ($self) = shift;
+    my ($nr, @aresult);
+    if (@_ == 1) {
+        $nr = shift;
+        @aresult = $self->list_from_action_nr( $nr );
+    } else {
+        @aresult = @_;
+        $nr = $self->nr_from_action_list( @aresult );
+    }
+say "set action @aresult";
+    $self->{'action_nr'}->SetValue( $nr );
+    #$self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
+}
+
+########################################################################
+sub init_action {
+    my ($self) = @_;
+    my @list = map { $self->{'action_result'}[$_]->init } $self->{'subrules'}->index_iterator;
+    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+}
+
+sub grid_action {
+    my ($self) = @_;
+    my @list = map { $self->{'action_result'}[$_]->grid } $self->{'subrules'}->index_iterator;
+    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+}
+
+sub random_action {
+    my ($self) = @_;
+    my @list =  map { $self->{'action_result'}[$_]->rand } $self->{'subrules'}->index_iterator;
+    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+}
+
+sub invert_action {
+    my ($self) = @_;
+    my @list = map { $self->{'action_result'}[$_]->invert } $self->{'subrules'}->index_iterator;
+    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+}
+
+sub list_from_action_nr { reverse split '', $_[1]}
+sub nr_from_action_list { shift @_; join '', reverse @_ }
 
 
 1;

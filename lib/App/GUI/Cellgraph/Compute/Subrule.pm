@@ -66,11 +66,13 @@ sub compute_subrules {
             map {$sum += $_} @{$self->{'input_list'}[$i]};
             $self->{'subrule_mapping'}[$i] = $sum;
         }
-        my $pre_pattern = join '', (0) x ($input_size - 1);
-        my $last_state = $state_count - 1;
-        $self->{'input_indy_pattern'}[$_] = $pre_pattern.$_ for 0 .. $last_state;
-        for my $i ($state_count .. $last_state + $input_size) {
-            $self->{'input_indy_pattern'}[$i] = substr($self->{'input_indy_pattern'}[$i-1], 1) . $last_state;
+        my @input = (0) x ($input_size);
+        $self->{'input_indy_pattern'}[0] = join '', @input;
+        for my $pos (0 .. $input_size - 1){
+            for my $new_state (1 .. $state_count-1){
+                $input[$pos] = $new_state;
+                push @{$self->{'input_indy_pattern'}}, join '', reverse @input;
+            }
         }
     }
 
@@ -106,7 +108,7 @@ sub independent_input_patterns { @{$_[0]->{'input_indy_pattern'}} }
 sub index_iterator             { 0 .. $_[0]->{'independent_subrules'} - 1 }
 ########################################################################
 
-sub independent_pattern_number {
+sub effective_pattern_nr {
     my ($self, $pattern) = @_;
     return unless exists $self->{'index_from_pattern'}{$pattern};
     my $i = $self->{'index_from_pattern'}{$pattern};

@@ -168,7 +168,6 @@ sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#000000', dynamics => 1,
 sub get_settings {
     my ($self) = @_;
     my $data = {
-        objects => $self->{'state_colors'},
         dynamics => $self->{'dynamics'}->GetValue,
         delta_S => $self->{'Sdelta'}->GetValue,
         delta_L => $self->{'Ldelta'}->GetValue,
@@ -176,7 +175,12 @@ sub get_settings {
     $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'};
     $data;
 }
-sub get_state { $_[0]->get_settings() }
+sub get_state {
+    my ($self) = @_;
+    my $data = $self-> get_settings;
+    $data->{'objects'} = $self->{'state_colors'};
+    $data;
+}
 
 sub set_settings {
     my ($self, $data) = @_;

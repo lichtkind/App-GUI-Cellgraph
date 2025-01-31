@@ -21,11 +21,10 @@ sub new {
     $self->create_label( 'logicals', 'State Rules' );
     $self->create_label( 'actions', 'Action Rules' );
     $self->create_label( 'visuals',  'Visual Settings' );
-    $self->create_label( 'input_size',  'Input Size:', 'Size of neighbourhood - from how many cells compute new cell state ?' );
+    $self->create_label( 'input_size',  'Input Size:',  'Size of neighbourhood - from how many cells compute new cell state ?' );
     $self->create_label( 'state_count', 'Cell States :','How many states a cell can have ?' );
-
-    $self->create_label( 'rule_kind',   'Rules:',       'Which kind of rules ?' );
-    $self->create_label( 'rule_count',  'Count :',      'Amount of subrules resulting from current settings.' );
+    $self->create_label( 'rule_kind',   'Kind:',        'Which kind of rules ?' );
+    $self->create_label( 'rule_count',  'Sub - Rules :','Amount of subrules resulting from current settings.' );
     $self->create_label( 'grid',        'Grid Style:',  'How to paint gaps between cell squares ?' );
     $self->create_label( 'cell_size',   'Size :',       'Visual size of the cells in pixel.' );
     $self->create_label( 'direction',   'Direction :',  'painting direction and pattern mirroring style' );
@@ -33,7 +32,8 @@ sub new {
     $self->{'widget'}{'circular_grid'} = Wx::CheckBox->new( $self, -1, '  Circular');
     $self->{'widget'}{'use_action_rules'} = Wx::CheckBox->new( $self, -1, '  Active');
 
-    $self->{'widget'}{'rule_count'}  = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 75, -1], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'rule_count'}  = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 105, -1], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'subrule_count'}  = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );
 
     $self->{'widget'}{'input_size'}  = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
@@ -44,10 +44,11 @@ sub new {
 
     $self->{'widget'}{'input_size'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from ?');
     $self->{'widget'}{'state_count'}->SetToolTip('How many states a cell can have?');
-    $self->{'widget'}{'rule_count'}->SetToolTip('amount of subrules resulting from current settings');
-    $self->{'widget'}{'rule_kind'}->SetToolTip("symmetric = aasymetric rule and it mirror have same result\nsum = all rules with same sum of input states have same result");
+    $self->{'widget'}{'rule_count'}->SetToolTip('Count of Rules resulting from current settings');
+    $self->{'widget'}{'subrule_count'}->SetToolTip('Count of Subrules resulting from current settings');
+    $self->{'widget'}{'rule_kind'}->SetToolTip("symmetric = aasymetric rule and it mirror have same result\nsumming = all rules with same sum of input states have same result");
     $self->{'widget'}{'use_action_rules'}->SetToolTip( "should action rules determine if a (state) rule gets applied this round");
-    $self->{'widget'}{'grid_type'}->SetToolTip('how to paint gaps between cell squares');
+    $self->{'widget'}{'grid_type'}->SetToolTip('How to paint gaps between cell squares');
     $self->{'widget'}{'cell_size'}->SetToolTip('visual size of the cells in pixel');
     $self->{'widget'}{'paint_direction'}->SetToolTip('painting direction');
     $self->{'widget'}{'circular_grid'}->SetToolTip('cells on the edges become neighbours to each other');
@@ -77,6 +78,7 @@ sub new {
     $logic2_sizer->Add( $self->{'widget'}{'rule_kind'}, 0, $row_attr, 8);
     $logic2_sizer->AddSpacer( 15 );
     $logic2_sizer->Add( $self->{'label'}{'rule_count'}, 0, $all_attr, 7);
+    $logic2_sizer->Add( $self->{'widget'}{'subrule_count'}, 0, $row_attr, 8);
     $logic2_sizer->Add( $self->{'widget'}{'rule_count'}, 0, $row_attr, 8);
     $logic2_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -134,7 +136,7 @@ sub new {
 sub init        {
     $_[0]->set_settings({
         input_size => 3, state_count => 2, circular_grid => 0,
-        rule_kind => 'all', rule_count => 8,
+        rule_kind => 'all', subrule_count => 8, rule_count => 256,
         use_action_rules => 0,
         grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
     });
@@ -149,8 +151,7 @@ sub get_settings {
     my ($self) = @_;
     my $settings = { map { $_ => $self->{'widget'}{$_}->GetValue } keys %{$self->{'widget'}} };
 }
-sub get_state { $_[0]->get_settings() }
-
+sub get_state   { $_[0]->get_settings() }
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
@@ -170,14 +171,15 @@ sub compute_subrule_count {
         $self->{'widget'}{'state_count'}->GetValue,
         $self->{'widget'}{'rule_kind'}->GetValue
     );
-    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->independent_count );
+    $self->{'widget'}{'subrule_count'}->SetValue( $self->{'subrules'}->independent_count );
+    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count );
 }
 
 sub create_label {
     my ($self, $id, $text, $help) = @_;
     return unless defined $text and $text and not exists $self->{'label'}{ $id };
     $self->{'label'}{ $id } = Wx::StaticText->new( $self, -1, $text );
-    $self->{'label'}{ $id }->SetToolTip('how to paint gaps between cell squares') if defined $help and $help;
+    $self->{'label'}{ $id }->SetToolTip( $help ) if defined $help and $help;
     $self->{'label'}{ $id }
 }
 

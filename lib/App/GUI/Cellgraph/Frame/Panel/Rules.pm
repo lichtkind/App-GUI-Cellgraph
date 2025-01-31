@@ -26,7 +26,7 @@ sub new {
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 0;
     $self->{'state_count'} = 0;
-    $self->{'rule_mode'} = 'all';
+    $self->{'rule_mode'} = '';
     $self->{'state_colors'} = [];
     $self->{'call_back'}  = sub {};
 
@@ -129,6 +129,7 @@ sub regenerate_rules {
     $do_regenerate += ($self->{'input_size'} != $self->{'subrules'}->input_size);
     $do_regenerate += ($self->{'state_count'} != $self->{'subrules'}->state_count);
     $do_regenerate += ($self->{'rule_mode'} ne $self->{'subrules'}->mode);
+say "ask regen optic with status ", $do_regenerate;
     for my $i (0 .. $#colors) {
         return unless ref $colors[$i] eq 'Graphics::Toolkit::Color';
         if (exists $self->{'state_colors'}[$i]) {
@@ -146,8 +147,9 @@ sub regenerate_rules {
     if ($do_regenerate){
         my $refresh = 0; # set back refresh flag
         $self->{'rules'}->renew;
-
-say "do regen optic ",$self->{'subrules'}->independent_count;
+        $self->{'rule_nr'}->SetValue( $self->{'rules'}->get_rule_nr );
+        my $label_length = length $self->{'subrules'}->independent_count;
+say "do regen optic with subrules: ",$self->{'subrules'}->independent_count, ' pattern: ', int @sub_rule_pattern;
         if (exists $self->{'rule_input'}){
             $self->{'plate_sizer'}->Clear(1);
             $self->{'rule_input'} = [];
@@ -164,6 +166,7 @@ say "do regen optic ",$self->{'subrules'}->independent_count;
             $self->{'rule_input'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::RuleInput->new ( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                 $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
+#say "i $rule_index ", $sub_rule_pattern[$rule_index];
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
             $self->{'rule_result'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
@@ -172,10 +175,12 @@ say "do regen optic ",$self->{'subrules'}->independent_count;
             $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
         }
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);
+            $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' ), 0, &Wx::wxGROW);
             $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
             $row_sizer->AddSpacer(15);
             $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
@@ -189,8 +194,8 @@ say "do regen optic ",$self->{'subrules'}->independent_count;
         $self->Layout if $refresh;
     } elsif ($do_recolor) {
         my @rgb = map {[$_->rgb]} @colors;
-        $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
-        $self->{'rule_result'}[$_]->SetColors( @rgb ) for $self->{'rules'}->part_rule_iterator;
+        $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'subrules'}->index_iterator;
+        $self->{'rule_result'}[$_]->SetColors( @rgb ) for $self->{'subrules'}->index_iterator;
     }
 }
 
@@ -201,12 +206,7 @@ sub set_settings {
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
     $self->set_rule( $settings->{'nr'} );
 }
-sub get_settings {
-    my ($self) = @_;
-    {
-        nr => $self->{'rule_nr'}->GetValue,
-    }
-}
+sub get_settings { return { nr => $_[0]->{'rule_nr'}->GetValue, } }
 sub get_state {
     my ($self) = @_;
     {
@@ -223,19 +223,19 @@ sub update_rule_from_output {  $_[0]->set_rule( $_[0]->get_output_list ) }
 
 sub set_rule {
     my ($self) = shift;
-    my ($rule_nr, @list);
+    my ($rule_nr, @result);
     return unless @_;
     if (@_ == 1) {
         $rule_nr = shift;
-        @list = $self->{'rules'}->output_list_from_rule_nr( $rule_nr );
+        @result = $self->{'rules'}->result_list_from_rule_nr( $rule_nr );
     } else {
-        @list = @_;
-        $rule_nr = $self->{'rules'}->rule_nr_from_output_list( @list );
+        @result = @_;
+        $rule_nr = $self->{'rules'}->rule_nr_from_result_list( @result );
     }
     return if $rule_nr == $self->{'rule_nr'}->GetValue;
-    $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
+    $self->{'rule_result'}[$_]->SetValue( $result[$_] ) for 0 .. $#result;
     $self->{'rule_nr'}->SetValue( $rule_nr );
-    $self->{'rules'}->set_rule_number( $rule_nr );
+    $self->{'rules'}->set_rule_nr( $rule_nr );
     $self->{'btn'}{'undo'}->Enable( $self->{'rules'}->can_undo );
     $self->{'btn'}{'redo'}->Enable( $self->{'rules'}->can_redo );
 }

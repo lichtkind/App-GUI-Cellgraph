@@ -100,7 +100,7 @@ sub paint {
     my $color = Wx::Colour->new( 0, 0, 0 );
     $dc->SetPen( Wx::Pen->new( $color, 1, &Wx::wxPENSTYLE_SOLID ) );
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
-    # my $grid = App::GUI::Cellgraph::Compute::Grid::now( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'state'} );
+    my $grid = App::GUI::Cellgraph::Compute::Grid::now( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'state'} );
 
     #~ my $sketch_length = exists $self->{'flag'}{'sketch'} ? $self->{'flag'}{'sketch'} : 0;
     #~ if ($self->{'state'}{'global'}{'paint_direction'} eq 'inside_out') {

@@ -183,17 +183,8 @@ sub init {
     $self->set_settings_save(1);
 }
 
-sub get_state {
-    my $self = shift;
-    my %state = map { $_ => $self->{'panel'}{$_}->get_state } @{$self->{'panel_names'}};
-    \%state;
-}
-
-sub get_settings {
-    my $self = shift;
-    my %settings = map { $_ => $self->{'panel'}{$_}->get_settings } @{$self->{'panel_names'}};
-    \%settings;
-}
+sub get_state    {{ map { $_ => $_[0]->{'panel'}{$_}->get_state } @{$_[0]->{'panel_names'}} }}
+sub get_settings {{ map { $_ => $_[0]->{'panel'}{$_}->get_settings } @{$_[0]->{'panel_names'}} }}
 
 sub set_settings {
     my ($self, $settings) = @_;
@@ -213,12 +204,12 @@ sub spread_setting_changes {
     my $global = $self->{'panel'}{'global'}->get_settings;
     $self->{'panel'}{'color'}->set_state_count( $global->{'state_count'} );
     my @needed_colors = $self->{'panel'}{'color'}->get_active_colors;
+#say "spread";
     $self->{'progress'}->set_colors( @needed_colors );
     $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
     $self->{'panel'}{'rules'}->regenerate_rules( @needed_colors );
     $self->{'panel'}{'action'}->regenerate_rules( @needed_colors );
 }
-
 sub sketch {
     my ($self) = @_;
     $self->spread_setting_changes();
@@ -226,7 +217,6 @@ sub sketch {
     $self->{'progress'}->reset;
     $self->set_settings_save( 0 );
 }
-
 sub draw {
     my ($self) = @_;
     $self->spread_setting_changes();
@@ -248,7 +238,6 @@ sub open_settings_dialog {
         $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 0);
     }
 }
-
 sub write_settings_dialog {
     my ($self) = @_;
     my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data", $self->{'config'}->get_value('write_dir'), '',
@@ -262,6 +251,42 @@ sub write_settings_dialog {
     $self->update_recent_settings_menu();
     my $dir = App::GUI::Cellgraph::Settings::extract_dir( $path );
     $self->{'config'}->set_value('write_dir', $dir);
+}
+sub open_setting_file {
+    my ($self, $file ) = @_;
+    my $settings = App::GUI::Cellgraph::Settings::load( $file );
+    if (ref $settings) {
+        $self->set_settings( $settings );
+        $self->draw;
+        $self->SetStatusText( "loaded settings from ".$file, 0) ;
+        my $dir = App::GUI::Cellgraph::Settings::extract_dir( $file );
+        $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
+        $self->update_recent_settings_menu();
+        $self->set_settings_save(1);
+        $settings;
+    } else {
+         $self->SetStatusText( $settings, 0);
+    }
+}
+sub write_settings_file {
+    my ($self, $file)  = @_;
+    $file = substr ($file, 0, -4) if lc substr ($file, -4) eq '.ini';
+    $file .= '.ini' unless lc substr ($file, -4) eq '.ini';
+    my $ret = App::GUI::Cellgraph::Settings::write( $file, $self->get_settings );
+    if ($ret){ $self->SetStatusText( $ret, 0 ) }
+    else     {
+        $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
+        $self->update_recent_settings_menu();
+        $self->SetStatusText( "saved settings into file $file", 0 );
+        $self->set_settings_save(1);
+    }
+}
+
+sub write_image {
+    my ($self, $file)  = @_;
+    $self->{'board'}->save_file( $file );
+    $file = App::GUI::Cellgraph::Settings::shrink_path( $file );
+    $self->SetStatusText( "saved image under: $file", 0 );
 }
 
 sub save_image_dialog {
@@ -290,49 +315,6 @@ sub save_image_dialog {
     my $ret = $self->write_image( $path );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     { $self->{'config'}->set_value('save_dir', App::GUI::Cellgraph::Settings::extract_dir( $path )) }
-}
-
-sub open_setting_file {
-    my ($self, $file ) = @_;
-    my $settings = App::GUI::Cellgraph::Settings::load( $file );
-    if (ref $settings) {
-        $self->set_settings( $settings );
-        $self->draw;
-        $self->SetStatusText( "loaded settings from ".$file, 0) ;
-        my $dir = App::GUI::Cellgraph::Settings::extract_dir( $file );
-        $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
-        $self->update_recent_settings_menu();
-        $self->set_settings_save(1);
-        $settings;
-    } else {
-         $self->SetStatusText( $settings, 0);
-    }
-}
-
-sub write_settings_file {
-    my ($self, $file)  = @_;
-    my $settings = $self->get_settings;
-    $file = substr ($file, 0, -4) if lc substr ($file, -4) eq '.ini';
-    $file .= '.ini' unless lc substr ($file, -4) eq '.ini';
-    delete $settings->{'rules'}{'f'};
-    delete $settings->{'action'}{'f'};
-    delete $settings->{'start'}{'list'};
-    delete $settings->{'color'}{'objects'};
-    my $ret = App::GUI::Cellgraph::Settings::write( $file, $settings );
-    if ($ret){ $self->SetStatusText( $ret, 0 ) }
-    else     {
-        $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
-        $self->update_recent_settings_menu();
-        $self->SetStatusText( "saved settings into file $file", 0 );
-        $self->set_settings_save(1);
-    }
-}
-
-sub write_image {
-    my ($self, $file)  = @_;
-    $self->{'board'}->save_file( $file );
-    $file = App::GUI::Cellgraph::Settings::shrink_path( $file );
-    $self->SetStatusText( "saved image under: $file", 0 );
 }
 
 1;
