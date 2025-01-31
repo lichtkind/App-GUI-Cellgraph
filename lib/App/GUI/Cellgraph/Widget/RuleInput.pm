@@ -32,16 +32,6 @@ sub new {
         $dc->SetBackground( Wx::Brush->new( $bg_color, &Wx::wxBRUSHSTYLE_SOLID ) );
         $dc->Clear();
         my $base_x = 0;
-        #~ if ($sum_type) {
-            #~ $base_x += $cell_size + 1;
-            #~ my $quarter = int ( $cell_size / 5 );
-            #~ my $half    = int ( $cell_size / 2 );
-            #~ $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 0, 0, 0 ), 1, &Wx::wxPENSTYLE_SOLID ) );
-            #~ $dc->DrawLine( $quarter,          1 + $quarter, $cell_size - (2*$quarter),          1 + $quarter);
-            #~ $dc->DrawLine( $quarter, $cell_size - $quarter, $cell_size - (2*$quarter), $cell_size - $quarter);
-            #~ $dc->DrawLine( $quarter,          1 + $quarter, $half, $half);
-            #~ $dc->DrawLine( $quarter, $cell_size - $quarter, $half, $half);
-        #~ }
         if ($ignore_center) {
             $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 0, 0, 0 ), 1, &Wx::wxPENSTYLE_SOLID ) );
             my $cross_x = $half_count * ($cell_size + 1);

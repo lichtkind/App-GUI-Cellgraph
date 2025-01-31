@@ -28,15 +28,13 @@ sub new {
 }
 sub renew {
     my ($self) = @_;
-
-    $self->{'result'} = [];
     $self->{'output_list'} = [];
     $self->{'output_pattern'} = [];
     $self->{'output_pattern_index'} = {};
     $self->{'next_rule_number'} = [];
     $self->{'last_rule_number'} = [];
     $self->{'max_rule_nr'} = ($self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count);
-    $self->{'rule_number'} = $self->{'max_rule_nr'} if $self->{'max_rule_nr'} > $self->{'rule_number'};
+    $self->{'rule_number'} = $self->{'max_rule_nr'}-1 unless $self->{'max_rule_nr'} > $self->{'rule_number'};
     $self->set_rule_number( $self->{'rule_number'} );
 
     $self->{'output_list'} =
@@ -46,12 +44,13 @@ sub renew {
         $self->{'output_pattern'}[$i] = join '', reverse @{$self->{'output_list'}[$i]};
         $self->{'output_pattern_index'}{ $self->{'output_pattern'}[$i] } = $i;
     }
-
+    $self->_update_results() unless $self->{'rule_number'} == -1;
     $self;
 }
 
 ########################################################################
 
+sub subrules { $_[0]->{'subrules'} }
 sub result_from_pattern {
     my ($self, $pattern) = @_;
     return unless exists $self->{'index_from_pattern'}{$pattern};
@@ -66,12 +65,12 @@ sub result_from_input_list {
 
 sub get_subrule_result {
     my ($self, $index) = @_;
-    return unless defined $index and $index < $self->independent_subrules and $index > -1;
+    return unless defined $index and $index < $self->{'subrules'}->independent_count and $index > -1;
     $self->{'result'}[$index];
 }
 sub set_subrule_result {
     my ($self, $index, $result) = @_;
-    return unless defined $result and $index < $self->independent_subrules and $index > -1;
+    return unless defined $result and $index < $self->{'subrules'}->independent_count and $index > -1;
     $self->{'result'}[$index] = $result;
 }
 
@@ -102,8 +101,8 @@ sub output_list_from_rule_nr {
     return unless exists $self->{'output_list'}[$nr];
     reverse @{$self->{'output_list'}[$nr]}
 }
-########################################################################
 
+####rule nr history ####################################################
 sub safe_rule_nr {
     my ($self) = @_;
     $self->{'next_rule_number'} = [];
@@ -136,8 +135,7 @@ sub can_redo {
     int (@{$self->{'next_rule_number'}}) > 0;
 }
 
-########################################################################
-
+####rule nr functions ##################################################
 sub prev_rule_nr {
     my ($self) = @_;
     my $nr = $self->safe_rule_nr;
@@ -190,7 +188,8 @@ sub inverted_rule_nr {
 sub random_rule_nr {
     my ($self) = @_;
     $self->safe_rule_nr;
-    my $nr = int rand $self->{'max_rule_nr'} + 1;
+    my $nr = int rand( $self->{'max_rule_nr'} );
+    say "$nr";
     $self->set_rule_number( $nr );
 }
 

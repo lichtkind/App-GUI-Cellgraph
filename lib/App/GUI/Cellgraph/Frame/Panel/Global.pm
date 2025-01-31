@@ -148,7 +148,6 @@ sub set_callback {
 sub get_settings {
     my ($self) = @_;
     my $settings = { map { $_ => $self->{'widget'}{$_}->GetValue } keys %{$self->{'widget'}} };
-#    $settings;
 }
 sub get_state { $_[0]->get_settings() }
 

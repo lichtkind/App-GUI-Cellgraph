@@ -26,6 +26,8 @@ sub new {
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 0;
     $self->{'state_count'} = 0;
+    $self->{'rule_mode'} = 'all';
+    $self->{'state_colors'} = [];
     $self->{'call_back'}  = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 85, -1], &Wx::wxTE_PROCESS_ENTER );
@@ -114,33 +116,38 @@ sub new {
         $self->{'call_back'}->();
 
     });
-    $self->regenerate_rules( 3, 2, color('white')->gradient_to('black', 2));
+    $self->regenerate_rules( color('white')->gradient_to('black', 2) );
     $self->init;
     $self;
 }
 
 sub regenerate_rules {
-    my ($self, $input_size, $state_count, @colors) = @_;
+    my ($self, @colors) = @_;
     return if @colors < 2;
     my $do_regenerate = 0;
     my $do_recolor = 0;
-    $do_regenerate += !($self->{'state_count'} == $state_count);
-    $do_regenerate += !($self->{'input_size'} == $input_size);
+    $do_regenerate += ($self->{'input_size'} != $self->{'subrules'}->input_size);
+    $do_regenerate += ($self->{'state_count'} != $self->{'subrules'}->state_count);
+    $do_regenerate += ($self->{'rule_mode'} ne $self->{'subrules'}->mode);
     for my $i (0 .. $#colors) {
         return unless ref $colors[$i] eq 'Graphics::Toolkit::Color';
         if (exists $self->{'state_colors'}[$i]) {
-            my @rgb = $colors[$i]->rgb;
+            my @rgb = $colors[$i]->values('rgb');
             $do_recolor += !( $rgb[$_] == $self->{'state_colors'}[$i][$_]) for 0 .. 2;
         } else { $do_recolor++ }
     }
     return unless $do_regenerate or $do_recolor;
-    $self->{'state_count'} = $state_count;
-    $self->{'input_size'} = $input_size;
+    $self->{'input_size'} = $self->{'subrules'}->input_size;
+    $self->{'state_count'} = $self->{'subrules'}->state_count;
+    $self->{'rule_mode'}   = $self->{'subrules'}->mode;
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
     my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
 
     if ($do_regenerate){
-        my $refresh = 0;
+        my $refresh = 0; # set back refresh flag
+        $self->{'rules'}->renew;
+
+say "do regen optic ",$self->{'subrules'}->independent_count;
         if (exists $self->{'rule_input'}){
             $self->{'plate_sizer'}->Clear(1);
             $self->{'rule_input'} = [];
@@ -161,6 +168,7 @@ sub regenerate_rules {
             $self->{'rule_result'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                  $self->{'rule_square_size'}, $self->{'state_colors'}, 0 );
+            $self->{'rule_result'}[$rule_index]->SetValue( $self->{'rules'}->get_subrule_result($rule_index) );
             $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
@@ -216,6 +224,7 @@ sub update_rule_from_output {  $_[0]->set_rule( $_[0]->get_output_list ) }
 sub set_rule {
     my ($self) = shift;
     my ($rule_nr, @list);
+    return unless @_;
     if (@_ == 1) {
         $rule_nr = shift;
         @list = $self->{'rules'}->output_list_from_rule_nr( $rule_nr );
@@ -223,6 +232,7 @@ sub set_rule {
         @list = @_;
         $rule_nr = $self->{'rules'}->rule_nr_from_output_list( @list );
     }
+    return if $rule_nr == $self->{'rule_nr'}->GetValue;
     $self->{'rule_result'}[$_]->SetValue( $list[$_] ) for 0 .. $#list;
     $self->{'rule_nr'}->SetValue( $rule_nr );
     $self->{'rules'}->set_rule_number( $rule_nr );
