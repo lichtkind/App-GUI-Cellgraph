@@ -28,7 +28,7 @@ sub new {
     $self->{'state_count'} = 0;
     $self->{'rule_mode'} = '';
 
-    $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 95, -1], &Wx::wxTE_PROCESS_ENTER );
+    $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 145, -1], &Wx::wxTE_PROCESS_ENTER );
 
     $self->{'btn'}{'1'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
     $self->{'btn'}{'2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
@@ -65,64 +65,25 @@ sub new {
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
-
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'1'},sub { $self->init_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'2'},sub { $self->grid_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'?'},sub { $self->random_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'!'},sub { $self->invert_action; $self->{'call_back'}->() } );
 
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub {
         my ($self, $cmd) = @_;
-        my $new_value = $cmd->GetString;
-        my $old_value = $self->nr_from_action_list( $self->get_action_list );
-        return if $new_value == $old_value;
-        $self->set_action( $new_value );
+        my $new_nr = $cmd->GetString;
+        my $old_nr = $self->action_nr_from_results;
+        return if $new_nr == $old_nr;
+        $self->set_action( $new_nr );
         $self->{'call_back'}->();
     });
 
     $self->regenerate_rules( 3, 2, color('white')->gradient_to('black', 2) );
     $self->init;
     $self;
-}
-
-sub set_callback {
-    my ($self, $code) = @_;
-    return unless ref $code eq 'CODE';
-    $self->{'call_back'} = $code;
-}
-
-sub init { $_[0]->set_settings( { nr => 22222222 } ) }
-
-sub get_settings {
-    my ($self) = @_;
-    {
-        nr => $self->{'action_nr'}->GetValue,
-        sum => 0,
-        threshold => 1,
-    }
-}
-sub get_state {
-    my ($self) = @_;
-    {
-        nr => $self->{'action_nr'}->GetValue,
-        f => [$self->get_action_list],
-        sum => 0,
-        threshold => 1,
-    }
-}
-
-sub set_settings {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    $self->set_action( $settings->{'nr'} );
-}
-
-sub get_action_number { join '', reverse $_[0]->get_action_list }
-sub get_action_list {
-    my ($self) = @_;
-   # map { $self->{'action'}[$_]->GetValue } $self->{'subrules'}->index_iterator;
 }
 
 sub regenerate_rules {
@@ -170,16 +131,18 @@ sub regenerate_rules {
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
             $self->{'action_result'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
             $self->{'action_result'}[$rule_index]->SetCallBack( sub {
-                    $self->{'action_nr'}->SetValue( $self->get_action_number ); $self->{'call_back'}->()
+                    $self->set_action( $self->action_nr_from_results ); $self->{'call_back'}->();
             });
             $self->{'action_result'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
 
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-            $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
+            $self->{'arrow'}[$rule_index]->SetToolTip('partial action rule '.($rule_index+1).' input left, output right');
         }
+        my $label_length = length $self->{'subrules'}->independent_count;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);
+            $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' ), 0, &Wx::wxGROW);
             $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
             $row_sizer->AddSpacer(15);
             $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
@@ -196,20 +159,61 @@ sub regenerate_rules {
     }
 }
 
+sub set_callback {
+    my ($self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'call_back'} = $code;
+}
+
+sub init { $_[0]->set_settings( { nr => 22222222 } ) }
+
+sub get_settings {
+    my ($self) = @_;
+    {
+        nr => $self->{'action_nr'}->GetValue,
+        sum => 0,
+        threshold => 1,
+    }
+}
+sub get_state {
+    my ($self) = @_;
+    my $state = $self->get_settings;
+    $state->{'f'} = [$self->get_action_results];
+    $state
+}
+
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
+    $self->set_action( $settings->{'nr'} );
+}
+
+sub action_nr_from_results {
+    $_[0]->nr_from_action_list( $_[0]->get_action_results )
+}
+sub get_action_results {
+    map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator
+}
 
 sub set_action {
     my ($self) = shift;
     my ($nr, @aresult);
+    my $srule_count = $self->{'subrules'}->{'independent_subrules'};
     if (@_ == 1) {
         $nr = shift;
         @aresult = $self->list_from_action_nr( $nr );
+        push @aresult, $self->{'action_result'}[int @aresult]->GetValue while @aresult < $srule_count-1;
+        $nr = $self->nr_from_action_list( @aresult );
     } else {
         @aresult = @_;
+        push @aresult, $self->{'action_result'}[int @aresult]->GetValue while @aresult < $srule_count-1;
+        pop @aresult  while @aresult >= $srule_count;
         $nr = $self->nr_from_action_list( @aresult );
     }
-say "set action @aresult";
     $self->{'action_nr'}->SetValue( $nr );
-    #$self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
+    return unless ref $self->{'action_result'}[0];
+    $self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
+    $nr;
 }
 
 ########################################################################

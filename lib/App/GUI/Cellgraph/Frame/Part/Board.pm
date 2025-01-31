@@ -102,9 +102,9 @@ sub paint {
     $dc->SetBrush( Wx::Brush->new( $color, &Wx::wxBRUSHSTYLE_SOLID ) );
     my $grid = App::GUI::Cellgraph::Compute::Grid::now( [$self->{'cells'}{'x'}, $self->{'cells'}{'y'}], $self->{'state'} );
 
-    #~ my $sketch_length = exists $self->{'flag'}{'sketch'} ? $self->{'flag'}{'sketch'} : 0;
-    #~ if ($self->{'state'}{'global'}{'paint_direction'} eq 'inside_out') {
-        #~ my $mid = int($self->{'cells'}{'x'} / 2);
+    my $sketch_length = exists $self->{'flag'}{'sketch'} ? $self->{'flag'}{'sketch'} : 0;
+    if ($self->{'state'}{'global'}{'paint_direction'} eq 'inside_out') {
+        my $mid = int($self->{'cells'}{'x'} / 2);
         #~ if ($self->{'cells'}{'x'} % 2){
             #~ for my $y (1 .. ($sketch_length ? $sketch_length : $mid)) {
                 #~ for my $x ($mid - $y .. $mid -1 + $y){
@@ -142,7 +142,7 @@ sub paint {
                 #~ }
             #~ }
         #~ }
-    #~ } elsif ($self->{'state'}{'global'}{'paint_direction'} eq 'outside_in') {
+    } elsif ($self->{'state'}{'global'}{'paint_direction'} eq 'outside_in') {
         #~ for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1)) ) {
             #~ last if $y >= $self->{'cells'}{'x'} - 2 - $y;
             #~ for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
@@ -155,7 +155,7 @@ sub paint {
                 #~ $dc->DrawRectangle( 1 + ($ny * $grid_d), 1 + ( $x * $grid_d), $cell_size, $cell_size );
             #~ }
         #~ }
-    #~ } else {
+    } else {
         #~ for my $y (0 .. ($sketch_length ? $sketch_length : $self->{'cells'}{'y'} - 1)) {
             #~ for my $x (0 .. $self->{'cells'}{'x'} - 1){
                 #~ $dc->SetPen( $pen[$grid->[$y][$x]] );
@@ -163,7 +163,7 @@ sub paint {
                 #~ $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size );
             #~ }
         #~ }
-    #~ }
+    }
 
     delete $self->{'flag'};
     $dc;

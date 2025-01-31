@@ -129,7 +129,6 @@ sub regenerate_rules {
     $do_regenerate += ($self->{'input_size'} != $self->{'subrules'}->input_size);
     $do_regenerate += ($self->{'state_count'} != $self->{'subrules'}->state_count);
     $do_regenerate += ($self->{'rule_mode'} ne $self->{'subrules'}->mode);
-say "ask regen optic with status ", $do_regenerate;
     for my $i (0 .. $#colors) {
         return unless ref $colors[$i] eq 'Graphics::Toolkit::Color';
         if (exists $self->{'state_colors'}[$i]) {
@@ -148,8 +147,6 @@ say "ask regen optic with status ", $do_regenerate;
         my $refresh = 0; # set back refresh flag
         $self->{'rules'}->renew;
         $self->{'rule_nr'}->SetValue( $self->{'rules'}->get_rule_nr );
-        my $label_length = length $self->{'subrules'}->independent_count;
-say "do regen optic with subrules: ",$self->{'subrules'}->independent_count, ' pattern: ', int @sub_rule_pattern;
         if (exists $self->{'rule_input'}){
             $self->{'plate_sizer'}->Clear(1);
             $self->{'rule_input'} = [];
@@ -166,7 +163,6 @@ say "do regen optic with subrules: ",$self->{'subrules'}->independent_count, ' p
             $self->{'rule_input'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::RuleInput->new ( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                 $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
-#say "i $rule_index ", $sub_rule_pattern[$rule_index];
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
             $self->{'rule_result'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
@@ -177,6 +173,7 @@ say "do regen optic with subrules: ",$self->{'subrules'}->independent_count, ' p
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
             $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
         }
+        my $label_length = length $self->{'subrules'}->independent_count;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);

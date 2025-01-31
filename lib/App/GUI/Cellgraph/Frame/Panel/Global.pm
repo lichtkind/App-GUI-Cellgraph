@@ -23,7 +23,7 @@ sub new {
     $self->create_label( 'visuals',  'Visual Settings' );
     $self->create_label( 'input_size',  'Input Size:',  'Size of neighbourhood - from how many cells compute new cell state ?' );
     $self->create_label( 'state_count', 'Cell States :','How many states a cell can have ?' );
-    $self->create_label( 'rule_kind',   'Kind:',        'Which kind of rules ?' );
+    $self->create_label( 'rule_kind',   'Kind:',        'Which subset of rules get bundled ?' );
     $self->create_label( 'rule_count',  'Sub - Rules :','Amount of subrules resulting from current settings.' );
     $self->create_label( 'grid',        'Grid Style:',  'How to paint gaps between cell squares ?' );
     $self->create_label( 'cell_size',   'Size :',       'Visual size of the cells in pixel.' );
