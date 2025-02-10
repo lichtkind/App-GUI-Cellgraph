@@ -141,7 +141,6 @@ sub regenerate_rules {
     $self->{'state_count'} = $self->{'subrules'}->state_count;
     $self->{'rule_mode'}   = $self->{'subrules'}->mode;
     $self->{'state_colors'} = [map {[$_->rgb]} @colors];
-    my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
 
     if ($do_regenerate){
         my $refresh = 0; # set back refresh flag
@@ -158,6 +157,8 @@ sub regenerate_rules {
             $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
             $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
         }
+
+        my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             $self->{'rule_input'}[$rule_index]

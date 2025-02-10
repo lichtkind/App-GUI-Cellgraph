@@ -36,12 +36,12 @@ sub compute_subrules {
 
     $self->{'input_list'} = [ permutations( $self, $input_size, $state_count )];
     for my $i (0 .. $self->{'subrule_count'} - 1){
-        $self->{'input_pattern'}[$i] = join '', reverse @{$self->{'input_list'}[$i]};
+        $self->{'input_pattern'}[$i] = join '', @{$self->{'input_list'}[$i]};
         $self->{'input_pattern_index'}{ $self->{'input_pattern'}[$i] } = $i;
     }
     for my $i (0 .. $self->{'subrule_count'} - 1) {
         my $l = $self->{'input_list'}[$i];
-        my $rev_pattern = join '', @$l;
+        my $rev_pattern = join '', reverse @$l;
         $self->{'input_symmetric_partner'}[$i] = $self->{'input_pattern_index'}{$rev_pattern};
     }
 
@@ -51,7 +51,7 @@ sub compute_subrules {
     } elsif ($mode eq 'symmetric' ) {
         my $map_nr = 0;
         for my $i (0 .. $self->{'subrule_count'} - 1) {
-            if ($self->{'input_symmetric_partner'}[$i] > $i) {
+            if ($self->{'input_symmetric_partner'}[$i] < $i) {
                 $self->{'subrule_mapping'}[$i] = $self->{'subrule_mapping'}[ $self->{'input_symmetric_partner'}[$i] ];
                 $self->{'independent_subrules'}--;
             } else {
@@ -59,7 +59,7 @@ sub compute_subrules {
                 $self->{'input_indy_pattern'}[$map_nr++] = $self->{'input_pattern'}[$i];
             }
         }
-    } else {
+    } else { # summing mode
         $self->{'independent_subrules'} = ($state_count-1) * $input_size + 1;
         for my $i (0 .. $self->{'subrule_count'} - 1) {
             my $sum = 0;
