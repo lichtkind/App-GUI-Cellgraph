@@ -1,10 +1,11 @@
-0.5 2025-02-02  lichtkind
+0.5 2025-02-03  lichtkind
 -------
     * = major feature release
     * + setting starting row of action rules
     * + making action rules optional
     * + adding symmetric rules only mode
     * + making summing rules optional
+    * + different types of subrule result application
     * / GUI overhaul
     * / subrules are numbered
     * ? increase GUI based documentation

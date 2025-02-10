@@ -53,7 +53,7 @@ sub new {
     $self->{'tabs'}{'selected'} = 0;
     $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 400, 10, $self->{'panel'}{'color'}->get_active_colors);
 
-    $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self , 800, 800 );
+    $self->{'board'}               = App::GUI::Cellgraph::Frame::Part::Board->new( $self, 800 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
     $self->{'btn'}{'draw'} = $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[50, 40] );
 
@@ -203,12 +203,11 @@ sub spread_setting_changes {
     my ($self) = @_;
     my $global = $self->{'panel'}{'global'}->get_settings;
     $self->{'panel'}{'color'}->set_state_count( $global->{'state_count'} );
-    my @needed_colors = $self->{'panel'}{'color'}->get_active_colors;
-#say "spread";
-    $self->{'progress'}->set_colors( @needed_colors );
-    $self->{'panel'}{'start'}->update_cell_colors( @needed_colors );
-    $self->{'panel'}{'rules'}->regenerate_rules( @needed_colors );
-    $self->{'panel'}{'action'}->regenerate_rules( @needed_colors );
+    my @state_colors = $self->{'panel'}{'color'}->get_active_colors;
+    $self->{'progress'}->set_colors( @state_colors );
+    $self->{'panel'}{'start'}->update_cell_colors( @state_colors );
+    $self->{'panel'}{'rules'}->regenerate_rules( @state_colors );
+    $self->{'panel'}{'action'}->regenerate_rules( @state_colors );
 }
 sub sketch {
     my ($self) = @_;

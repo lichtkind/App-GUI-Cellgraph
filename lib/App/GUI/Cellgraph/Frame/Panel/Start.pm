@@ -28,7 +28,7 @@ sub new {
     $self->{'btn'}{'one'}   = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}   = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
     $self->{'label'}{'rules'}  = Wx::StaticText->new( $self, -1, 'Cell States' );
-    $self->{'label'}{'action'}  = Wx::StaticText->new( $self, -1, 'Cell Activity Status' );
+    #$self->{'label'}{'action'}  = Wx::StaticText->new( $self, -1, 'Cell Activity Status' );
     $self->{'label'}{'rules_int'} = Wx::StaticText->new( $self, -1, 'Summary:' );
 
 
@@ -79,7 +79,7 @@ sub new {
     $main_sizer->AddSpacer(20);
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $row_attr|&Wx::wxRIGHT, 20 );
     $main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( $self->{'label'}{'action'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    #$main_sizer->Add( $self->{'label'}{'action'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
 
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
@@ -104,7 +104,7 @@ sub get_settings {
 sub get_state {
     my ($self) = @_;
     {
-        list => [$self->get_list],
+        list => [$self->cell_state_list],
         value => $self->{'start_int'}->GetValue ? $self->{'start_int'}->GetValue : 0,
         repeat => $self->{'repeat_start'}->GetValue ? 1 : 0,
     }
@@ -127,17 +127,17 @@ sub set_number {
 sub get_number {
     my ($self) = @_;
     my $number = 0;
-    for (reverse $self->get_list){
+    for (reverse $self->cell_state_list){
         $number *= $self->{'state_count'};
         $number += $_;
     }
     $number;
 }
 
-sub get_list {
+sub cell_state_list {
     my ($self) = @_;
     my @list = map { $self->{'state_switches'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
-    pop @list while @list and not $list[-1];    # remove starting 0
+    pop @list while @list and not $list[-1];    # remove zeros prefix
     unless ($self->{'repeat_start'}->GetValue){ shift @list while @list and not $list[0] }
     @list;
 }
