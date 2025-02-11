@@ -153,7 +153,7 @@ sub new {
     $self->SetMaxSize($size);
 
     $self->update_recent_settings_menu();
-    $self->init();
+    $self->sketch( );
     $self->SetStatusText( "settings in init state", 0 );
     $self->{'last_file_settings'} = $self->get_settings;
     $self;
@@ -211,6 +211,7 @@ sub spread_setting_changes {
 }
 sub sketch {
     my ($self) = @_;
+say "want sketch";
     $self->spread_setting_changes();
     $self->{'board'}->sketch( $self->get_state );
     $self->{'progress'}->reset;

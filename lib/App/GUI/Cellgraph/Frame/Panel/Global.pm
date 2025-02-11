@@ -32,6 +32,7 @@ sub new {
 
     $self->{'widget'}{'circular_grid'}   = Wx::CheckBox->new( $self, -1, '  Circular');
     $self->{'widget'}{'use_action_rules'}= Wx::CheckBox->new( $self, -1, '  Active');
+    $self->{'widget'}{'fill_cells'}      = Wx::CheckBox->new( $self, -1, '  Fill');
 
     $self->{'widget'}{'rule_count'}      = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 105, -1], &Wx::wxTE_READONLY );
     $self->{'widget'}{'subrule_count'}   = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );
@@ -57,8 +58,9 @@ sub new {
     $self->{'widget'}{'cell_size'}->SetToolTip('visual size of the cells in pixel');
     $self->{'widget'}{'paint_direction'}->SetToolTip('painting direction');
     $self->{'widget'}{'circular_grid'}->SetToolTip('cells on the edges become neighbours to each other');
+    $self->{'widget'}{'fill_cells'}->SetToolTip('fill cell squares with color, or just pain rectangles');
 
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/circular_grid/;
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/circular_grid use_action_rules fill_cells/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/grid_type cell_size paint_direction/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->compute_subrule_count; $self->{'call_back'}->() }) for qw/state_count input_size rule_kind/;
 
@@ -113,6 +115,8 @@ sub new {
     $visual2_sizer->AddSpacer( 15 );
     $visual2_sizer->Add( $self->{'label'}{'direction'}, 0, $all_attr, 7);
     $visual2_sizer->Add( $self->{'widget'}{'paint_direction'}, 0, $row_attr, 8);
+    $visual2_sizer->AddSpacer( 55 );
+    $visual2_sizer->Add( $self->{'widget'}{'fill_cells'}, 0, $all_attr, 7);
     $visual2_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $row_space = 10;
@@ -136,9 +140,9 @@ sub new {
     $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( $self->{'label'}{'visuals'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
     $main_sizer->AddSpacer( $row_space );
-    $main_sizer->Add( $visual1_sizer, 0, $std_attr, 0);
-    $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( $visual2_sizer, 0, $std_attr, 0);
+    $main_sizer->AddSpacer( $row_space );
+    $main_sizer->Add( $visual1_sizer, 0, $std_attr, 0);
     $main_sizer->AddSpacer( $row_space );
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $main_sizer );
@@ -153,6 +157,7 @@ sub init        {
         application => 'insert',
         use_action_rules => 0,
         grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
+        fill_cells => 1,
     });
 }
 sub set_callback {

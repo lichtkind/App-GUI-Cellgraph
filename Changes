@@ -6,6 +6,7 @@
     * + adding symmetric rules only mode
     * + making summing rules optional
     * + different types of subrule result application
+    * + new drawing style option: not fill squares
     * / GUI overhaul
     * / subrules are numbered
     * / adjusted window size so draw board is fully seen

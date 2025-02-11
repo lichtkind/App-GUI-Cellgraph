@@ -96,25 +96,24 @@ sub new {
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ) });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ) });
 
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->set_rule( $self->{'rules'}->prev_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->set_rule( $self->{'rules'}->next_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_l'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_left ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_r'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_right ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sym'},  sub { $self->set_rule( $self->{'rules'}->symmetric_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->set_rule( $self->{'rules'}->inverted_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->set_rule( $self->{'rules'}->opposite_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->set_rule( $self->{'rules'}->random_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'undo'}, sub { $self->set_rule( $self->{'rules'}->undo_rule_nr ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'redo'}, sub { $self->set_rule( $self->{'rules'}->redo_rule_nr ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->set_rule( $self->{'rules'}->prev_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->set_rule( $self->{'rules'}->next_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_l'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_left ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_r'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_right ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sym'},  sub { $self->set_rule( $self->{'rules'}->symmetric_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->set_rule( $self->{'rules'}->inverted_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->set_rule( $self->{'rules'}->opposite_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->set_rule( $self->{'rules'}->random_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'undo'}, sub { $self->set_rule( $self->{'rules'}->undo_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'redo'}, sub { $self->set_rule( $self->{'rules'}->redo_rule_nr ); $self->{'call_back'}->(); });
 
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
         my ($self, $cmd) = @_;
         my $new_value = $cmd->GetString;
         my $old_value = $self->{'rules'}->nr_from_output_list( $self->get_output_list );
         return if $new_value == $old_value;
-        $self->set_rule( $new_value );
+        $self->set_rule( $new_value, 1 );
         $self->{'call_back'}->();
-
     });
     $self->regenerate_rules( color('white')->gradient_to('black', 2) );
     $self->init;
@@ -169,7 +168,7 @@ sub regenerate_rules {
                 = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                  $self->{'rule_square_size'}, $self->{'state_colors'}, 0 );
             $self->{'rule_result'}[$rule_index]->SetValue( $self->{'rules'}->get_subrule_result($rule_index) );
-            $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output });
+            $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output; $self->{'call_back'}->(); });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
             $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');

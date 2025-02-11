@@ -44,9 +44,10 @@ sub create {
     my @cell_states = @start_states;
     my @prev_states;
     my $compute_right_stop = $grid_size - $input_overhang - 1;
-    my $compute_rows = (defined $sketch_length)        ? $sketch_length :
-                       ($grow_direction ne 'top_down') ? (int($grid_size/2) + $odd_grid_size)
-                                                       : $grid_size;
+    my $compute_rows = ($sketch_length)                ? $sketch_length :
+                       ($grow_direction eq 'top_down') ? $grid_size     :
+                                                         (int($grid_size/2) + $odd_grid_size);
+say "compute_rows $compute_rows / $grid_size ";
 
     my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} 0 .. $subrule_count-1;
 
@@ -73,13 +74,13 @@ sub create {
                     $pattern_nr *= $state_count;
                     $pattern_nr += $prev_states[$x_pos+$input_overhang];
                     $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
                     $pattern_nr *= $state_count;
                     $pattern_nr += $prev_states[$x_pos + $input_overhang - $grid_size];
                     $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -102,7 +103,7 @@ sub create {
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
                     $pattern_nr *= $state_count;
                     $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -114,6 +115,7 @@ sub create {
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
+                my $pattern_nr = 0;
                 my $left_pattern = 0;
                 my $right_pattern = 0;
                 for (@prev_states[-$input_overhang .. -1]){
@@ -125,7 +127,8 @@ sub create {
                     $right_pattern += $_;
                 }
                 for my $x_pos (0 .. $compute_right_stop-1){
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                     $left_pattern *= $state_count;
                     $right_pattern *= $state_count;
                     $left_pattern += $prev_states[$x_pos];
@@ -133,7 +136,8 @@ sub create {
                     $left_pattern %= $part_max;
                     $right_pattern %= $part_max;
                 }
-                $cell_states[$compute_right_stop] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                $cell_states[$compute_right_stop] = $subrule_result_cache{ $pattern_nr };
                 for my $x_pos ($compute_right_stop+1 .. $grid_size - 1){
                     $left_pattern *= $state_count;
                     $right_pattern *= $state_count;
@@ -141,7 +145,8 @@ sub create {
                     $right_pattern += $prev_states[$x_pos + $input_overhang - $grid_size];
                     $left_pattern %= $part_max;
                     $right_pattern %= $part_max;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -150,6 +155,7 @@ sub create {
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
+                my $pattern_nr = 0;
                 my $left_pattern = 0;
                 my $right_pattern = 0;
                 for (@prev_states[1 .. $input_overhang-1] ){
@@ -157,7 +163,8 @@ sub create {
                     $right_pattern += $_;
                 }
                 for my $x_pos (0 .. $compute_right_stop-1){
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                     $left_pattern *= $state_count;
                     $right_pattern *= $state_count;
                     $left_pattern += $prev_states[$x_pos];
@@ -165,14 +172,16 @@ sub create {
                     $left_pattern %= $part_max;
                     $right_pattern %= $part_max;
                 }
-                $cell_states[$compute_right_stop] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                $cell_states[$compute_right_stop] = $subrule_result_cache{ $pattern_nr };
                 for my $x_pos ($compute_right_stop+1 .. $grid_size - 1){
                     $left_pattern *= $state_count;
                     $right_pattern *= $state_count;
                     $left_pattern += $prev_states[$x_pos-1];
                     $left_pattern %= $part_max;
                     $right_pattern %= $part_max;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $left_pattern*$part_max + $right_pattern );
+                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -204,3 +213,66 @@ __END__
 
 #    my $iterator = compile_iterator( $state, $grid_size);
 #    die "comile error $@" if $@;
+
+
+    #~ if ($self->{'state'}{'global'}{'paint_direction'} eq 'inside_out') {
+        #~ my $mid = int($self->{'cells'}{'x'} / 2);
+        #~ if ($self->{'cells'}{'x'} % 2){
+            #~ for my $y (1 .. ($sketch_length ? $sketch_length : $mid)) {
+                #~ for my $x ($mid - $y .. $mid -1 + $y){
+                    #~ $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    #~ $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                    #~ my ($nx, $ny) = ($x, $mid + $y);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - $y);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($mid - $y, $x);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($mid + $y, $self->{'cells'}{'y'} - 1 - $x);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                #~ }
+                #~ $dc->SetPen( $pen[ $grid->[0][$mid] ] );
+                #~ $dc->SetBrush( $brush[ $grid->[0][$mid] ] );
+
+                #~ $dc->DrawRectangle( 1 + ($mid * $grid_d), 1 + ($mid * $grid_d), $cell_size, $cell_size )
+                    #~ if $grid->[0][$mid];
+            #~ }
+        #~ } else {
+            #~ for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1))) {
+                #~ last if $y >= $mid;
+                #~ for my $x ($mid - $y .. $mid + $y){
+                    #~ $dc->SetPen( $pen[$grid->[$y][$x]] );
+                    #~ $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                    #~ my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $mid - 1 - $y);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($x, $mid + $y);
+                    #~ $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($mid - 1 - $y, $x);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($x * $grid_d), $cell_size, $cell_size );
+                    #~ ($nx, $ny) = ($mid + $y, $self->{'cells'}{'x'} - 1 - $x);
+                    #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                #~ }
+            #~ }
+        #~ }
+    #~ } elsif ($self->{'state'}{'global'}{'paint_direction'} eq 'outside_in') {
+        #~ for my $y (0 .. ($sketch_length ? $sketch_length : (int($self->{'cells'}{'y'} / 2) + 1)) ) {
+            #~ last if $y >= $self->{'cells'}{'x'} - 2 - $y;
+            #~ for my $x ($y .. $self->{'cells'}{'x'} - 2 - $y){
+                #~ $dc->SetPen( $pen[$grid->[$y][$x]] );
+                #~ $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                #~ my ($nx, $ny) = ($self->{'cells'}{'x'} - 1 - $x, $self->{'cells'}{'y'} - 1 - $y);
+                #~ $dc->DrawRectangle( 1 + ( $x * $grid_d), 1 + ( $y * $grid_d), $cell_size, $cell_size );
+                #~ $dc->DrawRectangle( 1 + ($nx * $grid_d), 1 + ($ny * $grid_d), $cell_size, $cell_size );
+                #~ $dc->DrawRectangle( 1 + ( $y * $grid_d), 1 + ($nx * $grid_d), $cell_size, $cell_size );
+                #~ $dc->DrawRectangle( 1 + ($ny * $grid_d), 1 + ( $x * $grid_d), $cell_size, $cell_size );
+            #~ }
+        #~ }
+    #~ } else {
+        #~ for my $y (0 .. ($sketch_length ? $sketch_length : $self->{'cells'}{'y'} - 1)) {
+            #~ for my $x (0 .. $self->{'cells'}{'x'} - 1){
+                #~ $dc->SetPen( $pen[$grid->[$y][$x]] );
+                #~ $dc->SetBrush( $brush[$grid->[$y][$x]] );
+                #~ $dc->DrawRectangle( 1 + ($x * $grid_d), 1 + ($y * $grid_d), $cell_size, $cell_size );
+            #~ }
+        #~ }
+    #~ }
