@@ -135,7 +135,7 @@ sub new {
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $setting_sizer->Add( $self->{'tabs'}, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    $setting_sizer->AddSpacer(5);
+    $setting_sizer->AddSpacer(10);
     $setting_sizer->Add( $cmd_sizer,      0,  0, 0);
     $setting_sizer->AddSpacer(5);
     # $setting_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -147,7 +147,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'tabs'}->SetFocus;
-    my $size = [1295, 880];
+    my $size = [1295, 890];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
@@ -183,8 +183,8 @@ sub init {
     $self->set_settings_save(1);
 }
 
-sub get_state    {{ map { $_ => $_[0]->{'panel'}{$_}->get_state } @{$_[0]->{'panel_names'}} }}
-sub get_settings {{ map { $_ => $_[0]->{'panel'}{$_}->get_settings } @{$_[0]->{'panel_names'}} }}
+sub get_state    { return { map { $_ => $_[0]->{'panel'}{$_}->get_state } @{$_[0]->{'panel_names'}} }}
+sub get_settings { return { map { $_ => $_[0]->{'panel'}{$_}->get_settings } @{$_[0]->{'panel_names'}} }}
 
 sub set_settings {
     my ($self, $settings) = @_;

@@ -11,15 +11,15 @@ sub create {
     my $grid_circular = $state->{'global'}{'circular_grid'};
     my $grow_direction = $state->{'global'}{'paint_direction'};
     my $result_calc = $state->{'rules'}{'calc'};
-    my $subrules = $result_calc->subrules->max_count;
+    my $subrule_count = $result_calc->subrules->max_count;
     my $inputs = $state->{'global'}{'input_size'};
     my $state_count = $state->{'global'}{'state_count'};
+    my $use_action_rules = $state->{'global'}{'use_action_rules'};
     my $input_overhang = int $inputs / 2;
     my $self_input     = $inputs % 2;
     my $odd_grid_size = $grid_size % 2;
-    my $compute_right_stop = $grid_size - $input_overhang - 1;
-    my $compute_rows = (defined $sketch_length) ? $sketch_length :
-                       ($grow_direction ne 'top_down') ? (int($grid_size/2) + $odd_grid_size): $grid_size;
+
+# action rules missing
 
     my @start_states = @{ $state->{'start'}{'list'} };
     if ($state->{'start'}{'repeat'}) { # repeat first row into left and right direction
@@ -36,33 +36,49 @@ sub create {
             unshift @start_states, (0) x ($grid_size - @start_states);
         } else { splice @start_states, $grid_size }
     }
+
     my $action_grid = [ [(1) x $grid_size] ];
     my $state_grid  = [ [@start_states] ];
     my $paint_grid  = [ [] ];
     my @empty_row   =  (0) x $grid_size;
     my @cell_states = @start_states;
     my @prev_states;
+    my $compute_right_stop = $grid_size - $input_overhang - 1;
+    my $compute_rows = (defined $sketch_length)        ? $sketch_length :
+                       ($grow_direction ne 'top_down') ? (int($grid_size/2) + $odd_grid_size)
+                                                       : $grid_size;
+
+    my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} 0 .. $subrule_count-1;
+
+    my $code = 'for my $row_nr (1 .. '.($compute_rows - 1).') {'."\n".
+               '@prev_states = @cell_states;'."\n\n".
+               'my $pattern_nr = 0;'."\n";
+    my $code_end = '$state_grid->[$row_nr] = [@cell_states];'."\n".'}';
+
     if ($self_input){
         if ($grid_circular){
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
+                if ($state->{'global'}{'use_action_rules'}){
+                }
+
                 my $pattern_nr = 0;
                 for (@prev_states[-$input_overhang .. -1] ,
-                     @prev_states[0 .. $input_overhang-1] ){
+                    @prev_states[0 .. $input_overhang-1] ){
                     $pattern_nr *= $state_count;
                     $pattern_nr += $_;
                 }
                 for my $x_pos (0 .. $compute_right_stop){
                     $pattern_nr *= $state_count;
                     $pattern_nr += $prev_states[$x_pos+$input_overhang];
-                    $pattern_nr %= $subrules;
+                    $pattern_nr %= $subrule_count;
                     $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
                 }
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
                     $pattern_nr *= $state_count;
                     $pattern_nr += $prev_states[$x_pos + $input_overhang - $grid_size];
-                    $pattern_nr %= $subrules;
+                    $pattern_nr %= $subrule_count;
                     $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
                 }
 
@@ -80,12 +96,12 @@ sub create {
                 for my $x_pos (0 .. $compute_right_stop){
                     $pattern_nr *= $state_count;
                     $pattern_nr += $prev_states[$x_pos+$input_overhang];
-                    $pattern_nr %= $subrules;
-                    $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
+                    $pattern_nr %= $subrule_count;
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
                 }
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
                     $pattern_nr *= $state_count;
-                    $pattern_nr %= $subrules;
+                    $pattern_nr %= $subrule_count;
                     $cell_states[$x_pos] = $result_calc->result_from_pattern( $pattern_nr );
                 }
 
@@ -185,3 +201,6 @@ sub create {
 
 # - flexible activity grid
 __END__
+
+#    my $iterator = compile_iterator( $state, $grid_size);
+#    die "comile error $@" if $@;

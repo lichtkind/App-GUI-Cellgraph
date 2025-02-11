@@ -109,10 +109,9 @@ sub index_iterator             { 0 .. $_[0]->{'independent_subrules'} - 1 }
 ########################################################################
 
 sub effective_pattern_nr {
-    my ($self, $pattern) = @_;
-    return unless exists $self->{'index_from_pattern'}{$pattern};
-    my $i = $self->{'index_from_pattern'}{$pattern};
-    $self->{'subrule_mapping'}[$i];
+    my ($self, $nr) = @_;
+    return unless defined $nr and $nr > -1 and $nr < $self->max_count;
+    $self->{'subrule_mapping'}[$nr];
 }
 
 sub input_list_from_index {
