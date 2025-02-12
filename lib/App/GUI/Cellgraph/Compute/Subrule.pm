@@ -108,10 +108,12 @@ sub independent_input_patterns { @{$_[0]->{'input_indy_pattern'}} }
 sub index_iterator             { 0 .. $_[0]->{'independent_subrules'} - 1 }
 ########################################################################
 
+sub all_pattern { @{$_[0]->{'input_pattern'}} }
+
 sub effective_pattern_nr {
-    my ($self, $nr) = @_;
-    return unless defined $nr and $nr > -1 and $nr < $self->max_count;
-    $self->{'subrule_mapping'}[$nr];
+    my ($self, $pattern) = @_;
+    return unless exists $self->{'input_pattern_index'}{$pattern};
+    $self->{'subrule_mapping'}[ $self->{'input_pattern_index'}{$pattern} ];
 }
 
 sub input_list_from_index {

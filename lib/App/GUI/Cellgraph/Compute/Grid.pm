@@ -41,46 +41,48 @@ sub create {
     my $state_grid  = [ [@start_states] ];
     my $paint_grid  = [ [] ];
     my @empty_row   =  (0) x $grid_size;
+    my $row_start = "0" x ($input_overhang+1);
     my @cell_states = @start_states;
     my @prev_states;
-    my $compute_right_stop = $grid_size - $input_overhang - 1;
+    my $compute_right_stop = $grid_size - 1 - $input_overhang;
     my $compute_rows = ($sketch_length)                ? $sketch_length :
                        ($grow_direction eq 'top_down') ? $grid_size     :
                                                          (int($grid_size/2) + $odd_grid_size);
-say "compute_rows $compute_rows / $grid_size ";
 
-    my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} 0 .. $subrule_count-1;
+    my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} $result_calc->subrules->all_pattern;
 
-    my $code = 'for my $row_nr (1 .. '.($compute_rows - 1).') {'."\n".
-               '@prev_states = @cell_states;'."\n\n".
-               'my $pattern_nr = 0;'."\n";
-    my $code_end = '$state_grid->[$row_nr] = [@cell_states];'."\n".'}';
+    my $code =     'for my $row_nr (1 .. '.($compute_rows - 1).') {'."\n".
+                   '  @prev_states = @cell_states;'."\n\n".
+                   '  my $pattern = "";'."\n";
+    my $code_end = '  $state_grid->[$row_nr] = [@cell_states];'."\n".'}';
+
+    $code .= '  my $left_pattern = 0;'."\n".'  my $right_pattern = 0;'."\n" unless $self_input;
+
+
+
+#    my $result = eval( $code . $code_end);
+#    say "comile error $@" if $@;
+
+    if ($state->{'global'}{'result_application'}){
+    }
+    if ($state->{'global'}{'use_action_rules'}){
+    }
 
     if ($self_input){
         if ($grid_circular){
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
-                if ($state->{'global'}{'use_action_rules'}){
-                }
+                my $pattern = '0'. join '', @prev_states[-$input_overhang .. -1],
+                                            @prev_states[0 .. $input_overhang-1];
 
-                my $pattern_nr = 0;
-                for (@prev_states[-$input_overhang .. -1] ,
-                    @prev_states[0 .. $input_overhang-1] ){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr += $_;
-                }
                 for my $x_pos (0 .. $compute_right_stop){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr += $prev_states[$x_pos+$input_overhang];
-                    $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $pattern = substr($pattern,1). $prev_states[$x_pos+$input_overhang];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern };
                 }
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr += $prev_states[$x_pos + $input_overhang - $grid_size];
-                    $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $pattern = substr($pattern,1). $prev_states[$x_pos + $input_overhang - $grid_size];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -89,21 +91,14 @@ say "compute_rows $compute_rows / $grid_size ";
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
-                my $pattern_nr = 0;
-                for (@prev_states[0 .. $input_overhang-1] ){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr += $_;
-                }
+                my $pattern = $row_start . join '', @prev_states[0 .. $input_overhang-1];
                 for my $x_pos (0 .. $compute_right_stop){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr += $prev_states[$x_pos+$input_overhang];
-                    $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $pattern = substr($pattern,1). $prev_states[$x_pos+$input_overhang];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern };
                 }
                 for my $x_pos ($compute_right_stop + 1 .. $grid_size - 1){
-                    $pattern_nr *= $state_count;
-                    $pattern_nr %= $subrule_count;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $pattern = substr($pattern,1). '0';
+                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -115,38 +110,19 @@ say "compute_rows $compute_rows / $grid_size ";
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
-                my $pattern_nr = 0;
-                my $left_pattern = 0;
-                my $right_pattern = 0;
-                for (@prev_states[-$input_overhang .. -1]){
-                    $left_pattern *= $state_count;
-                    $left_pattern += $_;
+                my $left_pattern = join '', @prev_states[-$input_overhang .. -1];
+                my $right_pattern = join '', @prev_states[1 .. $input_overhang];
+                $cell_states[0] = $subrule_result_cache{ $left_pattern.$right_pattern };
+
+                for my $x_pos (1 .. $compute_right_stop){
+                    $left_pattern = substr($left_pattern,1). $prev_states[$x_pos-1];
+                    $right_pattern = substr($right_pattern,1). $prev_states[$x_pos+$input_overhang];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $left_pattern.$right_pattern };
                 }
-                for (@prev_states[1 .. $input_overhang] ){
-                    $right_pattern *= $state_count;
-                    $right_pattern += $_;
-                }
-                for my $x_pos (0 .. $compute_right_stop-1){
-                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
-                    $left_pattern *= $state_count;
-                    $right_pattern *= $state_count;
-                    $left_pattern += $prev_states[$x_pos];
-                    $right_pattern += $prev_states[$x_pos+$input_overhang+1];
-                    $left_pattern %= $part_max;
-                    $right_pattern %= $part_max;
-                }
-                $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                $cell_states[$compute_right_stop] = $subrule_result_cache{ $pattern_nr };
                 for my $x_pos ($compute_right_stop+1 .. $grid_size - 1){
-                    $left_pattern *= $state_count;
-                    $right_pattern *= $state_count;
-                    $left_pattern += $prev_states[$x_pos-1];
-                    $right_pattern += $prev_states[$x_pos + $input_overhang - $grid_size];
-                    $left_pattern %= $part_max;
-                    $right_pattern %= $part_max;
-                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $left_pattern = substr($left_pattern,1). $prev_states[$x_pos-1];
+                    $right_pattern = substr($right_pattern,1). $prev_states[$x_pos + $input_overhang - $grid_size];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $left_pattern.$right_pattern };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -155,33 +131,19 @@ say "compute_rows $compute_rows / $grid_size ";
             for my $row_nr (1 .. $compute_rows - 1) {
                 @prev_states = @cell_states;
 
-                my $pattern_nr = 0;
-                my $left_pattern = 0;
-                my $right_pattern = 0;
-                for (@prev_states[1 .. $input_overhang-1] ){
-                    $right_pattern *= $state_count;
-                    $right_pattern += $_;
+                my $left_pattern = substr($row_start, 1);
+                my $right_pattern = join '', @prev_states[1 .. $input_overhang];
+                $cell_states[0] = $subrule_result_cache{ $left_pattern.$right_pattern };
+
+                for my $x_pos (1 .. $compute_right_stop){
+                    $left_pattern = substr($left_pattern,1). $prev_states[$x_pos-1];
+                    $right_pattern = substr($right_pattern,1). $prev_states[$x_pos+$input_overhang];
+                    $cell_states[$x_pos] = $subrule_result_cache{ $left_pattern.$right_pattern };
                 }
-                for my $x_pos (0 .. $compute_right_stop-1){
-                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
-                    $left_pattern *= $state_count;
-                    $right_pattern *= $state_count;
-                    $left_pattern += $prev_states[$x_pos];
-                    $right_pattern += $prev_states[$x_pos+$input_overhang+1];
-                    $left_pattern %= $part_max;
-                    $right_pattern %= $part_max;
-                }
-                $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                $cell_states[$compute_right_stop] = $subrule_result_cache{ $pattern_nr };
                 for my $x_pos ($compute_right_stop+1 .. $grid_size - 1){
-                    $left_pattern *= $state_count;
-                    $right_pattern *= $state_count;
-                    $left_pattern += $prev_states[$x_pos-1];
-                    $left_pattern %= $part_max;
-                    $right_pattern %= $part_max;
-                    $pattern_nr = $left_pattern*$part_max + $right_pattern;
-                    $cell_states[$x_pos] = $subrule_result_cache{ $pattern_nr };
+                    $left_pattern = substr($left_pattern,1). $prev_states[$x_pos-1];
+                    $right_pattern = substr($right_pattern,1). '0';
+                    $cell_states[$x_pos] = $subrule_result_cache{ $left_pattern.$right_pattern };
                 }
 
                 $state_grid->[$row_nr] = [@cell_states];
@@ -210,11 +172,6 @@ say "compute_rows $compute_rows / $grid_size ";
 
 # - flexible activity grid
 __END__
-
-#    my $iterator = compile_iterator( $state, $grid_size);
-#    die "comile error $@" if $@;
-
-
     #~ if ($self->{'state'}{'global'}{'paint_direction'} eq 'inside_out') {
         #~ my $mid = int($self->{'cells'}{'x'} / 2);
         #~ if ($self->{'cells'}{'x'} % 2){

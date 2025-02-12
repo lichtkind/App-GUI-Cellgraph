@@ -1,7 +1,7 @@
 
-# display input of subrule as one widget
+# input pattern of a subrule in current colors as one passive widget
 
-package App::GUI::Cellgraph::Widget::RuleInput; # passive image
+package App::GUI::Cellgraph::Widget::RuleInput;
 use v5.12;
 use warnings;
 use Wx;
