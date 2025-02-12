@@ -19,10 +19,6 @@ use App::GUI::Cellgraph::Dialog::About;
 use App::GUI::Cellgraph::Settings;
 use App::GUI::Cellgraph::Config;
 
-# fast preview
-# modular conections
-# X Y sync ? , undo ?
-
 sub new {
     my ( $class, $parent, $title ) = @_;
     my $self = $class->SUPER::new( $parent, -1, $title );
@@ -45,7 +41,7 @@ sub new {
     $self->{'panel'}{'color'}  = App::GUI::Cellgraph::Frame::Panel::Color->new(  $self->{'tabs'}, $self->{'config'} );
     $self->{'panel_names'} = [keys %{$self->{'panel'}}];
     $self->{'panel'}{$_}->set_callback( sub { $self->sketch( $_[0] ) } ) for @{$self->{'panel_names'}};
-    $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'Global Settings');
+    $self->{'tabs'}->AddPage( $self->{'panel'}{'global'}, 'General Settings');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'start'},  'Starting Row');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'rules'},  'State Rules');
     $self->{'tabs'}->AddPage( $self->{'panel'}{'action'}, 'Action Rules');
@@ -211,7 +207,6 @@ sub spread_setting_changes {
 }
 sub sketch {
     my ($self) = @_;
-say "want sketch";
     $self->spread_setting_changes();
     $self->{'board'}->sketch( $self->get_state );
     $self->{'progress'}->reset;

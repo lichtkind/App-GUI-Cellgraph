@@ -48,7 +48,7 @@ sub draw {
 
 sub sketch {
     my( $self, $state ) = @_;
-say "sketch ";
+say "want sketch ";
     return unless $self->set_state( $state );
     $self->{'flag'}{'sketch'} = 5;
 say "did sketch ";

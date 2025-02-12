@@ -22,7 +22,7 @@ sub create {
 # action rules missing
 
     my @start_states = @{ $state->{'start'}{'list'} };
-    if ($state->{'start'}{'repeat'}) { # repeat first row into left and right direction
+    if ($state->{'start'}{'repeat_states'}) { # repeat first row into left and right direction
         my @repeat = @start_states;
         my $prepend_length = int( ($grid_size - @start_states) / 2);
         unshift @start_states, @repeat for 1 .. $prepend_length / @repeat;
