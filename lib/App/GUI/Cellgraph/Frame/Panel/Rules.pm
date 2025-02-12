@@ -169,7 +169,7 @@ sub regenerate_rules {
                                                                  $self->{'rule_square_size'}, $self->{'state_colors'}, 0 );
             $self->{'rule_result'}[$rule_index]->SetValue( $self->{'rules'}->get_subrule_result($rule_index) );
             $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output; $self->{'call_back'}->(); });
-            $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1));
+            $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1).'left or right click to change it (rotate states)');
             $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
             $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
         }

@@ -1,4 +1,4 @@
-0.5 2025-02-13  lichtkind
+0.7 2025-02-13  lichtkind
 -------
     * = major feature release
     * + setting starting row of action rules
@@ -11,7 +11,9 @@
     * / subrules are numbered
     * / adjusted window size so draw board is fully seen
     * ? increase GUI based documentation
+    * ? better tool tips
     * & code cleanup
+    * & faster start (does not sketch drawing twice)
 
 0.33 2025-01-25  lichtkind
 -------
