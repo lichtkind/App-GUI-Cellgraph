@@ -48,7 +48,7 @@ sub new {
     $self->{'widget'}{'action_spread'}     = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[65, -1], [0,1,2,3]);
     $self->{'widget'}{'action_change'}     = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[85, -1], ['-1','-0.9','-0.8','-0.7','-0.6','-0.5','-0.4','-0.3','-0.2','-.1',0,'+0.1','+0.2','+0.3','+0.4','+0.5','+0.6','+0.7','+0.8','+0.9','+1']);
     $self->{'widget'}{'grid_type'}         = Wx::ComboBox->new( $self, -1, 'lines', [-1,-1],[90, -1], ['lines', 'gaps', 'no']);
-    $self->{'widget'}{'cell_size'}         = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[65, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
+    $self->{'widget'}{'cell_size'}         = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'paint_direction'}   = Wx::ComboBox->new( $self, -1, 'top_down', [-1,-1],[120, -1], [qw/top_down outside_in inside_out/], &Wx::wxTE_READONLY);
 
     $self->{'widget'}{'rule_count'}->SetToolTip('Count of subrules that a rule sonsists of with current settings?');
@@ -149,7 +149,7 @@ sub new {
     $visual2_sizer->Add( $self->{'label'}{'grid'}, 0, $std_attr, 0);
     $visual2_sizer->AddSpacer( 10 );
     $visual2_sizer->Add( $self->{'widget'}{'grid_type'}, 0, $std_attr, 0);
-    $visual2_sizer->AddSpacer( 45 );
+    $visual2_sizer->AddSpacer( 30 );
     $visual2_sizer->Add( $self->{'label'}{'cell_size'}, 0, $std_attr, 0);
     $visual2_sizer->AddSpacer( 10 );
     $visual2_sizer->Add( $self->{'widget'}{'cell_size'}, 0, $std_attr, 0);

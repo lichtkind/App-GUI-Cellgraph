@@ -1,9 +1,10 @@
+
+# compute each cells state and action value
+
+package App::GUI::Cellgraph::Compute::Grid;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Cellgraph::Compute::Grid;
-
 
 sub create {
     my ($state, $grid_size, $sketch_length) = @_;
@@ -17,7 +18,8 @@ sub create {
     my $use_action_rules = $state->{'global'}{'use_action_rules'};
     my $input_overhang = int $inputs / 2;
     my $self_input     = $inputs % 2;
-    my $odd_grid_size = $grid_size % 2;
+    my $odd_grid_size  = $grid_size % 2;
+    my $half_grid_size = int($grid_size / 2);
 
 # action rules missing
 
@@ -47,7 +49,7 @@ sub create {
     my $compute_right_stop = $grid_size - 1 - $input_overhang;
     my $compute_rows = ($sketch_length)                ? $sketch_length :
                        ($grow_direction eq 'top_down') ? $grid_size     :
-                                                         (int($grid_size/2) + $odd_grid_size);
+                                                         ($half_grid_size + $odd_grid_size);
 
     my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} $result_calc->subrules->all_pattern;
 
@@ -150,19 +152,45 @@ sub create {
             }
         }
     }
-    if (defined $sketch_length){
-        for my $row_nr ($compute_rows .. $grid_size - 1) {
-            $state_grid->[$row_nr] = [@empty_row];
-        }
+
+    if ($sketch_length){
+        $state_grid->[$_] = [@empty_row] for $compute_rows .. $grid_size - 1;
         return $state_grid;
     }
     return $state_grid if $grow_direction eq 'top_down';
 
+    # implementing paint directions
     if ($grow_direction eq 'inside_out') {
+        $paint_grid->[$half_grid_size][$half_grid_size]
+            = $state_grid->[0][$half_grid_size] if $odd_grid_size;      # center cell state
+
+        for my $y_pos ($odd_grid_size .. $half_grid_size - 1 + $odd_grid_size){
+            my $cy_pos = $half_grid_size - $y_pos - 1 + $odd_grid_size; # mirror on Center pos
+            my $dy_pos = $half_grid_size + $y_pos;
+            for my $x_pos ($half_grid_size - $y_pos .. $half_grid_size + $y_pos){
+                my $bx_pos = $grid_size - 1 - $x_pos;
+                $paint_grid->[$cy_pos][$bx_pos] =
+                $paint_grid->[$bx_pos][$dy_pos] =
+                $paint_grid->[$dy_pos] [$x_pos] =
+                $paint_grid-> [$x_pos][$cy_pos] = $state_grid->[$y_pos][$x_pos];
+            }
+        }
     }
     if ($grow_direction eq 'outside_in') {
-    }
+        $paint_grid->[$half_grid_size][$half_grid_size]
+            = $state_grid->[$half_grid_size][$half_grid_size] if $odd_grid_size; # center cell state
 
+        for my $y_pos (0 .. $half_grid_size - 1){
+            my $by_pos = $grid_size - 1 - $y_pos;
+            for my $x_pos ($y_pos .. $by_pos - 1){
+                my $bx_pos = $grid_size - 1 - $x_pos;
+                $paint_grid->[$y_pos] [$x_pos]  =
+                $paint_grid->[$x_pos] [$by_pos] =
+                $paint_grid->[$by_pos][$bx_pos] =
+                $paint_grid->[$bx_pos][$y_pos]  = $state_grid->[$y_pos][$x_pos];
+            }
+        }
+    }
     $paint_grid;
 }
 

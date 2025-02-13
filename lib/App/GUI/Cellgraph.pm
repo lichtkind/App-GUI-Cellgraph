@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.4';
+our $VERSION = '0.7';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -83,9 +83,9 @@ I<Global> panel.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png" alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/redsquare.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/badeblau.png" alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/redsquare.png" alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/badeblau.png"  alt=""  width="300" height="300">
 </p>
 
 

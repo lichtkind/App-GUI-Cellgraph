@@ -1,12 +1,13 @@
 0.7 2025-02-13  lichtkind
 -------
     * = major feature release
-    * + setting starting row of action rules
+    * * overhauled action/activity rule logic
+    * * able to set starting row of action values
     * + making action rules optional
     * + adding symmetric rules only mode
-    * + making summing rules optional
+    * + making summing and symmetric rules mapping optional
     * + different types of subrule result application
-    * + new drawing style option: not fill squares
+    * + new faster drawing style option: not filled squares
     * / GUI overhaul
     * / subrules are numbered
     * / adjusted window size so draw board is fully seen
@@ -14,6 +15,7 @@
     * ? better tool tips
     * & code cleanup
     * & faster start (does not sketch drawing twice)
+    * ! fix redraw blib bug
 
 0.33 2025-01-25  lichtkind
 -------

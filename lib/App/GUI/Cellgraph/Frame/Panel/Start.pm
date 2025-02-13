@@ -19,6 +19,7 @@ sub new {
     $self->{'state_colors'} = [map {[$_->rgb]} color('white')->gradient_to('black', $self->{'state_count'})];
     my $rule_cell_size = 20;
     $self->{'state_switches'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'state_colors'}, 0) } 1 .. $length];
+    $self->{'state_switches'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
     # $self->{'state_switches'}[0]->Enable(0);
     $self->{'widget'}{'state_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
     $self->{'widget'}{'state_int'}->SetToolTip('condensed content of start row states');
@@ -26,6 +27,7 @@ sub new {
     $self->{'widget'}{'state_int'}->SetToolTip('condensed content of start row activity values');
     $self->{'widget'}{'repeat_states'} = Wx::CheckBox->new( $self, -1, '  Repeat');
     $self->{'widget'}{'repeat_action'} = Wx::CheckBox->new( $self, -1, '  Repeat');
+    $self->{'widget'}{'repeat_states'}->SetToolTip('repeat this pattern as the starting row is long');
     $self->{'btn'}{'prev'}  = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}  = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
     $self->{'btn'}{'one'}   = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
@@ -35,11 +37,9 @@ sub new {
     $self->{'label'}{'state_int'} = Wx::StaticText->new( $self, -1, 'Summary:' );
     $self->{'label'}{'action_int'} = Wx::StaticText->new( $self, -1, 'Summary:' );
 
-    $self->{'activity_colors'} = [map {[$_->rgb]} color('orange')->gradient_to('white', 6)];
-    $self->{'activity_switches'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'activity_colors'}, 0) } 1 .. $length];
+    $self->{'action_colors'} = [map {[$_->rgb]} color('orange')->gradient_to('white', 6)];
+    $self->{'action_switches'}   = [ map { App::GUI::Cellgraph::Widget::ColorToggle->new( $self, $rule_cell_size, $rule_cell_size, $self->{'action_colors'}, 0) } 1 .. $length];
 
-    $self->{'state_switches'}[$_]->SetToolTip('click with left or right to change state of this cell in starting row') for 0 .. $self->{'length'} - 1;
-    $self->{'widget'}{'repeat_states'}->SetToolTip('repeat this pattern as the starting row is long');
     $self->{'btn'}{'one'}->SetToolTip('reset cell states in starting row to initial values');
     $self->{'btn'}{'rnd'}->SetToolTip('choose random cell states in starting row');
     $self->{'btn'}{'next'}->SetToolTip('increment number that summarizes all cell states of starting row');
@@ -81,7 +81,7 @@ sub new {
 
     my $aio_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $aio_sizer->AddSpacer(20);
-    $aio_sizer->Add( $self->{'activity_switches'}[$_-1], 0, &Wx::wxGROW ) for 1 .. $self->{'length'};
+    $aio_sizer->Add( $self->{'action_switches'}[$_-1], 0, &Wx::wxGROW ) for 1 .. $self->{'length'};
     $aio_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $action_int_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
@@ -142,6 +142,7 @@ sub get_state {
     my ($self) = @_;
     my $state = $self->get_settings;
     $state->{'list'} = [$self->cell_state_list];
+    $state->{'action_list'} = [$self->cell_action_list];
     $state;
 }
 
@@ -172,8 +173,16 @@ sub get_number {
 sub cell_state_list {
     my ($self) = @_;
     my @list = map { $self->{'state_switches'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
-    pop @list while @list and not $list[-1];    # remove zeros prefix
+    pop @list while @list and not $list[-1];    # remove zeros in suffix
     unless ($self->{'widget'}{'repeat_states'}->GetValue){ shift @list while @list and not $list[0] }
+    @list;
+}
+
+sub cell_action_list {
+    my ($self) = @_;
+    my @list = map { $self->{'action_switches'}[$_]->GetValue } 0 .. $self->{'length'} - 1;
+    pop @list while @list and not $list[-1];    # remove zeros in suffix
+    unless ($self->{'widget'}{'repeat_action'}->GetValue){ shift @list while @list and not $list[0] }
     @list;
 }
 
