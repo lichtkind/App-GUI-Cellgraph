@@ -16,7 +16,6 @@ sub new {
     $self->{'state_count'} = 2;
     $self->{'cells_in_row'} = my $cell_count = 20;
     $self->{'cells_iterator'} = [0 .. $cell_count - 1];
-    $self->{'max_value'} = $self->{'state_count'} ** $self->{'cells_in_row'};
     $self->{'call_back'} = sub {};
     my $rule_cell_size = 20;
 
@@ -207,9 +206,7 @@ sub get_action_list {
 }
 sub set_state_list {
     my ($self, @list) = @_;
-say "set list @list";
-    @list = $self->get_state_list() unless @list;
-say "set list @list";
+    @list = (0) unless @list;
     return unless @list <= $self->{'cells_in_row'};
     map {return if $_ !~ /\d/ or $_ < 0 or $_ >= $self->{'state_count'}} @list;
     $self->set_state_summary( join '', @list );
@@ -244,9 +241,8 @@ sub update_cell_colors {
     }
     return unless $do_recolor;
     my @rgb = map {[$_->values('rgb')]} @colors;
-    $self->{'state_switches'}[$_]->SetColors( @rgb ) for 0 .. $self->{'length'} - 1;
+    $self->{'state_switches'}[$_]->SetColors( @rgb ) for @{$self->{'cells_iterator'}};
     $self->{'state_count'} = @colors;
-    $self->{'max_value'} = $self->{'state_count'} ** $self->{'length'};
 }
 
 sub set_callback {
@@ -271,7 +267,6 @@ sub prev_state {
     my @list = $self->get_state_list;
     return $self->set_state_list( ($self->{'state_count'} - 1) x $self->{'cells_in_row'})
         if @list == 1 and $list[0] == 1;
-say "prev of : @list : l ", int @list;
     my $pos = 0;
     while ($pos < @list){
         $list[$pos]--;
@@ -285,7 +280,6 @@ say "prev of : @list : l ", int @list;
 sub next_state {
     my ($self) = @_;
     my @list = $self->get_state_list;
-say "next of : @list : l ", int @list;
     my $pos = 0;
     while ($pos < @list){
         $list[$pos]++;
