@@ -24,8 +24,8 @@ sub create {
 # action rules missing
 my $t0 = Benchmark->new;
 
-    my @start_states = @{ $state->{'start'}{'list'} };
-    my @start_action = @{ $state->{'start'}{'list'} };
+    my @start_states = @{ $state->{'start'}{'state_list'} };
+    my @start_action = @{ $state->{'start'}{'action_list'} };
     if ($state->{'start'}{'repeat_states'}) { # repeat first row into left and right direction
         my @repeat = @start_states;
         my $prepend_length = int( ($grid_size - @start_states) / 2);
