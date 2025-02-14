@@ -37,8 +37,8 @@ sub new {
     $self->{'widget'}{'use_action_rules'} = Wx::CheckBox->new( $self, -1, '  Active');
     $self->{'widget'}{'fill_cells'}       = Wx::CheckBox->new( $self, -1, '  Fill');
 
-    $self->{'widget'}{'rule_count'}       = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 105, -1], &Wx::wxTE_READONLY );
     $self->{'widget'}{'subrule_count'}    = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'rule_count'}       = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 125, -1], &Wx::wxTE_READONLY );
 
     $self->{'widget'}{'input_size'}        = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'}       = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
