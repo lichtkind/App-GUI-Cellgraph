@@ -24,7 +24,6 @@ sub compute_subrules {
     $self->{'input_size'} = $input_size;
     $self->{'state_count'} = $state_count;
     $self->{'mode'} = $mode;
-
     $self->{'subrule_count'} = $state_count ** $input_size;
     $self->{'independent_subrules'} = $self->{'subrule_count'};
     $self->{'input_list'} = [];
@@ -46,17 +45,31 @@ sub compute_subrules {
     }
 
     if ($mode eq 'all' ) {
-        $self->{'subrule_mapping'}[$_] = $_ for 0 .. $self->{'subrule_count'} - 1;
+        @{$self->{'subrule_mapping'}} = 0 .. $self->{'subrule_count'} - 1;
         $self->{'input_indy_pattern'} = [ @{$self->{'input_pattern'}} ];
     } elsif ($mode eq 'symmetric' ) {
         my $map_nr = 0;
         for my $i (0 .. $self->{'subrule_count'} - 1) {
-            if ($self->{'input_symmetric_partner'}[$i] < $i) {
+            if ($self->{'input_symmetric_partner'}[$i] < $i) { # get mapped to symmetric partner
                 $self->{'subrule_mapping'}[$i] = $self->{'subrule_mapping'}[ $self->{'input_symmetric_partner'}[$i] ];
                 $self->{'independent_subrules'}--;
-            } else {
+            } else { # is uniq
                 $self->{'subrule_mapping'}[$i] = $map_nr;
                 $self->{'input_indy_pattern'}[$map_nr++] = $self->{'input_pattern'}[$i];
+            }
+        }
+    } elsif ($mode eq 'sorted' ) {
+        my $map_nr = 0;
+        for my $i (0 .. $self->{'subrule_count'} - 1) {
+            my $sorted_pattern = join '', sort @{$self->{'input_list'}[$i]};
+            my $pattern = $self->{'input_pattern'}[$i];
+            if ($sorted_pattern ne $pattern){ # get mapped to sorted
+                $self->{'subrule_mapping'}[$i] =
+                    $self->{'subrule_mapping'}[ $self->{'input_pattern_index'}{$sorted_pattern} ];
+                $self->{'independent_subrules'}--;
+            } else { # is uniq
+                $self->{'subrule_mapping'}[$i] = $map_nr;
+                $self->{'input_indy_pattern'}[$map_nr++] = $pattern;
             }
         }
     } else { # summing mode

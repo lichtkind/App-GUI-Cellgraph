@@ -5,7 +5,8 @@
     * * able to set starting row of action values
     * + making action rules optional
     * + adding symmetric rules only mode
-    * + making summing and symmetric rules mapping optional
+    * + adding sorting rules only mode
+    * + making summing rules mapping optional
     * + different types of subrule result application
     * + new faster drawing style option: not filled squares
     * / GUI overhaul

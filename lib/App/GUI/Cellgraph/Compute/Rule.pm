@@ -1,10 +1,11 @@
 
 # compute rule_nr (by output)
 
+package App::GUI::Cellgraph::Compute::Rule;
 use v5.12;
+use bigint;
 use warnings;
 use Wx;
-package App::GUI::Cellgraph::Compute::Rule;
 
 sub new {
     my ($pkg, $subrules) = @_;

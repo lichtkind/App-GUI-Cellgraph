@@ -42,8 +42,8 @@ sub new {
 
     $self->{'widget'}{'input_size'}        = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'}       = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
-    $self->{'widget'}{'subrule_filter'}    = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[118, -1], [qw/all symmetric summing/], &Wx::wxTE_READONLY); # median
-    $self->{'widget'}{'result_application'}= Wx::ComboBox->new( $self, -1, '2', [-1,-1],[110, -1], [qw/insert add subtract multiply/], &Wx::wxTE_READONLY);
+    $self->{'widget'}{'subrule_filter'}    = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[118, -1], [qw/all symmetric sorted summing/], &Wx::wxTE_READONLY); # median
+    $self->{'widget'}{'result_application'}= Wx::ComboBox->new( $self, -1, '2', [-1,-1],[110, -1], [qw/insert rotate add add_rot subtract multiply/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'action_threshold'}  = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[90, -1], [0, 0.1,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.75,0.8,0.85, 0.9, 0.95,1.0]);
     $self->{'widget'}{'action_spread'}     = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[65, -1], [0,1,2,3]);
     $self->{'widget'}{'action_change'}     = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[85, -1], ['-1','-0.9','-0.8','-0.7','-0.6','-0.5','-0.4','-0.3','-0.2','-.1',0,'+0.1','+0.2','+0.3','+0.4','+0.5','+0.6','+0.7','+0.8','+0.9','+1']);

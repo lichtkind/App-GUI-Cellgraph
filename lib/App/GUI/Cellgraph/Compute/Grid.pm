@@ -13,7 +13,6 @@ sub create {
     my $grid_circular = $state->{'global'}{'circular_grid'};
     my $grow_direction = $state->{'global'}{'paint_direction'};
     my $result_calc = $state->{'rules'}{'calc'};
-    my $subrule_count = $result_calc->subrules->max_count;
     my $inputs = $state->{'global'}{'input_size'};
     my $state_count = $state->{'global'}{'state_count'};
     my $use_action_rules = $state->{'global'}{'use_action_rules'};
@@ -51,38 +50,44 @@ my $t0 = Benchmark->new;
     my @subrule_nr;
     my @cell_action = @start_action;
     my @prev_action;
-    my @spread_action = (0) x ($grid_size + (2*$state->{'global'}{'action_spread'}));
+    my @spread_action = (0) x ($grid_size + (2*int($state->{'global'}{'action_spread'})));
     my $compute_right_stop = $grid_size - 1 - $input_overhang;
     my $compute_rows = ($sketch_length)                ? $sketch_length :
                        ($grow_direction eq 'top_down') ? $grid_size     :
                                                          ($half_grid_size + $odd_grid_size);
-    my %subrule_map_cache = map {$_ => $result_calc->subrules->effective_pattern_nr( $_ )} $result_calc->subrules->all_pattern;
-    my %result_cache      = map {$_ => $result_calc->get_subrule_result( $_ )} $result_calc->subrules->index_iterator;
-    my %subrule_result_cache = map {$_ => $result_calc->result_from_pattern( $_ )} $result_calc->subrules->all_pattern;
+    my %subrule_from_pattern = map {$_ => $result_calc->subrules->effective_pattern_nr( $_ )} $result_calc->subrules->all_pattern;
+    my %result_from_subrule  = map {$_ => $result_calc->get_subrule_result( $_ )} $result_calc->subrules->index_iterator;
+    my $result_op = $state->{'global'}{'result_application'};
+    my $state_max = $result_calc->subrules->independent_count;
 
     my $code =     'for my $row_nr (1 .. '.($compute_rows - 1).') {'."\n".
                    '  @prev_states = @cell_states;'."\n\n";
-    my $code_end = '  $state_grid->[$row_nr] = [@cell_states];'."\n".'}';
+    my $code_end = "\n\n".'  $state_grid->[$row_nr] = [@cell_states];'."\n".'}';
 
     my $wrap_overhang = 'join("", @prev_states[-'.$input_overhang.' .. -1])';
     my $right_overhang = 'join("", @prev_states[0 .. '.$input_overhang.'-1])';
+    my $next_result = ($result_op eq 'insert')   ? '$subrule_nr[$_]' :
+                      ($result_op eq 'rotate')   ? '(               1 + $subrule_nr[$_]) % $state_max' :
+                      ($result_op eq 'add')      ? '($cell_states[$_] + $subrule_nr[$_]) % $state_max' :
+                      ($result_op eq 'add_rot')  ? '($cell_states[$_]+1+$subrule_nr[$_]) % $state_max' :
+                      ($result_op eq 'subtract') ? '($cell_states[$_] - $subrule_nr[$_] + $state_max) % $state_max' :
+                                                   '($cell_states[$_] * $subrule_nr[$_]) % $state_max' ;
 
     if ($self_input) {
-        my $eval_pattern = '$subrule_map_cache{ $pattern }';
+        my $eval_pattern = '$subrule_from_pattern{ $pattern }';
         $code .= '  my $pattern = "0".'
               .($grid_circular ? $wrap_overhang : $row_start).'.'.$right_overhang.";\n"
               .'  for my $x_pos (0 .. '.$compute_right_stop.'){'."\n"
               .'  '.move_pattern_string('$pattern','$x_pos+$input_overhang')
               .'    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
               .'  for my $x_pos ('.($compute_right_stop + 1).' .. '.($grid_size - 1).'){'."\n"
-              .'    $pattern = substr($pattern,1).';
-        $code .= ($grid_circular ? '$prev_states[$x_pos + $input_overhang - $grid_size]' : "'0'").";\n"
+              .'  '.move_pattern_string('$pattern', ($grid_circular ? '$x_pos+'.($input_overhang - $grid_size) : undef ))
               .'    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
-              .'  @cell_states = map { $result_cache{$_} } @subrule_nr'.";\n\n";
+              .'  @cell_states = map { $result_from_subrule{'.$next_result.'} } 0 .. '.($grid_size-1).';';
     } else {
-        my $eval_pattern = '$subrule_map_cache{ $left_pattern.$right_pattern }';
+        my $eval_pattern = '$subrule_from_pattern{ $left_pattern.$right_pattern }';
         $code .= '  my $left_pattern = '.($grid_circular ? $wrap_overhang : $row_start).";\n"
-              .  '  my $right_pattern = join("", @prev_states[1 .. $input_overhang]);'."\n"
+              .  '  my $right_pattern = join("", @prev_states[1 .. '.$input_overhang.']);'."\n"
               .  '  $subrule_nr[0] = '.$eval_pattern.";\n\n"
               .  '  for my $x_pos (1 .. '.$compute_right_stop.'){'."\n"
               .  '  '.move_pattern_string('$left_pattern','$x_pos-1')
@@ -90,17 +95,15 @@ my $t0 = Benchmark->new;
               .  '    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
               .  '  for my $x_pos ('.($compute_right_stop+1).' .. '.($grid_size - 1).'){'."\n"
               .  '  '.move_pattern_string('$left_pattern','$x_pos-1')
-              .  '  '.move_pattern_string('$right_pattern', ($grid_circular ? '$x_pos+$input_overhang-$grid_size' : undef) )
+              .  '  '.move_pattern_string('$right_pattern', ($grid_circular ? '$x_pos+'.($input_overhang - $grid_size) : undef) )
               .  '    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
-              .  '  @cell_states = map { $result_cache{$_} } @subrule_nr'.";\n\n";
+              .'  @cell_states = map { $result_from_subrule{'.$next_result.'} } 0 .. '.($grid_size-1).';';
     }
 
-say $code . $code_end;
-    my $result = eval( $code . $code_end);
+    my $result = eval( $code . $code_end);# say $code . $code_end;
     say "compile in code:\n$code\n\n error: $@" if $@;
 
-    if ($state->{'global'}{'result_application'}){  } # insert add subtract multiply
-    # + - * % $subrule_count
+
     if ($state->{'global'}{'use_action_rules'}){  }
     # += $state->{'global'}{'action_change'}
     # += $state->{'global'}{'action_threshold'}
@@ -149,7 +152,6 @@ sub move_pattern_string {
     my ($var, $index) = @_;
     my $str = '  '.$var.' = substr('.$var.',1).';
     $str .= (defined $index) ? '$prev_states['.$index.']': "'0'";
-
     return $str.";\n";
 }
 
