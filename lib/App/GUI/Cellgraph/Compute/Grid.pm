@@ -103,7 +103,6 @@ my $t0 = Benchmark->new;
     my $result = eval( $code . $code_end);# say $code . $code_end;
     say "compile in code:\n$code\n\n error: $@" if $@;
 
-
     if ($state->{'global'}{'use_action_rules'}){  }
     # += $state->{'global'}{'action_change'}
     # += $state->{'global'}{'action_threshold'}

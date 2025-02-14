@@ -212,9 +212,10 @@ The first buttom set the inverted distribution of action propagation.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolor.png"   alt=""  width="630" height="410">
 </p>
 
-This panel help to set custom colors for each automaton state and it is
-divided into five sections by horizontal lines. This will be a
-description section by section from top to bottom.
+This panel helps you to customize the automaton state colors, with which
+the resulting picture is composed. This panel is divided into five sections
+by horizontal lines. The following paragraphs will describe them from top
+to bottom.
 
 The first section is for storing and loading complete sets of state colors.
 Just select a set you want to load either in the drop down menu or by

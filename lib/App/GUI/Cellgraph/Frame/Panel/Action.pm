@@ -61,7 +61,7 @@ sub new {
     $main_sizer->AddSpacer( 15 );
     $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxALL|&Wx::wxRIGHT, 20 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxRIGHT, 20 );
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
@@ -70,14 +70,14 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'?'},sub { $self->random_action; $self->{'call_back'}->() } );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'!'},sub { $self->invert_action; $self->{'call_back'}->() } );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action_summary( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action_summary( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub {
         my ($self, $cmd) = @_;
         my $new_nr = $cmd->GetString;
         my $old_nr = $self->action_nr_from_results;
         return if $new_nr == $old_nr;
-        $self->set_action( $new_nr );
+        $self->set_action_summary( $new_nr );
         $self->{'call_back'}->();
     });
 
@@ -122,35 +122,38 @@ sub regenerate_rules {
             $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-        for my $rule_index ($self->{'subrules'}->index_iterator){
-            $self->{'rule_input'}[$rule_index]
+        for my $i ($self->{'subrules'}->index_iterator){
+            $self->{'rule_input'}[$i]
                 = App::GUI::Cellgraph::Widget::RuleInput->new (
                     $self->{'rule_plate'}, $self->{'rule_square_size'},
-                    $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
+                    $sub_rule_pattern[$i], $self->{'state_colors'} );
 
-            $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
-            $self->{'action_result'}[$rule_index] = App::GUI::Cellgraph::Widget::Action->new( $self->{'rule_plate'}, $self->{'rule_square_size'}, [255, 255, 255] );
-            $self->{'action_result'}[$rule_index]->SetCallBack( sub {
-                    $self->set_action( $self->action_nr_from_results ); $self->{'call_back'}->();
+            my $help_text = 'increase of activity value after partial rule Nr.'.($i+1);
+            $self->{'rule_input'}[$i]->SetToolTip('input pattern of partial rule Nr.'.($i+1));
+            $self->{'action_result'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
+                    ( $self->{'rule_plate'}, 90, '', $help_text, -1, 1, 0.7, 0.05);
+            $self->{'action_result'}[$i]->SetCallBack( sub {
+                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
             });
-            $self->{'action_result'}[$rule_index]->SetToolTip('transfer of activity by partial rule Nr.'.($rule_index+1));
+            $self->{'action_result'}[$i]->SetToolTip( $help_text );
 
-            $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-            $self->{'arrow'}[$rule_index]->SetToolTip('partial action rule '.($rule_index+1).' input left, output right');
+            $self->{'arrow'}[$i] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            $self->{'arrow'}[$i]->SetToolTip('partial action rule '.($i+1).' input left, output right');
         }
         my $label_length = length $self->{'subrules'}->independent_count;
-        for my $rule_index ($self->{'subrules'}->index_iterator){
+        my $v_attr = &Wx::wxALIGN_CENTER_VERTICAL;
+        for my $i ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
             $row_sizer->AddSpacer(30);
-            $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' ), 0, &Wx::wxGROW);
-            $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
+            $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$i+1).' :  ' ), 0, $v_attr);
+            $row_sizer->Add( $self->{'rule_input'}[$i], 0, $v_attr );
             $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'action_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
+            $row_sizer->Add( $self->{'arrow'}[$i], 0, $v_attr );
+            $row_sizer->AddSpacer(0);
+            $row_sizer->Add( $self->{'action_result'}[$i], 0, $v_attr );
             $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
-            $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10);
+            $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 0);
         }
         $self->Layout if $refresh;
     } elsif ($do_recolor) {
@@ -185,7 +188,7 @@ sub get_state {
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    $self->set_action( $settings->{'nr'} );
+    $self->set_action_summary( $settings->{'nr'} );
 }
 
 sub action_nr_from_results {
@@ -195,7 +198,7 @@ sub get_action_results {
     map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator
 }
 
-sub set_action {
+sub set_action_summary {
     my ($self) = shift;
     my ($nr, @aresult);
     my $srule_count = $self->{'subrules'}->{'independent_subrules'};
@@ -212,7 +215,7 @@ sub set_action {
     }
     $self->{'action_nr'}->SetValue( $nr );
     return unless ref $self->{'action_result'}[0];
-    $self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
+   # $self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
     $nr;
 }
 

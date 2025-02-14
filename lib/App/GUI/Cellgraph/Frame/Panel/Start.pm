@@ -23,7 +23,7 @@ sub new {
     # $self->{'state_switches'}[0]->Enable(0);
     $self->{'widget'}{'state_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
     $self->{'widget'}{'state_int'}->SetToolTip('condensed content of start row states');
-    $self->{'widget'}{'action_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 180, -1] );
+    $self->{'widget'}{'action_int'}  = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 250, -1] );
     $self->{'widget'}{'state_int'}->SetToolTip('condensed content of start row activity values');
     $self->{'widget'}{'repeat_states'} = Wx::CheckBox->new( $self, -1, '  Repeat');
     $self->{'widget'}{'repeat_action'} = Wx::CheckBox->new( $self, -1, '  Repeat');
