@@ -8,7 +8,7 @@ use Wx;
 use base qw/Wx::Panel/;
 
 sub new {
-    my ( $class, $parent, $slider_size, $label, $help, $min, $max, $init_value, $delta ) = @_;
+    my ( $class, $parent, $slider_size, $label, $help, $min, $max, $init_value, $delta, $value_name ) = @_;
     return unless defined $max;
 
     my $self = $class->SUPER::new( $parent, -1);
@@ -32,9 +32,9 @@ sub new {
 
     $lbl->SetToolTip( $help );
     $self->{'widget'}{'txt'}->SetToolTip( $help );
-    $self->{'widget'}{'slider'}->SetToolTip( $help );
-    $self->{'widget'}{'button'}{'-'}->SetToolTip( "decrease by ".$self->{'value_delta'} );
-    $self->{'widget'}{'button'}{'+'}->SetToolTip( "increase by ".$self->{'value_delta'} );
+    $self->{'widget'}{'slider'}->SetToolTip( $help ) if exists $self->{'widget'}{'slider'};
+    $self->{'widget'}{'button'}{'-'}->SetToolTip( 'decrease '.((defined $value_name) ? $value_name.' ':'').'by '.$self->{'value_delta'} );
+    $self->{'widget'}{'button'}{'+'}->SetToolTip( 'increase '.((defined $value_name) ? $value_name.' ':'').'by '.$self->{'value_delta'} );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     my $attr = &Wx::wxLEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxALIGN_LEFT;

@@ -1,5 +1,5 @@
 
-# action rules panel
+# panel to change the values that control cell activity dependent on current subrule
 
 package App::GUI::Cellgraph::Frame::Panel::Action;
 use v5.12;
@@ -7,8 +7,7 @@ use warnings;
 use Wx;
 use base qw/Wx::Panel/;
 use App::GUI::Cellgraph::Widget::RuleInput;
-use App::GUI::Cellgraph::Widget::Action;
-use App::GUI::Cellgraph::Widget::ColorToggle;
+use App::GUI::Cellgraph::Widget::SliderCombo;
 use Graphics::Toolkit::Color qw/color/;
 
 # undo redo
@@ -19,67 +18,75 @@ sub new {
 
     $self->{'subrules'} = $subrule_calculator;
     $self->{'rule_square_size'} = 20;
+    $self->{'input_size'} = 0;
+    $self->{'state_count'} = 0;
+    $self->{'rule_mode'} = '';
+    $self->{'call_back'} = sub {};
+
+    my $btn_data = {action => [
+        ['init', '1',15, 'put all activity gain value to default'],
+        ['copy', '=',10, 'set all activity gains to the value of the first subrule'],
+        ['add',  '+',20, 'increase all activity value gains by 0.05'],
+        ['sub',  '-', 0, 'decrease all activity value gains by 0.05'],
+        ['mul',  '*',10, 'increase large and decrease small values of activity gains'],
+        ['div',  '/', 0, 'decrease large and increase small values of activity gains'],
+        ['wave', '%',20, 'increase activity gain of odd numbered subrules and decrease them of even the numbered'],
+        ['+rnd', '~',20, 'change all activity gains by a small random value'],
+        ['rnd',  '?',10, 'set all activity gains to a random value'],
+    ], spread => [
+        ['init', '1', 0, 'put all activity spread value on default'],
+        ['copy', '=',10, 'set all activity spread to the value of the first subrule'],
+        ['add',  '+',20, 'increase all activity spread by 0.05'],
+        ['sub',  '-', 0, 'decrease all activity spread by 0.05'],
+        ['mul',  '*',10, 'increase large and decrease small values of activity spread'],
+        ['div',  '/', 0, 'decrease large and increase small values of activity spread'],
+        ['wave', '%',20, 'increase activity spread of odd numbered subrules and decrease them of even the numbered'],
+        ['+rnd', '~',20, 'change all activity spread by a small random value'],
+        ['rnd',  '?',10, 'set all activity spread to a random value'],
+    ]};
+
+    $self->{'label'}{'action'} = Wx::StaticText->new( $self, -1, 'Gain :' );
+    $self->{'label'}{'action'}->SetToolTip('Functions to change all the turn based activity gain values');
+    $self->{'label'}{'spread'} = Wx::StaticText->new( $self, -1, 'Spread :' );
+    $self->{'label'}{'spread'}->SetToolTip('Functions to change all the turn based activity spread values');
+
+    my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_VERTICAL;
+    my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_VERTICAL;
+    my $sizer;
+
+    for my $type (qw/action spread/){
+        next unless exists $btn_data->{$type} and ref $btn_data->{$type} eq 'ARRAY';
+        $sizer->{ $type } = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+        $sizer->{ $type }->AddSpacer( 10 );
+        $sizer->{ $type }->Add( $self->{'label'}{ $type }, 0, $all_attr, 10 );
+
+        for my $btn_data (@{$btn_data->{$type}}){
+            my $button = Wx::Button->new( $self, -1, $btn_data->[1], [-1,-1], [30,25] );
+            $button->SetToolTip( $btn_data->[3] );
+            my $ID = $btn_data->[0];
+            Wx::Event::EVT_BUTTON( $self, $button, sub { $self->change_values_command( $ID, $type); $self->{'call_back'}->() } );
+            $sizer->{ $type }->AddSpacer( $btn_data->[2] );
+            $sizer->{ $type }->Add( $button, 0, $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM, 5 );
+        }
+        $sizer->{ $type }->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    }
+
+    $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
     $self->{'rule_plate'}->EnableScrolling(0,1);
     $self->{'rule_plate'}->SetScrollRate( 1, 1 );
-    $self->{'call_back'} = sub {};
-    $self->{'input_size'} = 0;
-    $self->{'state_count'} = 0;
-    $self->{'rule_mode'} = '';
-
-    $self->{'action_nr'} = Wx::TextCtrl->new( $self, -1, 22222222, [-1,-1], [ 145, -1], &Wx::wxTE_PROCESS_ENTER );
-
-    $self->{'btn'}{'1'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
-    $self->{'btn'}{'2'}  = Wx::Button->new( $self, -1, '2',  [-1,-1], [30,25] );
-    $self->{'btn'}{'!'}  = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
-    $self->{'btn'}{'?'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'btn'}{'1'}->SetToolTip('cells always in active action state (default)');
-    $self->{'btn'}{'2'}->SetToolTip('cells always in toggeling action state');
-    $self->{'btn'}{'!'}->SetToolTip('toggle resulting action states');
-    $self->{'btn'}{'?'}->SetToolTip('set resulting action states to random new values');
-
-    my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
-    my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
-
-    my $act_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $act_sizer->AddSpacer( 10 );
-    $act_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
-    $act_sizer->AddSpacer( 0 );
-    $act_sizer->Add( $self->{'action_nr'},   0, $all_attr, 5 );
-    $act_sizer->AddSpacer( 10 );
-    $act_sizer->Add( $self->{'btn'}{'!'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'1'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'2'}, 0, $all_attr, 5 );
-    $act_sizer->Add( $self->{'btn'}{'?'}, 0, $all_attr, 5 );
-    $act_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    $self->{'plate_sizer'} = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $self->{'rule_plate'}->SetSizer( $self->{'plate_sizer'} );
 
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 15 );
-    $main_sizer->Add( $act_sizer, 0, $std_attr, 20);
+    $main_sizer->Add( $sizer->{'action'}, 0, $std_attr, 20);
+    $main_sizer->AddSpacer( 10 );
+    $main_sizer->Add( $sizer->{'spread'}, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 10 );
     $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxRIGHT, 20 );
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
-
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'1'},sub { $self->init_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'2'},sub { $self->grid_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'?'},sub { $self->random_action; $self->{'call_back'}->() } );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'!'},sub { $self->invert_action; $self->{'call_back'}->() } );
-
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub { $self->set_action_summary( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'action_nr'}, sub { $self->set_action_summary( $self->{'action_nr'}->GetValue ); $self->{'call_back'}->() });
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'action_nr'}, sub {
-        my ($self, $cmd) = @_;
-        my $new_nr = $cmd->GetString;
-        my $old_nr = $self->action_nr_from_results;
-        return if $new_nr == $old_nr;
-        $self->set_action_summary( $new_nr );
-        $self->{'call_back'}->();
-    });
 
     $self->regenerate_rules( 3, 2, color('white')->gradient_to('black', 2) );
     $self->init;
@@ -123,34 +130,42 @@ sub regenerate_rules {
         }
         my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
         for my $i ($self->{'subrules'}->index_iterator){
-            $self->{'rule_input'}[$i]
-                = App::GUI::Cellgraph::Widget::RuleInput->new (
-                    $self->{'rule_plate'}, $self->{'rule_square_size'},
-                    $sub_rule_pattern[$i], $self->{'state_colors'} );
-
-            my $help_text = 'increase of activity value after partial rule Nr.'.($i+1);
+            $self->{'rule_input'}[$i] = App::GUI::Cellgraph::Widget::RuleInput->new (
+                $self->{'rule_plate'}, $self->{'rule_square_size'}, $sub_rule_pattern[$i], $self->{'state_colors'}
+            );
             $self->{'rule_input'}[$i]->SetToolTip('input pattern of partial rule Nr.'.($i+1));
-            $self->{'action_result'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
-                    ( $self->{'rule_plate'}, 90, '', $help_text, -1, 1, 0.7, 0.05);
-            $self->{'action_result'}[$i]->SetCallBack( sub {
-                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
-            });
-            $self->{'action_result'}[$i]->SetToolTip( $help_text );
-
             $self->{'arrow'}[$i] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-            $self->{'arrow'}[$i]->SetToolTip('partial action rule '.($i+1).' input left, output right');
+            $self->{'arrow'}[$i]->SetToolTip('partial action rule Nr.'.($i+1).' input left, output right');
+
+            my $help_text = 'turn based gain of activity value at partial rule Nr.'.($i+1);
+            $self->{'action_result'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
+                    ( $self->{'rule_plate'}, 80, '', $help_text, -1, 1, 0.7, 0.05, 'turn based activity value gain');
+            $self->{'action_result'}[$i]->SetToolTip( $help_text );
+            $self->{'action_result'}[$i]->SetCallBack( sub {
+#                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
+            });
+
+            my $help_txt = 'spread of activity value to neighbouring cells from partial rule Nr.'.($i+1);
+            $self->{'action_spread'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
+                    ( $self->{'rule_plate'}, 0, '', $help_txt, -1, 1, 0.3, 0.05, 'spread of activity value');
+            $self->{'action_spread'}[$i]->SetToolTip( $help_txt );
+            $self->{'action_spread'}[$i]->SetCallBack( sub {
+#                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
+            });
+
         }
         my $label_length = length $self->{'subrules'}->independent_count;
         my $v_attr = &Wx::wxALIGN_CENTER_VERTICAL;
         for my $i ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-            $row_sizer->AddSpacer(30);
+            $row_sizer->AddSpacer(20);
             $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$i+1).' :  ' ), 0, $v_attr);
             $row_sizer->Add( $self->{'rule_input'}[$i], 0, $v_attr );
             $row_sizer->AddSpacer(15);
             $row_sizer->Add( $self->{'arrow'}[$i], 0, $v_attr );
             $row_sizer->AddSpacer(0);
             $row_sizer->Add( $self->{'action_result'}[$i], 0, $v_attr );
+            $row_sizer->Add( $self->{'action_spread'}[$i], 0, $v_attr );
             $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
             $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 0);
@@ -173,7 +188,7 @@ sub init { $_[0]->set_settings( { nr => 22222222 } ) }
 sub get_settings {
     my ($self) = @_;
     {
-        nr => $self->{'action_nr'}->GetValue,
+        nr => 1,
         sum => 0,
         threshold => 1,
     }
@@ -188,7 +203,7 @@ sub get_state {
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    $self->set_action_summary( $settings->{'nr'} );
+    #$self->set_action_summary( $settings->{'nr'} );
 }
 
 sub action_nr_from_results {
@@ -198,54 +213,37 @@ sub get_action_results {
     map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator
 }
 
-sub set_action_summary {
-    my ($self) = shift;
-    my ($nr, @aresult);
-    my $srule_count = $self->{'subrules'}->{'independent_subrules'};
-    if (@_ == 1) {
-        $nr = shift;
-        @aresult = $self->list_from_action_nr( $nr );
-        push @aresult, $self->{'action_result'}[int @aresult]->GetValue while @aresult < $srule_count-1;
-        $nr = $self->nr_from_action_list( @aresult );
-    } else {
-        @aresult = @_;
-        push @aresult, $self->{'action_result'}[int @aresult]->GetValue while @aresult < $srule_count-1;
-        pop @aresult  while @aresult >= $srule_count;
-        $nr = $self->nr_from_action_list( @aresult );
-    }
-    $self->{'action_nr'}->SetValue( $nr );
-    return unless ref $self->{'action_result'}[0];
-   # $self->{'action_result'}[$_]->SetValue( $aresult[$_] ) for 0 .. $#aresult;
-    $nr;
-}
-
 ########################################################################
 sub init_action {
     my ($self) = @_;
     my @list = map { $self->{'action_result'}[$_]->init } $self->{'subrules'}->index_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub grid_action {
     my ($self) = @_;
     my @list = map { $self->{'action_result'}[$_]->grid } $self->{'subrules'}->index_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub random_action {
     my ($self) = @_;
     my @list =  map { $self->{'action_result'}[$_]->rand } $self->{'subrules'}->index_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub invert_action {
     my ($self) = @_;
     my @list = map { $self->{'action_result'}[$_]->invert } $self->{'subrules'}->index_iterator;
-    $self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
+    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
 sub list_from_action_nr { reverse split '', $_[1]}
 sub nr_from_action_list { shift @_; join '', reverse @_ }
 
+sub change_values_command {
+    my ($self, $command, $type) = @_;
+say "cmd $command, $type";
+}
 
 1;

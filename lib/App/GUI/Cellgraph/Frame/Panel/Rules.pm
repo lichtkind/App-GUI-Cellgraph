@@ -176,7 +176,7 @@ sub regenerate_rules {
         my $label_length = length $self->{'subrules'}->independent_count;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-            $row_sizer->AddSpacer(30);
+            $row_sizer->AddSpacer(20);
             $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' ), 0, &Wx::wxGROW);
             $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
             $row_sizer->AddSpacer(15);
