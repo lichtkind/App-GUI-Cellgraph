@@ -70,8 +70,8 @@ sub GetValue { $_[0]->{'value'} }
 
 sub SetValue {
     my ( $self, $value, $passive) = @_;
-    $value = $self->{'min_value'} if $value < $self->{'min_value'};
-    $value = $self->{'max_value'} if $value > $self->{'max_value'};
+    $value = $self->{'min_value'} if int($value) < $self->{'min_value'};
+    $value = $self->{'max_value'} if int($value) > $self->{'max_value'};
     return if $self->{'value'} == $value;
 
     $self->{'value'} = $value;

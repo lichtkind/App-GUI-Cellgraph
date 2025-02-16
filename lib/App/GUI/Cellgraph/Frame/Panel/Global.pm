@@ -34,7 +34,7 @@ sub new {
     $self->create_label( 'direction',   'Direction :',  'painting direction and pattern mirroring style' );
 
     $self->{'widget'}{'circular_grid'}    = Wx::CheckBox->new( $self, -1, '  Circular');
-    $self->{'widget'}{'use_action_rules'} = Wx::CheckBox->new( $self, -1, '  Active');
+    $self->{'widget'}{'use_action_rules'} = Wx::CheckBox->new( $self, -1, '  Apply');
     $self->{'widget'}{'fill_cells'}       = Wx::CheckBox->new( $self, -1, '  Fill');
 
     $self->{'widget'}{'subrule_count'}    = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );

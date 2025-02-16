@@ -44,6 +44,7 @@ sub new {
 sub draw {
     my( $self, $state ) = @_;
     return unless $self->set_state( $state );
+    $self->{'flag'}{'draw'} = 1;
     $self->Refresh;
 }
 
@@ -85,27 +86,26 @@ sub paint {
     my $grid_max_y = $grid_d * $self->{'cells'}{'y'};
     my $sketch_length = exists $self->{'flag'}{'sketch'} ? $self->{'flag'}{'sketch'} : 0;
 
-    my $background_color = Wx::Colour->new( 255, 255, 255 );
-    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
-    $dc->Clear();
+        $dc->Clear();
+        $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 170, 170, 170 ), 1, &Wx::wxPENSTYLE_SOLID ) );
+        #$dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
+        if ($self->{'state'}{'global'}{'grid_type'} eq 'lines'){
+            $dc->DrawLine( 0,  0, $grid_max_x,    0);
+            $dc->DrawLine( 0,  0,    0, $grid_max_y);
+            $dc->DrawLine( $grid_d * $_,            0, $grid_d * $_, $grid_max_y ) for 1 .. $self->{'cells'}{'x'};
+            $dc->DrawLine(            0, $grid_d * $_,  $grid_max_x, $grid_d * $_) for 1 .. $self->{'cells'}{'y'};
+        }
 
-    $dc->SetPen( Wx::Pen->new( Wx::Colour->new( 170, 170, 170 ), 1, &Wx::wxPENSTYLE_SOLID ) );
 #my $t0 = Benchmark->new;
-    if ($self->{'state'}{'global'}{'grid_type'} eq 'lines'){
-        $dc->DrawLine( 0,  0, $grid_max_x,    0);
-        $dc->DrawLine( 0,  0,    0, $grid_max_y);
-        $dc->DrawLine( $grid_d * $_,            0, $grid_d * $_, $grid_max_y ) for 1 .. $self->{'cells'}{'x'};
-        $dc->DrawLine(            0, $grid_d * $_,  $grid_max_x, $grid_d * $_) for 1 .. $self->{'cells'}{'y'};
-    }
 #say "grid took:",timestr( timediff(Benchmark->new, $t0) );
 
     my @color = map { Wx::Colour->new( $_->rgb ) } @{$self->{'state'}{'color'}{'objects'}};
-    my @pen = map {Wx::Pen->new( $_, 1, &Wx::wxPENSTYLE_SOLID )} @color;
+    my @pen   = map {Wx::Pen->new( $_, 1, &Wx::wxPENSTYLE_SOLID )} @color;
     my @brush = map { Wx::Brush->new( $_, &Wx::wxBRUSHSTYLE_SOLID ) } @color;
-
-    my $grid = App::GUI::Cellgraph::Compute::Grid::create( $self->{'state'}, $self->{'cells'}{'x'}, $sketch_length );
-
-    my $rows = $sketch_length ? ($sketch_length - 1) : ($self->{'cells'}{'x'} - 1);
+    my $grid  = App::GUI::Cellgraph::Compute::Grid::create( $self->{'state'}, $self->{'cells'}{'x'}, $sketch_length );
+    my $rows  = $sketch_length ? ($sketch_length - 1) : ($self->{'cells'}{'x'} - 1);
+    my $cell_size_iterator = [0 .. $self->{'state'}{'global'}{'cell_size'}-1];
+    my $cl = $cell_size - 1;
     my $y_cursor = 1;
 #my $t1 = Benchmark->new;
     if ($self->{'state'}{'global'}{'fill_cells'}){
@@ -113,15 +113,14 @@ sub paint {
             my $x_cursor = 1;
             for my $x (0 .. $self->{'cells'}{'x'}-1) {
                 $dc->SetPen( $pen[$grid->[$y][$x]] );
-                $dc->SetBrush( $brush[$grid->[$y][$x]] );
-                $dc->DrawRectangle( $x_cursor, $y_cursor, $cell_size, $cell_size );
+                $dc->DrawLine( $x_cursor, $y_cursor+$_, $x_cursor + $cl, $y_cursor+$_) for @$cell_size_iterator;
+                #$dc->SetBrush( $brush[$grid->[$y][$x]] );
+                #$dc->DrawRectangle( $x_cursor, $y_cursor, $cell_size, $cell_size );
                 $x_cursor += $grid_d;
             }
             $y_cursor += $grid_d;
         }
     } else {
-        my ($xe, $ye);
-        my $cl = $cell_size - 1;
         for my $y (0 .. $rows) {
             my $x_cursor = 1;
             for my $x (0 .. $self->{'cells'}{'x'}-1) {

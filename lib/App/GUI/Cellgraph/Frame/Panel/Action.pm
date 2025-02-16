@@ -23,6 +23,11 @@ sub new {
     $self->{'rule_mode'} = '';
     $self->{'call_back'} = sub {};
 
+    $self->{'label'}{'action'} = Wx::StaticText->new( $self, -1, 'Gain :' );
+    $self->{'label'}{'action'}->SetToolTip('Functions to change all the turn based activity gain values');
+    $self->{'label'}{'spread'} = Wx::StaticText->new( $self, -1, 'Spread :' );
+    $self->{'label'}{'spread'}->SetToolTip('Functions to change all the turn based activity spread values');
+
     my $btn_data = {action => [
         ['init', '1',15, 'put all activity gain value to default'],
         ['copy', '=',10, 'set all activity gains to the value of the first subrule'],
@@ -45,10 +50,6 @@ sub new {
         ['rnd',  '?',10, 'set all activity spread to a random value'],
     ]};
 
-    $self->{'label'}{'action'} = Wx::StaticText->new( $self, -1, 'Gain :' );
-    $self->{'label'}{'action'}->SetToolTip('Functions to change all the turn based activity gain values');
-    $self->{'label'}{'spread'} = Wx::StaticText->new( $self, -1, 'Spread :' );
-    $self->{'label'}{'spread'}->SetToolTip('Functions to change all the turn based activity spread values');
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_VERTICAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_VERTICAL;
@@ -84,7 +85,7 @@ sub new {
     $main_sizer->AddSpacer( 10 );
     $main_sizer->Add( $sizer->{'spread'}, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxRIGHT, 20 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT, 20 );
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
