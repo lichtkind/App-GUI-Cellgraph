@@ -4,7 +4,6 @@
 package App::GUI::Cellgraph::Compute::History;
 use v5.12;
 
-
 sub new {
     my ($pkg, ) = @_;
     bless { present => undef, past => [], future => [],
@@ -24,12 +23,12 @@ sub set_merge_condition { # code ref that checks if data just replaces present s
 }
 
 #### predicates / getter ###############################################
-sub can_undo { int (@{$_[0]->{'past'}}) > 0 }
-sub can_redo { int (@{$_[0]->{'future'}}) > 0 }
+sub can_undo      { int ((@{$_[0]->{'past'}}) > 0) }
+sub can_redo      { int ((@{$_[0]->{'future'}}) > 0) }
 
-sub current_value { $_[0]->{'present'} if defined $_[0]->{'present'}; }
-sub prev_value { $_[0]->{'past'}[-1] if $_[0]->can_undo; }
-sub next_value { $_[0]->{'future'}[0] if $_[0]->can_redo; }
+sub current_value { $_[0]->{'present'} if defined $_[0]->{'present'} }
+sub prev_value    { $_[0]->{'past'}[-1] if $_[0]->can_undo }
+sub next_value    { $_[0]->{'future'}[0] if $_[0]->can_redo }
 
 #### worker methods ####################################################
 sub reset {

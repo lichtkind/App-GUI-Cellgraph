@@ -60,14 +60,19 @@ sub new {
 
     my $attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxLEFT;
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $sizer->AddSpacer(10);
     $sizer->Add( $self->{'red'},  0, $attr, 10);
+    $sizer->AddSpacer(10);
     $sizer->Add( $self->{'green'},  0, $attr, 10);
+    $sizer->AddSpacer(10);
     $sizer->Add( $self->{'blue'},  0, $attr, 10);
-    $sizer->AddSpacer( 20 );
+    $sizer->AddSpacer( 30 );
     $sizer->Add( $self->{'hue'},  0, $attr, 10);
+    $sizer->AddSpacer(10);
     $sizer->Add( $self->{'sat'},  0, $attr, 10);
+    $sizer->AddSpacer(10);
     $sizer->Add( $self->{'light'},  0, $attr, 10);
-
+    $sizer->AddSpacer(10);
     $self->SetSizer($sizer);
     $self;
 }
