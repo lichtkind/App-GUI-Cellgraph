@@ -23,7 +23,7 @@ sub new {
     $self->create_label( 'visuals',  'Visual Settings', 'Section for settings regarding appearances' );
     $self->create_label( 'input_size',  'Input Size :',  'Size of neighbourhood - from how many cells compute new cell state ?' );
     $self->create_label( 'state_count', 'Cell States :','How many states a cell can have ?' );
-    $self->create_label( 'subrule_filter',   'Type :',   'Which selection of subrules are distinct? Rest gets bundled.' );
+    $self->create_label( 'subrule_selection',   'Select :',   'Which selection of subrules are distinct? Rest gets bundled.' );
     $self->create_label( 'result_application', 'Result :', 'Result of a subrule should replace previous value (insert) or be added to it ?' );
     $self->create_label( 'rule_count',  'Sub - Rules :','Amount of subrules and possible rules resulting from current settings.' );
     $self->create_label( 'action_threshold','Threshold :',  'How to paint gaps between cell squares ?' );
@@ -42,7 +42,7 @@ sub new {
 
     $self->{'widget'}{'input_size'}        = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'}       = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
-    $self->{'widget'}{'subrule_filter'}    = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[118, -1], [qw/all symmetric sorted summing/], &Wx::wxTE_READONLY); # median
+    $self->{'widget'}{'subrule_selection'} = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[118, -1], [qw/all symmetric sorted summing/], &Wx::wxTE_READONLY); # median
     $self->{'widget'}{'result_application'}= Wx::ComboBox->new( $self, -1, '2', [-1,-1],[110, -1], [qw/insert rotate add add_rot subtract multiply/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'action_threshold'}  = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[90, -1], [0, 0.1,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.75,0.8,0.85, 0.9, 0.95,1.0]);
     $self->{'widget'}{'action_spread'}     = Wx::ComboBox->new( $self, -1, '0.6', [-1,-1],[65, -1], [0,1,2,3]);
@@ -57,7 +57,7 @@ sub new {
     $self->{'widget'}{'state_count'}->SetToolTip('How many states a cell can have?');
     $self->{'widget'}{'rule_count'}->SetToolTip('Count of Rules resulting from current settings');
     $self->{'widget'}{'subrule_count'}->SetToolTip('Count of Subrules resulting from current settings');
-    $self->{'widget'}{'subrule_filter'}->SetToolTip("symmetric = an asymetric rule and its mirror have same result\nsumming = all rules with same sum of input states have same result");
+    $self->{'widget'}{'subrule_selection'}->SetToolTip("symmetric = an asymetric rule and its mirror have same result\nsumming = all rules with same sum of input states have same result");
     $self->{'widget'}{'result_application'}->SetToolTip("Result of a subrule should replace previous value (insert) or be added to it ?");
     $self->{'widget'}{'use_action_rules'}->SetToolTip( "should action rules determine if a (state) rule gets applied this round.");
     $self->{'widget'}{'action_threshold'}->SetToolTip( "Action potential of a cell has to be at least this big so state can change.");
@@ -74,7 +74,7 @@ sub new {
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() })
         for qw/grid_type cell_size action_threshold action_spread action_change paint_direction result_application/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->compute_subrule_count; $self->{'call_back'}->() })
-        for qw/state_count input_size subrule_filter/;
+        for qw/state_count input_size subrule_selection/;
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL;
     my $sep_attr = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT | &Wx::wxGROW;
@@ -94,9 +94,9 @@ sub new {
 
     my $rule2_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $rule2_sizer->AddSpacer( $indent );
-    $rule2_sizer->Add( $self->{'label'}{'subrule_filter'}, 0, $std_attr, 0);
+    $rule2_sizer->Add( $self->{'label'}{'subrule_selection'}, 0, $std_attr, 0);
     $rule2_sizer->AddSpacer( 10 );
-    $rule2_sizer->Add( $self->{'widget'}{'subrule_filter'}, 0, $std_attr, 0);
+    $rule2_sizer->Add( $self->{'widget'}{'subrule_selection'}, 0, $std_attr, 0);
     $rule2_sizer->AddSpacer( 15 );
     $rule2_sizer->Add( $self->{'label'}{'rule_count'}, 0,   $std_attr, 0);
     $rule2_sizer->AddSpacer( 10 );
@@ -187,23 +187,23 @@ sub new {
     $self->init;
     $self;
 }
-
-sub init        {
-    $_[0]->set_settings({
-        input_size => 3, state_count => 2, circular_grid => 1,
-        subrule_filter => 'all', subrule_count => 8, rule_count => 256,
-        result_application => 'insert',
-        use_action_rules => 0, action_threshold => 0.7, action_spread => 0, action_change => -0.5,
-        grid_type => 'lines', cell_size => 3, paint_direction => 'top_down',
-        fill_cells => 1,
-    });
-}
 sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;
 }
 
+sub init        {
+    $_[0]->set_settings({
+        input_size => 3, state_count => 2, circular_grid => 1,
+        subrule_selection => 'all', subrule_count => 8, rule_count => 256,
+        result_application => 'insert',
+        use_action_rules => 0, action_spread => 0,
+        action_change => -0.5, action_threshold => 0.7,
+        paint_direction => 'top_down', grid_type => 'lines', cell_size => 3,
+        fill_cells => 1,
+    });
+}
 sub get_settings {
     my ($self) = @_;
     my $settings = { map { $_ => $self->{'widget'}{$_}->GetValue } keys %{$self->{'widget'}} };
@@ -226,7 +226,7 @@ sub compute_subrule_count {
     $self->{'subrules'}->renew(
         $self->{'widget'}{'input_size'}->GetValue,
         $self->{'widget'}{'state_count'}->GetValue,
-        $self->{'widget'}{'subrule_filter'}->GetValue
+        $self->{'widget'}{'subrule_selection'}->GetValue
     );
     $self->{'widget'}{'subrule_count'}->SetValue( $self->{'subrules'}->independent_count );
     $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count );

@@ -184,21 +184,28 @@ sub set_callback {
     $self->{'call_back'} = $code;
 }
 
+########################################################################
 sub init { $_[0]->set_settings( { nr => 22222222 } ) }
+
+sub get_state {
+    my ($self) = @_;
+    my $state = $self->get_settings;
+    #~ $state->{'f'} = [$self->get_action_results];
+    #~ $state;
+    #~ {
+        #~ nr => 1,
+        #~ sum => 0,
+
+    #~ }
+}
 
 sub get_settings {
     my ($self) = @_;
     {
         nr => 1,
         sum => 0,
-        threshold => 1,
+
     }
-}
-sub get_state {
-    my ($self) = @_;
-    my $state = $self->get_settings;
-    $state->{'f'} = [$self->get_action_results];
-    $state
 }
 
 sub set_settings {
@@ -207,12 +214,36 @@ sub set_settings {
     #$self->set_action_summary( $settings->{'nr'} );
 }
 
-sub action_nr_from_results {
-    $_[0]->nr_from_action_list( $_[0]->get_action_results )
+
+sub get_action_results { map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator }
+sub get_action_spreads { map { $_[0]->{'action_spread'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator }
+sub set_action_result {
+    my ($self, $nr, $result) = @_;
+    return unless defined $result;
 }
-sub get_action_results {
-    map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator
+sub set_all_action_results {
+    my ($self, @result) = @_;
+    return unless @result == $self->{'subrules'}->independent_count;
 }
+sub set_action_spread {
+    my ($self, $nr, $spread) = @_;
+    return unless defined $spread;
+}
+sub set_all_action_spreads {
+    my ($self, @spread) = @_;
+    return unless @spread == $self->{'subrules'}->independent_count;
+}
+
+sub result_summary {
+    my ($self) = @_;
+}
+
+sub spread_summary {
+    my ($self) = @_;
+}
+
+sub list_from_summary { split ',', $_[1] }
+sub summary_from_list { shift @_; join ',', @_ }
 
 ########################################################################
 sub init_action {
@@ -239,12 +270,9 @@ sub invert_action {
     #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
 }
 
-sub list_from_action_nr { reverse split '', $_[1]}
-sub nr_from_action_list { shift @_; join '', reverse @_ }
-
 sub change_values_command {
     my ($self, $command, $type) = @_;
-say "cmd $command, $type";
+
 }
 
 1;
