@@ -7,7 +7,8 @@ use v5.12;
 
 sub new {
     my ($pkg, ) = @_;
-    bless { present => undef, past => [], future => [], guard => ''  };
+    bless { present => undef, past => [], future => [],
+            guard => '', merge => '',  last_condition => [] };
 }
 
 sub reset {
@@ -16,20 +17,32 @@ sub reset {
     $self->{'future'} = [];
 }
 
-sub set_guard {
-    my ($self, $guard) = @_;
-    return unless ref $guard eq 'CODE';
-    $self->{'guard'} = $guard;
+sub set_guard_condition {
+    my ($self, $condition) = @_;
+    return unless ref $condition eq 'CODE';
+    $self->{'guard'} = $condition;
+}
+sub set_merge_condition {
+    my ($self, $condition) = @_;
+    return unless ref $condition eq 'CODE';
+    $self->{'merge'} = $condition;
 }
 
 sub add_value {
-    my ($self, $value) = @_;
+    my ($self, $value, @cond) = @_;
     return unless defined $value;
+    return if defined $self->{'present'} and $value eq $self->{'present'};
     return if $self->{'guard'} and not $self->{'guard'}->($value);
+    if ($self->{'merge'} and @cond) {
+        my $do_merge = $self->{'merge'}->( [@cond], $self->{'last_condition'} );
+        $self->{'last_condition'} = [@cond];
+        if (not $do_merge and defined $self->{'present'}) {
+            push @{$self->{'past'}}, $self->{'present'} ;
+        }
+    }
     $self->{'future'} = [];
-    push @{$self->{'past'}}, $self->{'present'} if defined $self->{'present'};
-say "add $value ";
     $self->{'present'} = $value;
+    $value;
 }
 
 sub undo {

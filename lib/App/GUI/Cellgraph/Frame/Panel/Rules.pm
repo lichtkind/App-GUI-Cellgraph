@@ -233,10 +233,7 @@ sub set_rule {
     return if $rule_nr == $self->{'rule_nr'}->GetValue;
     $self->{'rule_result'}[$_]->SetValue( $result[$_] ) for 0 .. $#result;
     $self->{'rule_nr'}->SetValue( $rule_nr );
-say "set gui $rule_nr";
     $self->{'rules'}->set_rule_nr( $rule_nr );
-say 'past: ', @{$self->{'rules'}{'history'}{'past'}};
-say 'future: ', @{$self->{'rules'}{'history'}{'future'}};
     $self->{'btn'}{'undo'}->Enable( $self->{'rules'}->can_undo );
     $self->{'btn'}{'redo'}->Enable( $self->{'rules'}->can_redo );
 }

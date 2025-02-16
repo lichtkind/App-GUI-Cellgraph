@@ -108,7 +108,7 @@ my $t0 = Benchmark->new;
     # += $state->{'global'}{'action_threshold'}
     # += $state->{'global'}{'action_spread'}
 
-say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
+#say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
 
     if ($sketch_length){
         $state_grid->[$_] = [@empty_row] for $compute_rows .. $grid_size - 1;

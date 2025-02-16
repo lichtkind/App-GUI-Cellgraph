@@ -17,6 +17,7 @@ sub new {
     $self->{'max_value'} = $max;
     $self->{'init_value'} = $init_value;
     $self->{'name'} = $label;
+    $self->{'help'} = $help;
     $self->{'value'} = $init_value // $min;
     $self->{'value_delta'} = $delta // 1;
     $self->{'callback'} = sub {};
@@ -70,9 +71,12 @@ sub GetValue { $_[0]->{'value'} }
 
 sub SetValue {
     my ( $self, $value, $passive) = @_;
+    return if $self->{'value'} == $value;
+    $value = $self->{'value_delta'} * int( $value / $self->{'value_delta'}) if $self->{'value_delta'};
     $value = $self->{'min_value'} if int($value) < $self->{'min_value'};
     $value = $self->{'max_value'} if int($value) > $self->{'max_value'};
     return if $self->{'value'} == $value;
+# say "||||||||| came through $value in ",$self->{'help'};
 
     $self->{'value'} = $value;
     my $slider_val = $value / $self->{'value_delta'};

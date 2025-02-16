@@ -199,7 +199,7 @@ sub init        {
         subrule_selection => 'all', subrule_count => 8, rule_count => 256,
         result_application => 'insert',
         use_action_rules => 0, action_spread => 0,
-        action_change => -0.5, action_threshold => 0.7,
+        action_change => -0.6, action_threshold => 0.7,
         paint_direction => 'top_down', grid_type => 'lines', cell_size => 3,
         fill_cells => 1,
     });
