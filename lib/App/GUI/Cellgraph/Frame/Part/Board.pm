@@ -78,7 +78,6 @@ sub paint {
     $self->{'cells'}{'y'} = ($self->{'state'}{'global'}{'grid_type'} eq 'no')
                           ? int (  $height      /  $self->{'size'}{'cell'}      )
                           : int ( ($height - 1) / ($self->{'size'}{'cell'} + 1) );
-    $self->{'seed_cell'}  = int   $self->{'cells'}{'x'} / 2;
 
     my $cell_size = $self->{'size'}{'cell'};
     my $grid_d =  ($self->{'state'}{'global'}{'grid_type'} eq 'no')  ? $cell_size : $cell_size + 1;
@@ -95,9 +94,6 @@ sub paint {
             $dc->DrawLine( $grid_d * $_,            0, $grid_d * $_, $grid_max_y ) for 1 .. $self->{'cells'}{'x'};
             $dc->DrawLine(            0, $grid_d * $_,  $grid_max_x, $grid_d * $_) for 1 .. $self->{'cells'}{'y'};
         }
-
-#my $t0 = Benchmark->new;
-#say "grid took:",timestr( timediff(Benchmark->new, $t0) );
 
     my @color = map { Wx::Colour->new( $_->rgb ) } @{$self->{'state'}{'color'}{'objects'}};
     my @pen   = map {Wx::Pen->new( $_, 1, &Wx::wxPENSTYLE_SOLID )} @color;
@@ -129,7 +125,6 @@ sub paint {
                 $dc->DrawLine( $x_cursor, $y_cursor + $cl, $x_cursor + $cl, $y_cursor + $cl);
                 # $dc->DrawLine( $x_cursor, $y_cursor, $x_cursor, $y_cursor + $cl);
                 # $dc->DrawLine( $x_cursor + $cl, $y_cursor, $x_cursor + $cl, $y_cursor + $cl);
-                # $dc->DrawRectangle( $x_cursor, $y_cursor, $cell_size, $cell_size );
                 $x_cursor += $grid_d;
             }
             $y_cursor += $grid_d;
