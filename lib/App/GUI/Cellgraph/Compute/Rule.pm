@@ -6,6 +6,7 @@ use v5.12;
 use bigint;
 use warnings;
 use Wx;
+use App::GUI::Cellgraph::Compute::History;
 
 sub new {
     my ($pkg, $subrules) = @_;
@@ -15,19 +16,16 @@ sub new {
     my $states = $subrules->state_count;
     bless { subrules => $subrules, subrule_result => [],
             max_rule_nr => ($states ** $rules), rule_nr => -1,
-            last_rule_nr => [], next_rule_nr => [],
+            history => App::GUI::Cellgraph::Compute::History->new(),
     };
 }
 sub renew {
     my ($self) = @_;
-    $self->{'next_rule_nr'} = [];
-    $self->{'last_rule_nr'} = [];
+    $self->{'history'}->reset;
     $self->{'subrule_result'} = [];
     $self->{'max_rule_nr'} = ($self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count);
     $self->{'rule_nr'} = $self->{'max_rule_nr'}-1 unless $self->{'rule_nr'} < $self->{'max_rule_nr'};
     $self->set_rule_nr( $self->{'rule_nr'} );
-    $self->_update_results_from_rule_nr( );
-    $self;
 }
 
 ########################################################################
@@ -38,12 +36,16 @@ sub get_rule_nr { $_[0]->{'rule_nr'} }
 sub set_rule_nr {
     my ($self, $number) = @_;
     return unless defined $number and $number > -1 and $number < $self->{'max_rule_nr'} and $number != $self->{'rule_nr'};
-    $self->safe_rule_nr;
-    $self->{'rule_nr'} = $number;
-    $self->_update_results_from_rule_nr;
-    $number;
+    $self->_update_results_from_rule_nr( $number );
+    $self->safe_rule_nr( );
 }
-sub _update_results_from_rule_nr { $_[0]->{'subrule_result'} = [$_[0]->result_list_from_rule_nr( $_[0]->{'rule_nr'} ) ] }
+sub _update_results_from_rule_nr {
+    my ($self, $rule_nr) = @_;
+    $rule_nr = $self->get_rule_nr unless defined $rule_nr;
+    $self->{'rule_nr'} = $rule_nr;
+    $self->{'subrule_result'} = [ $self->result_list_from_rule_nr( $rule_nr ) ];
+    $rule_nr;
+}
 sub _update_rule_nr_from_results { $_[0]->{'rule_nr'} = $_[0]->rule_nr_from_result_list( @{$_[0]->{'subrule_result'}} ) }
 sub _is_state { (@_ == 2 and $_[1] >= 0 and $_[1] < $_[0]->{'subrules'}->state_count) ? 1 : 0 }
 sub _is_index { (@_ == 2 and $_[1] >= 0 and $_[1] < $_[0]->{'subrules'}->independent_count) ? 1 : 0 }
@@ -102,55 +104,46 @@ sub result_list_from_rule_nr {
 
 ####rule nr history ####################################################
 sub safe_rule_nr {
-    my ($self) = @_;
-    $self->{'next_rule_nr'} = [];
-    return if $self->{'rule_nr'} == -1;
-    push @{$self->{'last_rule_nr'}}, $self->{'rule_nr'};
-    $self->{'rule_nr'};
+    my ($self, $nr) = @_;
+    $self->{'history'}->add_value( $nr //= $self->get_rule_nr );
 }
 sub undo_rule_nr {
     my ($self) = @_;
-    return unless @{$self->{'last_rule_nr'}};
-    push @{$self->{'next_rule_nr'}}, $self->{'rule_nr'};
-    $self->{'rule_number'} = pop @{$self->{'last_rule_nr'}};
-    $self->_update_results_from_rule_nr;
-    $self->{'rule_nr'};
+    my $rule_number = $self->{'history'}->undo // return;
+    $self->_update_results_from_rule_nr( $rule_number );
 }
 sub redo_rule_nr {
     my ($self) = @_;
-    return unless @{$self->{'next_rule_nr'}};
-    push @{$self->{'last_rule_nr'}}, $self->{'rule_nr'};
-    $self->{'rule_nr'} = pop @{$self->{'next_rule_nr'}};
-    $self->_update_results_from_rule_nr;
-    $self->{'rule_nr'};
+    my $rule_number = $self->{'history'}->redo // return;
+    $self->_update_results_from_rule_nr( $rule_number );
 }
-sub can_undo { int (@{$_[0]->{'last_rule_nr'}}) > 0 }
-sub can_redo { int (@{$_[0]->{'next_rule_nr'}}) > 0 }
+sub can_undo { $_[0]->{'history'}->can_undo }
+sub can_redo { $_[0]->{'history'}->can_redo }
 
 ####rule nr functions ##################################################
 sub prev_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     $nr = ($nr < 2) ? ($self->{'max_rule_nr'}-1) : $nr - 1;
     $self->set_rule_nr( $nr );
 }
 sub next_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     $nr++;
     $nr = 1 if $nr >= $self->{'max_rule_nr'};
     $self->set_rule_nr( $nr );
 }
 sub shift_rule_nr_left {
     my ($self) = @_;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     my @result = @{$self->{'subrule_result'}};
     unshift @result, pop @result;
     $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $nr;
 }
 sub shift_rule_nr_right {
     my ($self) = @_;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     my @result = @{$self->{'subrule_result'}};
     push @result, shift @result;
     $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $nr;
@@ -158,7 +151,7 @@ sub shift_rule_nr_right {
 sub opposite_rule_nr {
     my ($self) = @_;
     my $sub_rules = $self->{'subrules'}->independent_count;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     my @old_result = @{$self->{'subrule_result'}};
     my @new_result = map { $old_result[ $sub_rules - $_ - 1] }
         $self->{'subrules'}->index_iterator;
@@ -167,7 +160,7 @@ sub opposite_rule_nr {
 sub symmetric_rule_nr {
     my ($self) = @_;
     return $self->{'rule_nr'} unless $self->{'subrules'}->mode eq 'all';
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     my @old_result = @{$self->{'subrule_result'}};
     my @new_result = map { $old_result[ $self->{'subrules'}{'input_symmetric_partner'}[$_] ] }
         $self->{'subrules'}->index_iterator;
@@ -175,13 +168,12 @@ sub symmetric_rule_nr {
 }
 sub inverted_rule_nr {
     my ($self) = @_;
-    my $nr = $self->safe_rule_nr;
+    my $nr = $self->get_rule_nr;
     $self->set_rule_nr( $self->{'max_rule_nr'} - $nr - 1 ) // $nr;# swap color
 }
 
 sub random_rule_nr {
     my ($self) = @_;
-    $self->safe_rule_nr;
     $self->set_rule_nr( int rand( $self->{'max_rule_nr'} ) );
 }
 

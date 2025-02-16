@@ -19,10 +19,6 @@ sub new {
 
     $self->{'subrules'} = $subrule_calculator;
     $self->{'rules'}    = App::GUI::Cellgraph::Compute::Rule->new( $subrule_calculator );
-    $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
-    $self->{'rule_plate'}->ShowScrollbars(0,1);
-    $self->{'rule_plate'}->EnableScrolling(0,1);
-    $self->{'rule_plate'}->SetScrollRate( 1, 1 );
     $self->{'rule_square_size'} = 20;
     $self->{'input_size'} = 0;
     $self->{'state_count'} = 0;
@@ -40,8 +36,8 @@ sub new {
     $self->{'btn'}{'inv'}    = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
     $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
     $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'btn'}{'undo'}   = Wx::Button->new( $self, -1, '<=',  [-1,-1], [30,25] );
-    $self->{'btn'}{'redo'}   = Wx::Button->new( $self, -1, '=>',  [-1,-1], [30,25] );
+    $self->{'btn'}{'undo'}   = Wx::Button->new( $self, -1, '<=', [-1,-1], [30,25] );
+    $self->{'btn'}{'redo'}   = Wx::Button->new( $self, -1, '=>', [-1,-1], [30,25] );
 
     $self->{'btn'}{'prev'}->SetToolTip('decrease rule number by one');
     $self->{'btn'}{'next'}->SetToolTip('increase rule number by one');
@@ -53,6 +49,11 @@ sub new {
     $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
     $self->{'btn'}{'undo'}->SetToolTip('undo the last rule changes');
     $self->{'btn'}{'redo'}->SetToolTip('redo - take back the rule change undo');
+
+    $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
+    $self->{'rule_plate'}->ShowScrollbars(0,1);
+    $self->{'rule_plate'}->EnableScrolling(0,1);
+    $self->{'rule_plate'}->SetScrollRate( 1, 1 );
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -232,7 +233,10 @@ sub set_rule {
     return if $rule_nr == $self->{'rule_nr'}->GetValue;
     $self->{'rule_result'}[$_]->SetValue( $result[$_] ) for 0 .. $#result;
     $self->{'rule_nr'}->SetValue( $rule_nr );
+say "set gui $rule_nr";
     $self->{'rules'}->set_rule_nr( $rule_nr );
+say 'past: ', @{$self->{'rules'}{'history'}{'past'}};
+say 'future: ', @{$self->{'rules'}{'history'}{'future'}};
     $self->{'btn'}{'undo'}->Enable( $self->{'rules'}->can_undo );
     $self->{'btn'}{'redo'}->Enable( $self->{'rules'}->can_redo );
 }
