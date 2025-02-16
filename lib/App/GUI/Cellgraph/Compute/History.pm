@@ -11,21 +11,32 @@ sub new {
             guard => '', merge => '',  last_merge_data => [] };
 }
 
-sub reset {
-    my ($self) = @_;
-    $self->{'past'} = [];
-    $self->{'future'} = [];
-}
-
+#### code ref setter ###################################################
 sub set_guard_condition { # code ref that checks if data is well formed or passes as wanted type
     my ($self, $condition) = @_;
-    return unless ref $condition eq 'CODE';
+    return unless ref $condition eq 'CODE'; # return 1 if data good
     $self->{'guard'} = $condition;
 }
 sub set_merge_condition { # code ref that checks if data just replaces present state
     my ($self, $condition) = @_;
-    return unless ref $condition eq 'CODE';
+    return unless ref $condition eq 'CODE';# return 1 if data should replace
     $self->{'merge'} = $condition;
+}
+
+#### predicates / getter ###############################################
+sub can_undo { int (@{$_[0]->{'past'}}) > 0 }
+sub can_redo { int (@{$_[0]->{'future'}}) > 0 }
+
+sub current_value { $_[0]->{'present'} if defined $_[0]->{'present'}; }
+sub prev_value { $_[0]->{'past'}[-1] if $_[0]->can_undo; }
+sub next_value { $_[0]->{'future'}[0] if $_[0]->can_redo; }
+
+#### worker methods ####################################################
+sub reset {
+    my ($self, $full) = @_;
+    $self->{'past'} = [];
+    $self->{'future'} = [];
+    $self->{'present'} = undef if defined $full;
 }
 
 sub add_value {
@@ -34,15 +45,14 @@ sub add_value {
     return if defined $self->{'present'} and $value eq $self->{'present'};
     return if $self->{'guard'} and not $self->{'guard'}->($value);
     if ($self->{'merge'} and @data) {
-        my $do_merge = $self->{'merge'}->( [@data], $self->{'last_merge_data'} );
+        my $replace_resent = $self->{'merge'}->( [@data], $self->{'last_merge_data'} );
         $self->{'last_merge_data'} = [@data];
-        if (not $do_merge and defined $self->{'present'}) {
+        if (not $replace_resent and defined $self->{'present'}) {
             push @{$self->{'past'}}, $self->{'present'} ;
         }
     }
     $self->{'future'} = [];
     $self->{'present'} = $value;
-    $value;
 }
 
 sub undo {
@@ -58,13 +68,5 @@ sub redo {
     push @{ $self->{'past'} }, $self->{'present'};
     $self->{'present'} = shift @{ $self->{'future'} };
 }
-
-########################################################################
-sub current_value { $_[0]->{'present'} if defined $_[0]->{'present'}; }
-sub prev_value { $_[0]->{'past'}[-1] if $_[0]->can_undo; }
-sub next_value { $_[0]->{'future'}[0] if $_[0]->can_redo; }
-
-sub can_undo { int (@{$_[0]->{'past'}}) > 0 }
-sub can_redo { int (@{$_[0]->{'future'}}) > 0 }
 
 1;
