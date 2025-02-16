@@ -31,20 +31,20 @@ sub new {
     my $btn_data = {action => [
         ['init', '1',15, 'put all activity gain value to default'],
         ['copy', '=',10, 'set all activity gains to the value of the first subrule'],
-        ['add',  '+',20, 'increase all activity value gains by 0.05'],
-        ['sub',  '-', 0, 'decrease all activity value gains by 0.05'],
-        ['mul',  '*',10, 'increase large and decrease small values of activity gains'],
-        ['div',  '/', 0, 'decrease large and increase small values of activity gains'],
+        ['sub',  '-',20, 'decrease all activity value gains by 0.05'],
+        ['add',  '+', 0, 'increase all activity value gains by 0.05'],
+        ['div',  '/',10, 'decrease large and increase small values of activity gains'],
+        ['mul',  '*', 0, 'increase large and decrease small values of activity gains'],
         ['wave', '%',20, 'increase activity gain of odd numbered subrules and decrease them of even the numbered'],
         ['+rnd', '~',20, 'change all activity gains by a small random value'],
         ['rnd',  '?',10, 'set all activity gains to a random value'],
     ], spread => [
         ['init', '1', 0, 'put all activity spread value on default'],
         ['copy', '=',10, 'set all activity spread to the value of the first subrule'],
-        ['add',  '+',20, 'increase all activity spread by 0.05'],
-        ['sub',  '-', 0, 'decrease all activity spread by 0.05'],
-        ['mul',  '*',10, 'increase large and decrease small values of activity spread'],
-        ['div',  '/', 0, 'decrease large and increase small values of activity spread'],
+        ['sub',  '-',20, 'decrease all activity spread by 0.05'],
+        ['add',  '+', 0, 'increase all activity spread by 0.05'],
+        ['div',  '/',10, 'decrease large and increase small values of activity spread'],
+        ['mul',  '*', 0, 'increase large and decrease small values of activity spread'],
         ['wave', '%',20, 'increase activity spread of odd numbered subrules and decrease them of even the numbered'],
         ['+rnd', '~',20, 'change all activity spread by a small random value'],
         ['rnd',  '?',10, 'set all activity spread to a random value'],
@@ -54,7 +54,6 @@ sub new {
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_VERTICAL;
     my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_VERTICAL;
     my $sizer;
-
     for my $type (qw/action spread/){
         next unless exists $btn_data->{$type} and ref $btn_data->{$type} eq 'ARRAY';
         $sizer->{ $type } = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
@@ -89,7 +88,7 @@ sub new {
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    $self->regenerate_rules( 3, 2, color('white')->gradient_to('black', 2) );
+    $self->regenerate_rules( color('white')->gradient_to('black', 2) );
     $self->init;
     $self;
 }
@@ -140,20 +139,15 @@ sub regenerate_rules {
 
             my $help_text = 'turn based gain of activity value at partial rule Nr.'.($i+1);
             $self->{'action_result'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
-                    ( $self->{'rule_plate'}, 80, '', $help_text, -1, 1, 0.7, 0.05, 'turn based activity value gain');
+                    ( $self->{'rule_plate'}, 80, '', $help_text, -1, 1, 0.7, 0.02, 'turn based activity value gain');
             $self->{'action_result'}[$i]->SetToolTip( $help_text );
-            $self->{'action_result'}[$i]->SetCallBack( sub {
-#                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
-            });
+            $self->{'action_result'}[$i]->SetCallBack( sub { $self->{'call_back'}->() });
 
             my $help_txt = 'spread of activity value to neighbouring cells from partial rule Nr.'.($i+1);
             $self->{'action_spread'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
-                    ( $self->{'rule_plate'}, 0, '', $help_txt, -1, 1, 0.3, 0.05, 'spread of activity value');
+                    ( $self->{'rule_plate'}, 0, '', $help_txt, -1, 1, 0.3, 0.02, 'spread of activity value');
             $self->{'action_spread'}[$i]->SetToolTip( $help_txt );
-            $self->{'action_spread'}[$i]->SetCallBack( sub {
-#                    $self->set_action_summary( $self->action_nr_from_results ); $self->{'call_back'}->();
-            });
-
+            $self->{'action_spread'}[$i]->SetCallBack( sub { $self->{'call_back'}->() });
         }
         my $label_length = length $self->{'subrules'}->independent_count;
         my $v_attr = &Wx::wxALIGN_CENTER_VERTICAL;
@@ -177,7 +171,6 @@ sub regenerate_rules {
         $self->{'rule_input'}[$_]->SetColors( @rgb ) for $self->{'subrules'}->index_iterator;
     }
 }
-
 sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
@@ -185,33 +178,35 @@ sub set_callback {
 }
 
 ########################################################################
-sub init { $_[0]->set_settings( { nr => 22222222 } ) }
-
-sub get_state {
-    my ($self) = @_;
-    my $state = $self->get_settings;
-    #~ $state->{'f'} = [$self->get_action_results];
-    #~ $state;
-    #~ {
-        #~ nr => 1,
-        #~ sum => 0,
-
-    #~ }
-}
-
-sub get_settings {
-    my ($self) = @_;
-    {
-        nr => 1,
-        sum => 0,
-
-    }
+sub init {
+    $_[0]->change_values_command( 'init', 'action' );
+    $_[0]->change_values_command( 'init', 'spread' );
 }
 
 sub set_settings {
     my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    #$self->set_action_summary( $settings->{'nr'} );
+    return unless ref $settings eq 'HASH' and exists $settings->{'result_summary'} and exists $settings->{'spread_summary'};
+    $self->set_all_action_results( list_from_summary( $settings->{'result_summary'} ) );
+    $self->set_all_action_spreads( list_from_summary( $settings->{'spread_summary'} ) );
+}
+sub get_settings {
+    my ($self) = @_;
+    my $state = $self->get_state;
+    delete $state->{'result_list'};
+    delete $state->{'spread_list'};
+    return $state;
+}
+sub get_state {
+    my ($self) = @_;
+    my @result_list = $self->get_action_results;
+    my @spread_list = $self->get_action_spreads;
+    {
+        result_summary => summary_from_list(@result_list),
+        spread_summary => summary_from_list(@spread_list),
+        result_list => [@result_list],
+        spread_list => [@spread_list],
+
+    }
 }
 
 
@@ -219,60 +214,59 @@ sub get_action_results { map { $_[0]->{'action_result'}[$_]->GetValue } $_[0]->{
 sub get_action_spreads { map { $_[0]->{'action_spread'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator }
 sub set_action_result {
     my ($self, $nr, $result) = @_;
-    return unless defined $result;
+    return unless defined $result and exists $self->{'action_result'}[$nr];
+    $self->{'action_result'}[$nr]->SetValue( $result );
 }
 sub set_all_action_results {
     my ($self, @result) = @_;
     return unless @result == $self->{'subrules'}->independent_count;
+    $self->{'action_result'}[$_]->SetValue( $result[$_] ) for $self->{'subrules'}->index_iterator;
 }
 sub set_action_spread {
     my ($self, $nr, $spread) = @_;
-    return unless defined $spread;
+    return unless defined $spread and exists $self->{'action_spread'}[$nr];
+    $self->{'action_spread'}[$nr]->SetValue( $spread );
 }
 sub set_all_action_spreads {
     my ($self, @spread) = @_;
     return unless @spread == $self->{'subrules'}->independent_count;
-}
-
-sub result_summary {
-    my ($self) = @_;
-}
-
-sub spread_summary {
-    my ($self) = @_;
+    $self->{'action_spread'}[$_]->SetValue( $spread[$_] ) for $self->{'subrules'}->index_iterator;
 }
 
 sub list_from_summary { split ',', $_[1] }
 sub summary_from_list { shift @_; join ',', @_ }
 
 ########################################################################
-sub init_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action_result'}[$_]->init } $self->{'subrules'}->index_iterator;
-    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub grid_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action_result'}[$_]->grid } $self->{'subrules'}->index_iterator;
-    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub random_action {
-    my ($self) = @_;
-    my @list =  map { $self->{'action_result'}[$_]->rand } $self->{'subrules'}->index_iterator;
-    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
-sub invert_action {
-    my ($self) = @_;
-    my @list = map { $self->{'action_result'}[$_]->invert } $self->{'subrules'}->index_iterator;
-    #$self->{'action_nr'}->SetValue( $self->nr_from_action_list( @list ) );
-}
-
 sub change_values_command {
     my ($self, $command, $type) = @_;
-
+    my $sub_rule_count = $self->{'subrules'}->independent_count;
+    if ($type eq 'action'){
+        my @list = $self->get_action_results;
+        if    ($command eq 'init'){ @list = map { 0.7      } @list }
+        elsif ($command eq 'copy'){ @list = map { $list[0] } @list }
+        elsif ($command eq 'add') { @list = map { $_ + 0.02} @list }
+        elsif ($command eq 'sub') { @list = map { $_ - 0.02} @list }
+        elsif ($command eq 'mul') { @list = map { $_ * 1.1 } @list }
+        elsif ($command eq 'div') { @list = map { $_ / 1.2 } @list }
+        elsif ($command eq 'wave'){ @list = map { ($_ % 2) ? ($list[$_] - 0.1) : ($list[$_] + 0.1) } 0 .. $#list }
+        elsif ($command eq '+rnd'){ @list = map { $_ + ((rand 0.2)-0.1)} @list }
+        elsif ($command eq 'rnd') { @list = map {(rand 2) - 1} @list }
+        else { return; }
+        $self->set_all_action_results( @list );
+    } elsif ($type eq 'spread'){
+        my @list = $self->get_action_spreads;
+        if    ($command eq 'init'){ @list = map { 0.3      } @list }
+        elsif ($command eq 'copy'){ @list = map { $list[0] } @list }
+        elsif ($command eq 'add') { @list = map { $_ + 0.02} @list }
+        elsif ($command eq 'sub') { @list = map { $_ - 0.02} @list }
+        elsif ($command eq 'mul') { @list = map { $_ * 1.05} @list }
+        elsif ($command eq 'div') { @list = map { $_ / 1.1 } @list }
+        elsif ($command eq 'wave'){ @list = map { ($_ % 2) ? ($list[$_] - 0.1) : ($list[$_] + 0.1) } 0 .. $#list }
+        elsif ($command eq '+rnd'){ @list = map { $_ + ((rand 0.2)-0.1)} @list }
+        elsif ($command eq 'rnd') { @list = map {(rand 2) - 1} @list }
+        else { return; }
+        $self->set_all_action_spreads( @list );
+    }
 }
 
 1;
