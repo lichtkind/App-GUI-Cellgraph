@@ -1,5 +1,5 @@
 
-# general purpose undo and redo functionality
+# general purpose undo and redo functionality for scalar values and with special powers
 
 package App::GUI::Cellgraph::Compute::History;
 use v5.12;
@@ -8,7 +8,7 @@ use v5.12;
 sub new {
     my ($pkg, ) = @_;
     bless { present => undef, past => [], future => [],
-            guard => '', merge => '',  last_condition => [] };
+            guard => '', merge => '',  last_merge_data => [] };
 }
 
 sub reset {
@@ -17,25 +17,25 @@ sub reset {
     $self->{'future'} = [];
 }
 
-sub set_guard_condition {
+sub set_guard_condition { # code ref that checks if data is well formed or passes as wanted type
     my ($self, $condition) = @_;
     return unless ref $condition eq 'CODE';
     $self->{'guard'} = $condition;
 }
-sub set_merge_condition {
+sub set_merge_condition { # code ref that checks if data just replaces present state
     my ($self, $condition) = @_;
     return unless ref $condition eq 'CODE';
     $self->{'merge'} = $condition;
 }
 
 sub add_value {
-    my ($self, $value, @cond) = @_;
+    my ($self, $value, @data) = @_;
     return unless defined $value;
     return if defined $self->{'present'} and $value eq $self->{'present'};
     return if $self->{'guard'} and not $self->{'guard'}->($value);
-    if ($self->{'merge'} and @cond) {
-        my $do_merge = $self->{'merge'}->( [@cond], $self->{'last_condition'} );
-        $self->{'last_condition'} = [@cond];
+    if ($self->{'merge'} and @data) {
+        my $do_merge = $self->{'merge'}->( [@data], $self->{'last_merge_data'} );
+        $self->{'last_merge_data'} = [@data];
         if (not $do_merge and defined $self->{'present'}) {
             push @{$self->{'past'}}, $self->{'present'} ;
         }
