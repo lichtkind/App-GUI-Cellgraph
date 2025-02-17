@@ -10,12 +10,11 @@ use Benchmark;
 sub create {
     my ($state, $grid_size, $sketch_length) = @_;
     return unless defined $grid_size and ref $state eq 'HASH' and exists $state->{'global'}{'input_size'};
-    my $grid_circular = $state->{'global'}{'circular_grid'};
+    my $grid_circular = $state->{'global'}{'grid_circular'};
     my $grow_direction = $state->{'global'}{'paint_direction'};
     my $result_calc = $state->{'rules'}{'calc'};
     my $inputs = $state->{'global'}{'input_size'};
     my $state_count = $state->{'global'}{'state_count'};
-    my $use_action_rules = $state->{'global'}{'use_action_rules'};
     my $input_overhang = int $inputs / 2;
     my $self_input     = $inputs % 2;
     my $odd_grid_size  = $grid_size % 2;
@@ -23,7 +22,6 @@ sub create {
     # my $t0 = Benchmark->new;
 
     my @start_states = @{ $state->{'start'}{'state_list'} };
-say "start: ", int @start_states, "@start_states";
     if ($state->{'start'}{'repeat_states'}) { # repeat first row into left and right direction
         my @repeat = @start_states;
         my $prepend_length = int( ($grid_size - @start_states) / 2);
@@ -67,6 +65,7 @@ say "start: ", int @start_states, "@start_states";
                                                          ($half_grid_size + $odd_grid_size);
     my %subrule_from_pattern = map {$_ => $result_calc->subrules->effective_pattern_nr( $_ )} $result_calc->subrules->all_pattern;
     my %result_from_subrule  = map {$_ => $result_calc->get_subrule_result( $_ )} $result_calc->subrules->index_iterator;
+
     my @action_result_from_subrule = @{$state->{'action'}{'result_list'}};
     my @action_spread_from_subrule = @{$state->{'action'}{'spread_list'}};
     my @action_spread_decrease = ($state->{'global'}{'action_spread'}) ? (map
@@ -83,18 +82,19 @@ say "start: ", int @start_states, "@start_states";
                                                    '($cell_states[$_] * $subrule_nr[$_]) % $state_max' ;
     $next_result = ' $result_from_subrule{ '.$next_result.' } ';
     $next_result = ' ($cell_action[$_] >= '.$state->{'global'}{'action_threshold'}.
-                    ') ? '.$next_result.' : $cell_states[$_] ' if $state->{'global'}{'use_action_rules'};
+                    ') ? '.$next_result.' : $cell_states[$_] ' if $state->{'global'}{'action_rules_apply'};
 
 
     my $code =     'for my $row_nr (1 .. '.($compute_rows - 1).') {'."\n".
                    (($state->{'global'}{'action_spread'}) ? '  my @action_spread = @init_spread;'."\n" :'').
-                   '  @prev_states = @cell_states;'."\n".
-                   '  @prev_action = @cell_action;'."\n\n";
+                   '  @prev_states = @cell_states;'."\n";
+
 
     my $code_end = '  @cell_states = map { '.$next_result.' } 0 .. '.($grid_size-1).";\n\n".
                    '  $state_grid->[$row_nr] = [@cell_states];'."\n".'}';
 
-    if ($state->{'global'}{'use_action_rules'}){
+    if ($state->{'global'}{'action_rules_apply'}){
+        $code .=    '  @prev_action = @cell_action;'."\n";
         my $calc_action = '  @cell_action = map { $action_result_from_subrule[$_] } @subrule_nr'.";\n".
                           '  @cell_action = map { $cell_action[$_] + $prev_action[$_] + '.$state->{'global'}{'action_change'}.' } 0 .. '.($grid_size-1).";\n";
         $calc_action.= '  for my $x ( 0 .. '.($grid_size-1).' ) { '."\n".
@@ -121,7 +121,7 @@ say "start: ", int @start_states, "@start_states";
         $code .= '  my $pattern = "0".'
               .($grid_circular ? $wrap_overhang : $row_start).'.'.$right_overhang.";\n"
               .'  for my $x_pos (0 .. '.$compute_right_stop.'){'."\n"
-              .'  '.move_pattern_string('$pattern','$x_pos+$input_overhang')
+              .'  '.move_pattern_string('$pattern','$x_pos+'.$input_overhang)
               .'    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
               .'  for my $x_pos ('.($compute_right_stop + 1).' .. '.($grid_size - 1).'){'."\n"
               .'  '.move_pattern_string('$pattern', ($grid_circular ? '$x_pos+'.($input_overhang - $grid_size) : undef ))
@@ -133,7 +133,7 @@ say "start: ", int @start_states, "@start_states";
               .  '  $subrule_nr[0] = '.$eval_pattern.";\n\n"
               .  '  for my $x_pos (1 .. '.$compute_right_stop.'){'."\n"
               .  '  '.move_pattern_string('$left_pattern','$x_pos-1')
-              .  '  '.move_pattern_string('$right_pattern','$x_pos+$input_overhang')
+              .  '  '.move_pattern_string('$right_pattern','$x_pos+'.$input_overhang)
               .  '    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n"
               .  '  for my $x_pos ('.($compute_right_stop+1).' .. '.($grid_size - 1).'){'."\n"
               .  '  '.move_pattern_string('$left_pattern','$x_pos-1')
@@ -141,9 +141,10 @@ say "start: ", int @start_states, "@start_states";
               .  '    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n\n";
     }
 
-    say $code . $code_end;
+    #say $code . $code_end;
     my $result = eval( $code . $code_end);
-    say "compile in code:\n$code\n\n error: $@" if $@; # say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
+    say "compile in code:\n$code\n\n error: $@" if $@;
+    # say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
 
     if ($sketch_length){
         $state_grid->[$_] = [@empty_row] for $compute_rows .. $grid_size - 1;

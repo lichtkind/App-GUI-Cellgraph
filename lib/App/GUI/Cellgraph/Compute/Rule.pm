@@ -21,9 +21,11 @@ sub new {
 }
 sub renew {
     my ($self) = @_;
+    my $sub_rule_count = $self->{'subrules'}->independent_count;
     $self->{'history'}->reset;
-    $self->{'subrule_result'} = [];
-    $self->{'max_rule_nr'} = ($self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count);
+    pop @{$self->{'subrule_result'}} while @{$self->{'subrule_result'}} > $sub_rule_count;   # prevent undefined results
+    push @{$self->{'subrule_result'}}, 0 while @{$self->{'subrule_result'}} < $sub_rule_count;
+    $self->{'max_rule_nr'} = $self->{'subrules'}->state_count ** $sub_rule_count;
     $self->{'rule_nr'} = $self->{'max_rule_nr'}-1 unless $self->{'rule_nr'} < $self->{'max_rule_nr'};
     $self->set_rule_nr( $self->{'rule_nr'} );
 }

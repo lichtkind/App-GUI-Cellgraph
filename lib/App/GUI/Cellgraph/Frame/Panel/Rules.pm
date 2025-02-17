@@ -201,9 +201,7 @@ sub init { $_[0]->set_settings( { nr => 18 } ) }
 
 sub set_settings {
     my ($self, $settings) = @_;
-say "set $settings->{'nr'}";
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-say "set $settings->{'nr'}";
     $self->set_rule( $settings->{'nr'} );
 }
 sub get_settings { return { nr => $_[0]->{'rule_nr'}->GetValue, } }

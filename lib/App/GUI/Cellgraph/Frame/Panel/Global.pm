@@ -33,8 +33,8 @@ sub new {
     $self->create_label( 'cell_size',   'Cell Size :',  'Visual size of the cells in pixel.' );
     $self->create_label( 'direction',   'Direction :',  'painting direction and pattern mirroring style' );
 
-    $self->{'widget'}{'circular_grid'}    = Wx::CheckBox->new( $self, -1, '  Circular');
-    $self->{'widget'}{'use_action_rules'} = Wx::CheckBox->new( $self, -1, '  Apply');
+    $self->{'widget'}{'grid_circular'}    = Wx::CheckBox->new( $self, -1, '  Circular');
+    $self->{'widget'}{'action_rules_apply'} = Wx::CheckBox->new( $self, -1, '  Apply');
     $self->{'widget'}{'fill_cells'}       = Wx::CheckBox->new( $self, -1, '  Fill');
 
     $self->{'widget'}{'subrule_count'}    = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );
@@ -59,18 +59,18 @@ sub new {
     $self->{'widget'}{'subrule_count'}->SetToolTip('Count of Subrules resulting from current settings');
     $self->{'widget'}{'subrule_selection'}->SetToolTip("symmetric = an asymetric rule and its mirror have same result\nsumming = all rules with same sum of input states have same result");
     $self->{'widget'}{'result_application'}->SetToolTip("Result of a subrule should replace previous value (insert) or be added to it ?");
-    $self->{'widget'}{'use_action_rules'}->SetToolTip( "should action rules determine if a (state) rule gets applied this round.");
+    $self->{'widget'}{'action_rules_apply'}->SetToolTip( "should action rules determine if a (state) rule gets applied this round.");
     $self->{'widget'}{'action_threshold'}->SetToolTip( "Action potential of a cell has to be at least this big so state can change.");
     $self->{'widget'}{'action_spread'}->SetToolTip( "How many neighbours get influenced by cells action rules ?");
     $self->{'widget'}{'action_change'}->SetToolTip( "How much the action value always changes from round to round (never goes negative or above 1) ?");
     $self->{'widget'}{'grid_type'}->SetToolTip('How to paint gaps between cell squares');
     $self->{'widget'}{'cell_size'}->SetToolTip('visual size of the cells in pixel');
     $self->{'widget'}{'paint_direction'}->SetToolTip('painting direction');
-    $self->{'widget'}{'circular_grid'}->SetToolTip('cells on the edges become neighbours to each other');
+    $self->{'widget'}{'grid_circular'}->SetToolTip('cells on the edges become neighbours to each other');
     $self->{'widget'}{'fill_cells'}->SetToolTip('fill cell squares with color, or just pain rectangles');
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() })
-        for qw/circular_grid use_action_rules fill_cells/;
+        for qw/grid_circular action_rules_apply fill_cells/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->{'call_back'}->() })
         for qw/grid_type cell_size action_threshold action_spread action_change paint_direction result_application/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{$_}, sub { $self->compute_subrule_count; $self->{'call_back'}->() })
@@ -111,12 +111,12 @@ sub new {
     $rule3_sizer->AddSpacer( 10 );
     $rule3_sizer->Add( $self->{'widget'}{'result_application'}, 0, $std_attr, 0);
     $rule3_sizer->AddSpacer( 97 );
-    $rule3_sizer->Add( $self->{'widget'}{'circular_grid'}, 0, $std_attr, 0);
+    $rule3_sizer->Add( $self->{'widget'}{'grid_circular'}, 0, $std_attr, 0);
     $rule3_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $action1_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $action1_sizer->AddSpacer( $indent );
-    $action1_sizer->Add( $self->{'widget'}{'use_action_rules'}, 0, $std_attr, 0);
+    $action1_sizer->Add( $self->{'widget'}{'action_rules_apply'}, 0, $std_attr, 0);
     $action1_sizer->AddSpacer( 115 );
     $action1_sizer->Add( $self->{'label'}{'action_threshold'}, 0, $std_attr, 0);
     $action1_sizer->AddSpacer( 10 );
@@ -194,10 +194,10 @@ sub set_callback {
 }
 
 my $default_settings = {
-    input_size => 3, state_count => 2, circular_grid => 1,
+    input_size => 3, state_count => 2, grid_circular => 1,
     subrule_selection => 'all', subrule_count => 8, rule_count => 256,
     result_application => 'insert',
-    use_action_rules => 0, action_spread => 0,
+    action_rules_apply => 0, action_spread => 0,
     action_change => -0.6, action_threshold => 0.7,
     paint_direction => 'top_down', grid_type => 'lines', cell_size => 3,
     fill_cells => 1,
