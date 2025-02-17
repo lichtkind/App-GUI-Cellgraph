@@ -175,7 +175,7 @@ sub regenerate_rules {
             $self->{'action_result'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new
                     ( $self->{'rule_plate'}, 80, '', $help_text, -1, 1, 0.7, 0.02, 'turn based activity value gain');
             $self->{'action_result'}[$i]->SetToolTip( $help_text );
-            $self->{'action_result'}[$i]->SetCallBack( sub { say "== res callback";$self->update_result_history($i); $self->{'call_back'}->() });
+            $self->{'action_result'}[$i]->SetCallBack( sub { $self->update_result_history($i); $self->{'call_back'}->() });
 
             my $help_txt = 'spread of activity value to neighbouring cells from partial rule Nr.'.($i+1);
             $self->{'action_spread'}[$i] = App::GUI::Cellgraph::Widget::SliderCombo->new

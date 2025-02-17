@@ -54,7 +54,7 @@ sub new {
         my ($self, $cmd) = @_;
         my $value = $cmd->GetString;
         $value = $self->{'init_value'} if not defined $value;
-        $self->SetValue( $value);
+        $self->SetValue( $value );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'-'}, sub {
         $self->SetValue( $self->{'value'} - $self->{'value_delta'} )
@@ -74,12 +74,12 @@ sub GetValue { $_[0]->{'value'} }
 
 sub SetValue {
     my ( $self, $value, $passive) = @_;
-    return if $self->{'value'} == $value;
+    return if $self->{'value'} == $value or exists $self->{'no_recursive_events'};
     $value = $self->{'value_delta'} * int( $value / $self->{'value_delta'}) if $self->{'value_delta'};
     $value = $self->{'min_value'} if int($value) < $self->{'min_value'};
     $value = $self->{'max_value'} if int($value) > $self->{'max_value'};
     return if $self->{'value'} == $value;
-
+    $self->{'no_recursive_events'}++;
 
     $self->{'value'} = $value;
     my $slider_val = $value / $self->{'value_delta'};
@@ -89,6 +89,7 @@ sub SetValue {
     $self->{'widget'}{'slider'}->SetValue( $slider_val ) if
         defined $self->{'widget'}{'slider'} and $slider_val != $self->{'widget'}{'slider'}->GetValue;
     $self->{'callback'}->( $value ) unless defined $passive;
+    delete $self->{'no_recursive_events'}
 }
 
 sub SetCallBack {
