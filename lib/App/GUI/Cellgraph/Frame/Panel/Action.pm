@@ -220,8 +220,8 @@ sub init {
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH' and exists $settings->{'result_summary'} and exists $settings->{'spread_summary'};
-    $self->set_all_action_results( list_from_summary( $settings->{'result_summary'} ) );
-    $self->set_all_action_spreads( list_from_summary( $settings->{'spread_summary'} ) );
+    $self->set_result_values( list_from_summary( $settings->{'result_summary'} ) );
+    $self->set_spread_values( list_from_summary( $settings->{'spread_summary'} ) );
 }
 sub get_settings {
     my ($self) = @_;

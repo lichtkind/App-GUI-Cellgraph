@@ -20,11 +20,10 @@ sub create {
     my $self_input     = $inputs % 2;
     my $odd_grid_size  = $grid_size % 2;
     my $half_grid_size = int($grid_size / 2);
-
-# action rules missing
-my $t0 = Benchmark->new;
+    # my $t0 = Benchmark->new;
 
     my @start_states = @{ $state->{'start'}{'state_list'} };
+say "start: ", int @start_states, "@start_states";
     if ($state->{'start'}{'repeat_states'}) { # repeat first row into left and right direction
         my @repeat = @start_states;
         my $prepend_length = int( ($grid_size - @start_states) / 2);
@@ -142,10 +141,9 @@ my $t0 = Benchmark->new;
               .  '    $subrule_nr[$x_pos] = '.$eval_pattern.";\n  }\n\n";
     }
 
-    my $result = eval( $code . $code_end);# say $code . $code_end;
-    say "compile in code:\n$code\n\n error: $@" if $@;
-
-say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
+    say $code . $code_end;
+    my $result = eval( $code . $code_end);
+    say "compile in code:\n$code\n\n error: $@" if $@; # say "got grid in:",timestr( timediff(Benchmark->new, $t0) );
 
     if ($sketch_length){
         $state_grid->[$_] = [@empty_row] for $compute_rows .. $grid_size - 1;

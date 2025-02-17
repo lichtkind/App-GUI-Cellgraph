@@ -193,17 +193,17 @@ sub set_callback {
     $self->{'call_back'} = $code;
 }
 
-sub init        {
-    $_[0]->set_settings({
-        input_size => 3, state_count => 2, circular_grid => 1,
-        subrule_selection => 'all', subrule_count => 8, rule_count => 256,
-        result_application => 'insert',
-        use_action_rules => 0, action_spread => 0,
-        action_change => -0.6, action_threshold => 0.7,
-        paint_direction => 'top_down', grid_type => 'lines', cell_size => 3,
-        fill_cells => 1,
-    });
-}
+my $default_settings = {
+    input_size => 3, state_count => 2, circular_grid => 1,
+    subrule_selection => 'all', subrule_count => 8, rule_count => 256,
+    result_application => 'insert',
+    use_action_rules => 0, action_spread => 0,
+    action_change => -0.6, action_threshold => 0.7,
+    paint_direction => 'top_down', grid_type => 'lines', cell_size => 3,
+    fill_cells => 1,
+};
+
+sub init        { $_[0]->set_settings( $default_settings ) }
 sub get_settings {
     my ($self) = @_;
     my $settings = { map { $_ => $self->{'widget'}{$_}->GetValue } keys %{$self->{'widget'}} };
@@ -214,8 +214,9 @@ sub set_settings {
     return unless ref $settings eq 'HASH';
     my $change = 0;
     for my $key (keys %{$self->{'widget'}}) {
-        next if $settings->{$key} eq $self->{'widget'}{$key}->GetValue;
-        $self->{'widget'}{$key}->SetValue( $settings->{$key} );
+        my $value = (exists $settings->{$key}) ? $settings->{$key} : $default_settings->{$key};
+        next if $value eq $self->{'widget'}{$key}->GetValue;
+        $self->{'widget'}{$key}->SetValue( $value );
         $change++;
     }
     $self->compute_subrule_count if $change;

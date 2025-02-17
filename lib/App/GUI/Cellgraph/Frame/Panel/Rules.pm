@@ -26,7 +26,7 @@ sub new {
     $self->{'state_colors'} = [];
     $self->{'call_back'}  = sub {};
 
-    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 85, -1], &Wx::wxTE_PROCESS_ENTER );
+    $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 115, -1], &Wx::wxTE_PROCESS_ENTER );
     $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
     $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
     $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
@@ -201,7 +201,9 @@ sub init { $_[0]->set_settings( { nr => 18 } ) }
 
 sub set_settings {
     my ($self, $settings) = @_;
+say "set $settings->{'nr'}";
     return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
+say "set $settings->{'nr'}";
     $self->set_rule( $settings->{'nr'} );
 }
 sub get_settings { return { nr => $_[0]->{'rule_nr'}->GetValue, } }

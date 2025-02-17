@@ -136,45 +136,42 @@ sub next_rule_nr {
 }
 sub shift_rule_nr_left {
     my ($self) = @_;
-    my $nr = $self->get_rule_nr;
     my @result = @{$self->{'subrule_result'}};
     unshift @result, pop @result;
-    $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $nr;
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $self->get_rule_nr;
 }
 sub shift_rule_nr_right {
     my ($self) = @_;
-    my $nr = $self->get_rule_nr;
     my @result = @{$self->{'subrule_result'}};
     push @result, shift @result;
-    $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $nr;
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) ) // $self->get_rule_nr;
 }
 sub opposite_rule_nr {
     my ($self) = @_;
     my $sub_rules = $self->{'subrules'}->independent_count;
-    my $nr = $self->get_rule_nr;
     my @old_result = @{$self->{'subrule_result'}};
     my @new_result = map { $old_result[ $sub_rules - $_ - 1] }
         $self->{'subrules'}->index_iterator;
-    $self->set_rule_nr( $self->rule_nr_from_result_list( @new_result ) ) // $nr;
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @new_result ) ) // $self->get_rule_nr;
 }
 sub symmetric_rule_nr {
     my ($self) = @_;
     return $self->{'rule_nr'} unless $self->{'subrules'}->mode eq 'all';
-    my $nr = $self->get_rule_nr;
     my @old_result = @{$self->{'subrule_result'}};
     my @new_result = map { $old_result[ $self->{'subrules'}{'input_symmetric_partner'}[$_] ] }
         $self->{'subrules'}->index_iterator;
-    $self->set_rule_nr( $self->rule_nr_from_result_list( @new_result ) ) // $nr;
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @new_result ) ) // $self->get_rule_nr;
 }
 sub inverted_rule_nr {
     my ($self) = @_;
-    my $nr = $self->get_rule_nr;
-    $self->set_rule_nr( $self->{'max_rule_nr'} - $nr - 1 ) // $nr;# swap color
+    my $max_state = $self->{'subrules'}->state_count -1;
+    my @new_result = map { $max_state - $_ } @{$self->{'subrule_result'}};
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @new_result ) );
 }
-
 sub random_rule_nr {
     my ($self) = @_;
-    $self->set_rule_nr( int rand( $self->{'max_rule_nr'} ) );
+    my @result = map {int rand $self->{'subrules'}->state_count} $self->{'subrules'}->index_iterator;
+    $self->set_rule_nr( $self->rule_nr_from_result_list( @result ) )
 }
 
 1;

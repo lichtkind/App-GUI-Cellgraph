@@ -33,24 +33,24 @@ sub new {
     $self->{'state_marker'}       = [ map { App::GUI::Cellgraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 ..$self->{'last_state'} ];
     $self->{'state_pic'}[$_]      = App::GUI::Cellgraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->values(as => 'hash'))
         for 0 .. $self->{'last_state'};
-    $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
-    $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
-    $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
-    $self->{'curr_color_lbl'}    = Wx::StaticText->new($self, -1, 'Selected State Color' );
-    $self->{'color_store_lbl'}   = Wx::StaticText->new($self, -1, 'Color Store' );
+    $self->{'color_set_store_lbl'}= Wx::StaticText->new($self, -1, 'Color Set Store' );
+    $self->{'color_set_f_lbl'}    = Wx::StaticText->new($self, -1, 'Colors Set Function' );
+    $self->{'state_color_lbl'}    = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
+    $self->{'curr_color_lbl'}     = Wx::StaticText->new($self, -1, 'Selected State Color' );
+    $self->{'color_store_lbl'}    = Wx::StaticText->new($self, -1, 'Color Store' );
 
-    $self->{'dynamics'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.33, 0.5, 0.66, 0.83, 1, 1.2, 1.5, 2, 3 ]);
+    $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.33, 0.5, 0.66, 0.83, 1, 1.2, 1.5, 2, 3 ]);
     $self->{'Sdelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
     $self->{'Ldelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 
 
-    $self->{'btn'}{'gray'}       = Wx::Button->new( $self, -1, 'Gray',       [-1,-1], [45, 35] );
-    $self->{'btn'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 35] );
-    $self->{'btn'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 35] );
-    $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet. Adheres to count of needed colors and current dynamics settings.");
-    $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color. Adheres to dynamics settings.");
+    $self->{'btn'}{'gray'}       = Wx::Button->new( $self, -1, 'Gray',       [-1,-1], [45, 17] );
+    $self->{'btn'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 17] );
+    $self->{'btn'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 17] );
+    $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet. Adheres to count of needed colors and current dynamic settings.");
+    $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color. Adheres to dynamic settings.");
     $self->{'btn'}{'complement'}->SetToolTip("Create color set from first up to current color as complementary colors. Adheres to both delta values.");
-    $self->{'dynamics'}->SetToolTip("dynamics of gradient (1 = linear) and also of gray scale");
+    $self->{'widget'}{'dynamic'}->SetToolTip("dynamic of gradient (1 = linear) and also of gray scale");
     $self->{'Sdelta'}->SetToolTip("max. satuaration deviation when computing complement colors ( -100 .. 100)");
     $self->{'Ldelta'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
 
@@ -68,11 +68,11 @@ sub new {
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'state_count'}, dynamic => $self->{'dynamics'}->GetValue) );
+        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'state_count'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue) );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_state'} ], in => 'RGB', steps => $self->{'current_state'}+1, dynamics => $self->{'dynamics'}->GetValue);
+        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_state'} ], in => 'RGB', steps => $self->{'current_state'}+1, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
         $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'complement'}, sub {
@@ -91,7 +91,7 @@ sub new {
     $f_sizer->AddSpacer( 5 );
     $f_sizer->Add( $self->{'btn'}{'gray'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'btn'}{'gradient'}, 0, $std_attr|&Wx::wxALL, 5 );
-    $f_sizer->Add( $self->{'dynamics'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'widget'}{'dynamic'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->AddSpacer( 25 );
     $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $std_attr|&Wx::wxALL, 5 );
     $f_sizer->Add( $self->{'Sdelta'}, 0, $std_attr|&Wx::wxALL, 5 );
@@ -163,12 +163,12 @@ sub select_state {
     $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash, 'silent' );
 }
 
-sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#000000', dynamics => 1, delta_S => 0, delta_L => 0 } ) }
+sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#000000', dynamic => 1, delta_S => 0, delta_L => 0 } ) }
 
 sub get_settings {
     my ($self) = @_;
     my $data = {
-        dynamics => $self->{'dynamics'}->GetValue,
+        dynamic => $self->{'widget'}{'dynamic'}->GetValue,
         delta_S => $self->{'Sdelta'}->GetValue,
         delta_L => $self->{'Ldelta'}->GetValue,
     };
@@ -184,8 +184,8 @@ sub get_state {
 
 sub set_settings {
     my ($self, $data) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'dynamics'};
-    $self->{'dynamics'}->SetValue( $data->{'dynamics'} );
+    return unless ref $data eq 'HASH' and exists $data->{'dynamic'};
+    $self->{'widget'}{'dynamic'}->SetValue( $data->{'dynamic'} );
     $self->{'Sdelta'}->SetValue( $data->{'delta_S'} );
     $self->{'Ldelta'}->SetValue( $data->{'delta_L'} );
     for (0 .. $self->{'last_state'}){

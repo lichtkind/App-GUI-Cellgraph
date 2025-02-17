@@ -108,7 +108,7 @@ sub paint {
         for my $y (0 .. $rows) {
             my $x_cursor = 1;
             for my $x (0 .. $self->{'cells'}{'x'}-1) {
-                $dc->SetPen( $pen[$grid->[$y][$x]] );
+                $dc->SetPen( $pen[$grid->[$y][$x] // 0] );
                 $dc->DrawLine( $x_cursor, $y_cursor+$_, $x_cursor + $cl, $y_cursor+$_) for @$cell_size_iterator;
                 #$dc->SetBrush( $brush[$grid->[$y][$x]] );
                 #$dc->DrawRectangle( $x_cursor, $y_cursor, $cell_size, $cell_size );

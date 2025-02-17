@@ -253,7 +253,7 @@ sub open_setting_file {
     if (ref $settings) {
         $self->set_settings( $settings );
         $self->draw;
-        $self->SetStatusText( "loaded settings from ".$file, 0) ;
+        $self->SetStatusText( "loaded settings from ".$file, 1) ;
         my $dir = App::GUI::Cellgraph::Settings::extract_dir( $file );
         $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
         $self->update_recent_settings_menu();
@@ -272,7 +272,7 @@ sub write_settings_file {
     else     {
         $self->{'config'}->add_setting_file( $file ); # remember file in recents menu
         $self->update_recent_settings_menu();
-        $self->SetStatusText( "saved settings into file $file", 0 );
+        $self->SetStatusText( "saved settings into file $file", 1 );
         $self->set_settings_save(1);
     }
 }
