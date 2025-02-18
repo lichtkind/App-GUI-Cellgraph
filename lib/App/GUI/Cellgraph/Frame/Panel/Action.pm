@@ -196,7 +196,7 @@ sub regenerate_rules {
             $row_sizer->Add( $self->{'action_result'}[$i], 0, $v_attr );
             $row_sizer->Add( $self->{'action_spread'}[$i], 0, $v_attr );
             $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-            $self->{'plate_sizer'}->AddSpacer(15);
+            $self->{'plate_sizer'}->AddSpacer(10);
             $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 0);
         }
         $self->Layout if $refresh;

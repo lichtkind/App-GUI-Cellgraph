@@ -1,23 +1,24 @@
-0.7 2025-02-17  lichtkind
+0.7 2025-02-19  lichtkind
 -------
     * = major feature release
     * * overhauled action/activity rule logic
     * * able to set starting row of action values
     * + making action rules optional
-    * + adding symmetric rules only mode
-    * + adding sorting rules only mode
-    * + making summing rules mapping optional
+    * + adding symmetric state rules only mode
+    * + adding sorting state rules only mode
+    * + making summing state rules mapping optional
     * + different types of subrule result application
     * + new faster drawing style option: not filled squares
     * / GUI overhaul
     * / subrules are numbered
     * / adjusted window size so draw board is fully seen
+    * ? rewrote most POD documentation
     * ? increase GUI based documentation
     * ? better tool tips
     * & code cleanup
-    * & faster start (does not sketch drawing twice)
     * & full picture draw is now 3 times faster (dropped brush usage)
-    * ! fix redraw blib bug
+    * & faster start (does sketches image only once)
+    * ! fix redraw move blib bug
 
 0.33 2025-01-25  lichtkind
 -------
@@ -98,6 +99,3 @@
 
 
 TODO:
-
-  meta settings for action rules
-  start line for action rules

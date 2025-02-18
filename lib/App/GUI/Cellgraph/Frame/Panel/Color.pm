@@ -39,7 +39,7 @@ sub new {
     $self->{'curr_color_lbl'}     = Wx::StaticText->new($self, -1, 'Selected State Color' );
     $self->{'color_store_lbl'}    = Wx::StaticText->new($self, -1, 'Color Store' );
 
-    $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.33, 0.5, 0.66, 0.83, 1, 1.2, 1.5, 2, 3 ]);
+    $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.2, 0.25, 0.33, 0.4, 0.5, 0.66, 0.7, 0.83, 0.9, 1, 1.2, 1.5, 2, 2.5, 3, 4 ]);
     $self->{'Sdelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
     $self->{'Ldelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 

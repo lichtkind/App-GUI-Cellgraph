@@ -48,84 +48,128 @@ start the program (cellgraph)
 
 =item 3.
 
-push buttons and see patterns change
+push buttons and see preview patterns change
 
 =item 4.
 
-push button I<Draw> in right bottom corner to get a full picture
+push button I<Draw> in right bottom corner (or C<Ctrl+D>) to get a full picture
 
 =item 5.
 
 choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
-(choose image size  in menu beforehand)
+(choose image size in menu beforehand)
 
 =item 6.
 
 choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
-INI file for loading in and tweaking the parameters later
+INI file for loading it and tweaking the parameters later
 
 After first use of the program, a config file will be created under
 I<~/.config/cellgraph> in your home directory. It contains mainly
 stored colors and dirs where to load and store setting files.
-You may change it manually or deleted it to reset defaults.
+You may change it manually or deleted it to reset it to default.
 
 =back
 
 =head1 DESCRIPTION
 
-This is a row (one dimensional arrangement) of cellular automata.
-Their starting state can be seen as a color in the first row of the grid.
-Each subsequent row below reflects the following state (Y is time axis).
-Other drawing  directions are optional and explained as part of the
-I<Global> panel.
+This graphical application uses cellular automata logic, as described in
+I<Steve Wolfram>s book  I<"A new kind of science">, to paint tiled pictures.
+Although - the original concept got expanded by many additional options
+and functionalities.
+
+It is meant for B<fun>, leasure, B<beautiful>, personalized images
+and a deeper B<understanding> about how cellular automatons work.
+
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"     alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/redsquare.png" alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/blauberg.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"      alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/ukra.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/blauberg.png"alt=""  width="300" height="300">
 </p>
+
+
+=head1 GUI
+
+The general layout is very simple: the picture gets drawn on the left
+window side. On the right side you change the settings from which the
+picture is computed. Please note there the tabs, in the top row.
+They select which page of settings is visible.
+
+Please mind the tool tips - short help texts which appear if the mouse
+stands still over a button. Also helpful are messages in the status bar
+at the bottom that appear while browsing the menu of after a command given.
 
 
 =head1 Mechanics
 
-One automaton is called cell and works like described in I<Steve Wolfram>s
-book  I<"A new kind of science">. Each cell can be in one of several states,
-displayed as a greyscale or user defined color. The most simple cells
-have only two states: 0 and 1 (pictured as white and black squares).
-The state of each cell may change each round (think of processor cycles).
-How exactly they change is defined by a transfer function. The input of
-that function are the states of neighbours left and right and the cell
-itself. The size of this neighbourhood can be changed. For every combination
-of states in the neighbourhood there is one partial rule that defines the
-next state of the cell. If large neighbourhoods or large state counts would
-result in too many partial rules, than a different logic will apply.
-Than there is only a different partial rule for every distinct sum value.
-By sum is meant the sum of all states in the neighbourhood, since the
-state of a cell is just an integer.
+Every tile (square) in the picture represents one automaton (called B<cell>).
+The tile color depicts the state of that cell. The B<state> is just an one
+digit B<number> (0 or 1 at start). To see and change which B<color> stands
+for which state - choose the rightmost tab titled "I<Colors>". The uppermost
+row of the picture represents a row of automata in its initial state,
+that is given by the user via settings in the second tab ("I<Starting Row>").
+The row below is painted by the same string of cells, just after one
+round of computation later and so forth. The vertical Y-axis is so to
+speak the time axis, with top being the beginning and bottom the end.
 
-To each partial rule also belongs also an action rule, an instruction
-that decides if the transfer function will be even applied or the state
-just stays the same. Action rules will be set via the I<Action> panel.
+During each round of computation every cell might change its state.
+It depends on which subrule matches. Each subrule is layed out as a
+row at the third tab ("I<State Rules>"). On a left side of the arrow (=>)
+you see there a number of colored tiles. At the beginning there will be
+three tiles, representing our focal automaton and its left neighbour
+on its left flank and its right neighbour on the right. In case all three
+colors are the same as displayed, the new state of the focal automaton
+can be read on the right side of the arrow (result of this subrule).
+Of course this was simplified, since many options might complicate that
+picture. They are described in the paragraphs below.
 
-=head1 GUI
+One big addition are B<action rules>. Parallel to its state, every cell has
+also an activity value. It starts with a value also set in the
+"I<Starting Row>" tab. It drops every round by a fixed amount but it
+also gets raised depending on the result of action rules. Only if the
+activity value reaches a threshold, the cell can change its state.
+More details about this mechanics are to be found in the chapter
+"I<General Settings>" and "I<Action Rules>".
 
-The general layout is very simple: the settings are on the right and
-the drawing board is left. The settings are devided into several tabs.
 
-Please mind the tool tips - short help texts which appear if the mouse
-stands still over a button. Also helpful are messages in the status bar
-at the bottom that appear while browsing the menu.
-
-=head2 Global
+=head2 General Settings
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal.png"   alt=""  width="630" height="410">
 </p>
 
-The first tab contains the general (meta) settings.
+The first tab contains settings, that shape the drawing in the most broad way.
+It is segmented into three parts that somewhat parallel the last three tabs.
+
+The topmost section sets the framework for rules by which the cell state
+changes - computation round by computation round.
+
+B<Input Size>
+B<Cell States>
+B<Select>
+B<Result>
+B<Circular>
+
+The middle section sets the framework for the action rules, which change
+the activity value of a cell.
+
+B<Apply>
+B<Threshold>
+B<Spread>
+B<Change>
+
+The bottom section is about visual settings, which sometimes are not just
+cosmetic.
+
+B<Direction>
+B<Fill>
+B<Grid Style>
+B<>
+
 In upper left corder is the selector for the optical grid style. With or
 without grid lines (always sized one pixel) or just same sized gaps
 between the colored squares, which represent the cells. Right beside you
@@ -154,11 +198,13 @@ The third row in this tab sets the meta properties of the rules: number
 of states and size of neighbourhood. If that is even, the cell in question
 is not part of its own neighbourhood.
 
-=head2 Start
+=head2 Starting Row
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart.png"   alt=""  width="630" height="410">
 </p>
+
+B<Circular>
 
 The second tab contains settings for the starting values (states).
 By clicking on the squares you change (cycle) the state. Only the cells
@@ -169,7 +215,7 @@ to take up the entire cell row. To get only one none zero cell, press the
 butoon C<1> and for a random starting sequence C<?>. The arrow buttons
 are just increment or decrement the numeric value of the starting sequence.
 
-=head2 Rules
+=head2 State Rules
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules.png"   alt=""  width="630" height="410">
@@ -189,7 +235,7 @@ partner (neighbourhood pattern or sum reversed). Opposite rule means
 the pattern of result states will be reversed (mirrored).
 The button I<"?"> again selects a random rule.
 
-=head2 Action
+=head2 Action Rules
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIaction.png"   alt=""  width="630" height="410">
@@ -206,15 +252,16 @@ singular action value (behind the label "Active:"). Here are also four
 buttons to select the init state, a grid patter or a random state.
 The first buttom set the inverted distribution of action propagation.
 
-=head2 Color
+=head2 Colors
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolor.png"   alt=""  width="630" height="410">
 </p>
 
-This panel helps you to customize the automaton state colors, with which
-the resulting picture is composed. This panel is divided into five sections
-by horizontal lines. The following paragraphs will describe them from top
+This panel helps you to customize the automaton/cell state colors, with
+which the picture is drawn. It helps you also to remember you favorite
+colors and color sets. The panel is divided into five sections by
+horizontal lines. The following paragraphs will describe them from top
 to bottom.
 
 The first section is for storing and loading complete sets of state colors.
