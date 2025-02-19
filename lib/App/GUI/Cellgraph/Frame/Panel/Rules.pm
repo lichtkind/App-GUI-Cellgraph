@@ -1,5 +1,5 @@
 
-# rules panel
+# panel to input subrule results
 
 package App::GUI::Cellgraph::Frame::Panel::Rules;
 use v5.12;
@@ -10,8 +10,6 @@ use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::ColorToggle;
 use App::GUI::Cellgraph::Compute::Rule;
 use Graphics::Toolkit::Color qw/color/;
-
-# undo redo
 
 sub new {
     my ( $class, $parent, $subrule_calculator ) = @_;
@@ -27,28 +25,28 @@ sub new {
     $self->{'call_back'}  = sub {};
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 115, -1], &Wx::wxTE_PROCESS_ENTER );
-    $self->{'rule_nr'}->SetToolTip('number of currently displayed rule');
-    $self->{'btn'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
-    $self->{'btn'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
-    $self->{'btn'}{'sh_l'}   = Wx::Button->new( $self, -1, '<<', [-1,-1], [35,25] );
-    $self->{'btn'}{'sh_r'}   = Wx::Button->new( $self, -1, '>>', [-1,-1], [35,25] );
-    $self->{'btn'}{'sym'}    = Wx::Button->new( $self, -1, '<>', [-1,-1], [35,25] );
-    $self->{'btn'}{'inv'}    = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
-    $self->{'btn'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
-    $self->{'btn'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'btn'}{'undo'}   = Wx::Button->new( $self, -1, '<=', [-1,-1], [30,25] );
-    $self->{'btn'}{'redo'}   = Wx::Button->new( $self, -1, '=>', [-1,-1], [30,25] );
+    $self->{'rule_nr'}->SetToolTip('number of currently displayed rule, works only on small subrule counts');
+    $self->{'button'}{'prev'}   = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
+    $self->{'button'}{'next'}   = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
+    $self->{'button'}{'sh_l'}   = Wx::Button->new( $self, -1, '<<', [-1,-1], [35,25] );
+    $self->{'button'}{'sh_r'}   = Wx::Button->new( $self, -1, '>>', [-1,-1], [35,25] );
+    $self->{'button'}{'sym'}    = Wx::Button->new( $self, -1, '<>', [-1,-1], [35,25] );
+    $self->{'button'}{'inv'}    = Wx::Button->new( $self, -1, '!',  [-1,-1], [30,25] );
+    $self->{'button'}{'opp'}    = Wx::Button->new( $self, -1, '%',  [-1,-1], [30,25] );
+    $self->{'button'}{'rnd'}    = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
+    $self->{'button'}{'undo'}   = Wx::Button->new( $self, -1, '<=', [-1,-1], [30,25] );
+    $self->{'button'}{'redo'}   = Wx::Button->new( $self, -1, '=>', [-1,-1], [30,25] );
 
-    $self->{'btn'}{'prev'}->SetToolTip('decrease rule number by one');
-    $self->{'btn'}{'next'}->SetToolTip('increase rule number by one');
-    $self->{'btn'}{'sh_l'}->SetToolTip('rotate binary rule number one to left');
-    $self->{'btn'}{'sh_r'}->SetToolTip('rotate binary rule number one to right');
-    $self->{'btn'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
-    $self->{'btn'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
-    $self->{'btn'}{'opp'}->SetToolTip('choose opposite rule ()');
-    $self->{'btn'}{'rnd'}->SetToolTip('choose random rule');
-    $self->{'btn'}{'undo'}->SetToolTip('undo the last rule changes');
-    $self->{'btn'}{'redo'}->SetToolTip('redo - take back the rule change undo');
+    $self->{'button'}{'prev'}->SetToolTip('decrease rule number by one');
+    $self->{'button'}{'next'}->SetToolTip('increase rule number by one');
+    $self->{'button'}{'sh_l'}->SetToolTip('rotate binary rule number one to left');
+    $self->{'button'}{'sh_r'}->SetToolTip('rotate binary rule number one to right');
+    $self->{'button'}{'sym'}->SetToolTip('choose symmetric rule (every partial rule swaps result with symmetric partner)');
+    $self->{'button'}{'inv'}->SetToolTip('choose inverted rule (every partial rule that produces white, goes black and vice versa)');
+    $self->{'button'}{'opp'}->SetToolTip('choose opposite rule ()');
+    $self->{'button'}{'rnd'}->SetToolTip('choose random rule');
+    $self->{'button'}{'undo'}->SetToolTip('undo the last rule changes');
+    $self->{'button'}{'redo'}->SetToolTip('redo - take back the rule change undo');
 
     $self->{'rule_plate'} = Wx::ScrolledWindow->new( $self );
     $self->{'rule_plate'}->ShowScrollbars(0,1);
@@ -62,25 +60,25 @@ sub new {
     my $rule_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $rule_sizer->AddSpacer( 10 );
     $rule_sizer->Add( Wx::StaticText->new( $self, -1, 'Rule :' ), 0, $all_attr, 10 );
-    #$rule_sizer->AddSpacer( 5 );
     $rule_sizer->Add( $self->{'rule_nr'},     0, $all_attr, 5 );
     $rule_sizer->AddSpacer( 5 );
-    $rule_sizer->Add( $self->{'btn'}{'prev'}, 0, $tb_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'next'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'button'}{'prev'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'button'}{'next'}, 0, $tb_attr, 5 );
     $rule_sizer->AddSpacer( 23 );
-    $rule_sizer->Add( $self->{'btn'}{'undo'}, 0, $tb_attr, 5 );
-    $rule_sizer->Add( $self->{'btn'}{'redo'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'button'}{'undo'}, 0, $tb_attr, 5 );
+    $rule_sizer->Add( $self->{'button'}{'redo'}, 0, $tb_attr, 5 );
     $rule_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rf_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $rf_sizer->AddSpacer( 63 );
-    $rf_sizer->Add( $self->{'btn'}{'inv'}, 0, $all_attr, 5 );
-    $rf_sizer->Add( $self->{'btn'}{'sym'}, 0, $all_attr, 5 );
-    $rf_sizer->Add( $self->{'btn'}{'opp'}, 0, $all_attr, 5 );
-    $rf_sizer->Add( $self->{'btn'}{'rnd'}, 0, $all_attr, 5 );
+    $rf_sizer->Add( $self->{'button'}{'sh_l'}, 0, $tb_attr, 5 );
+    $rf_sizer->Add( $self->{'button'}{'sh_r'}, 0, $tb_attr, 5 );
+    $rf_sizer->AddSpacer( 15 );
+    $rf_sizer->Add( $self->{'button'}{'opp'}, 0, $all_attr, 5 );
+    $rf_sizer->Add( $self->{'button'}{'sym'}, 0, $all_attr, 5 );
+    $rf_sizer->Add( $self->{'button'}{'inv'}, 0, $all_attr, 5 );
     $rf_sizer->AddSpacer( 10 );
-    $rf_sizer->Add( $self->{'btn'}{'sh_l'}, 0, $tb_attr, 5 );
-    $rf_sizer->Add( $self->{'btn'}{'sh_r'}, 0, $tb_attr, 5 );
+    $rf_sizer->Add( $self->{'button'}{'rnd'}, 0, $all_attr, 5 );
     $rf_sizer->AddSpacer(20);
     $rf_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -89,33 +87,32 @@ sub new {
     $main_sizer->Add( $rule_sizer, 0, $std_attr, 20);
     $main_sizer->AddSpacer( 5 );
     $main_sizer->Add( $rf_sizer, 0, $std_attr, 20);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-
+    $main_sizer->AddSpacer( 5 );
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxLEFT|&Wx::wxRIGHT, 10 );
     $main_sizer->Add( $self->{'rule_plate'}, 1, $std_attr, 0);
     $self->SetSizer( $main_sizer );
 
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ) });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub { $self->set_rule( $self->{'rule_nr'}->GetValue ) });
-
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'prev'}, sub { $self->set_rule( $self->{'rules'}->prev_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'next'}, sub { $self->set_rule( $self->{'rules'}->next_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_l'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_left ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sh_r'}, sub { $self->set_rule( $self->{'rules'}->shift_rule_nr_right ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'sym'},  sub { $self->set_rule( $self->{'rules'}->symmetric_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'inv'},  sub { $self->set_rule( $self->{'rules'}->inverted_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'opp'},  sub { $self->set_rule( $self->{'rules'}->opposite_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'rnd'},  sub { $self->set_rule( $self->{'rules'}->random_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'undo'}, sub { $self->set_rule( $self->{'rules'}->undo_rule_nr ); $self->{'call_back'}->(); });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'redo'}, sub { $self->set_rule( $self->{'rules'}->redo_rule_nr ); $self->{'call_back'}->(); });
-
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
-        my ($self, $cmd) = @_;
-        my $new_value = $cmd->GetString;
-        my $old_value = $self->{'rules'}->nr_from_output_list( $self->get_output_list );
-        return if $new_value == $old_value;
-        $self->set_rule( $new_value, 1 );
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'prev'}, sub { $self->set_result_values( $self->{'rules'}->prev_rule_nr  );     $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'next'}, sub { $self->set_result_values( $self->{'rules'}->next_rule_nr  );     $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'sh_l'}, sub { $self->set_result_values( $self->{'rules'}->shift_rule_nr_left); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'sh_r'}, sub { $self->set_result_values( $self->{'rules'}->shift_rule_nr_right);$self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'sym'},  sub { $self->set_result_values( $self->{'rules'}->symmetric_rule_nr ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'inv'},  sub { $self->set_result_values( $self->{'rules'}->inverted_rule_nr  ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'opp'},  sub { $self->set_result_values( $self->{'rules'}->opposite_rule_nr  ); $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'rnd'},  sub { $self->set_result_values( $self->{'rules'}->random_rule_nr );    $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'undo'}, sub { $self->set_result_values( $self->{'rules'}->undo_results   );    $self->{'call_back'}->(); });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'redo'}, sub { $self->set_result_values( $self->{'rules'}->redo_results   );    $self->{'call_back'}->(); });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'rule_nr'}, sub {
+        my ($widget, $cmd) = @_;
+        $self->set_result_values( $self->{'rules'}->result_list_from_rule_nr( $widget->GetValue ) );
         $self->{'call_back'}->();
     });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'rule_nr'}, sub {
+        my ($self, $cmd) = @_;
+        $self->set_result_values( $self->{'rules'}->result_list_from_rule_nr( $cmd->GetString ) );
+        $self->{'call_back'}->();
+    });
+
     $self->regenerate_rules( color('white')->gradient_to('black', 2) );
     $self->init;
     $self;
@@ -165,14 +162,14 @@ sub regenerate_rules {
                 = App::GUI::Cellgraph::Widget::RuleInput->new ( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                 $sub_rule_pattern[$rule_index], $self->{'state_colors'} );
             $self->{'rule_input'}[$rule_index]->SetToolTip('input pattern of partial rule Nr.'.($rule_index+1));
+            $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
+            $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
             $self->{'rule_result'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::ColorToggle->new( $self->{'rule_plate'}, $self->{'rule_square_size'},
                                                                  $self->{'rule_square_size'}, $self->{'state_colors'}, 0 );
             $self->{'rule_result'}[$rule_index]->SetValue( $self->{'rules'}->get_subrule_result($rule_index) );
-            $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_rule_from_output; $self->{'call_back'}->(); });
+            $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_subrule_result( $rule_index, $_[0]); $self->{'call_back'}->(); });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1).'left or right click to change it (rotate states)');
-            $self->{'arrow'}[$rule_index] = Wx::StaticText->new( $self->{'rule_plate'}, -1, ' => ' );
-            $self->{'arrow'}[$rule_index]->SetToolTip('partial rule '.($rule_index+1).' input left, output right');
         }
         my $label_length = length $self->{'subrules'}->independent_count;
         for my $rule_index ($self->{'subrules'}->index_iterator){
@@ -196,63 +193,47 @@ sub regenerate_rules {
         $self->{'rule_result'}[$_]->SetColors( @rgb ) for $self->{'subrules'}->index_iterator;
     }
 }
-
-sub init { $_[0]->set_settings( { nr => 18 } ) }
-
-sub set_settings {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'nr'};
-    $self->set_rule( $settings->{'nr'} );
-}
-sub get_settings { return { nr => $_[0]->{'rule_nr'}->GetValue, } }
-sub get_state {
-    my ($self) = @_;
-    {
-        calc => $self->{'rules'},
-        nr => $self->{'rule_nr'}->GetValue,
-    }
-}
-
-sub get_output_list {
-    my ($self) = @_;
-    map { $self->{'rule_result'}[$_]->GetValue } $self->{'subrules'}->index_iterator;
-}
-sub update_rule_from_output {  $_[0]->set_rule( $_[0]->get_output_list ) }
-
-sub set_rule {
-    my ($self) = shift;
-    my ($rule_nr, @result);
-    return unless @_;
-    if (@_ == 1) {
-        $rule_nr = shift;
-        @result = $self->{'rules'}->result_list_from_rule_nr( $rule_nr );
-    } else {
-        @result = @_;
-        $rule_nr = $self->{'rules'}->rule_nr_from_result_list( @result );
-    }
-    return if $rule_nr == $self->{'rule_nr'}->GetValue;
-    $self->{'rule_result'}[$_]->SetValue( $result[$_] ) for 0 .. $#result;
-    $self->{'rule_nr'}->SetValue( $rule_nr );
-    $self->{'rules'}->set_rule_nr( $rule_nr );
-    $self->{'btn'}{'undo'}->Enable( $self->{'rules'}->can_undo );
-    $self->{'btn'}{'redo'}->Enable( $self->{'rules'}->can_redo );
-}
-
-sub prev_rule      { $_[0]->set_rule( $_[0]->{'rules'}->prev_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub next_rule      { $_[0]->set_rule( $_[0]->{'rules'}->next_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-
-sub shift_rule_left  { $_[0]->set_rule( $_[0]->{'rules'}->shift_nr_left( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub shift_rule_right { $_[0]->set_rule( $_[0]->{'rules'}->shift_nr_right( $_[0]->{'rule_nr'}->GetValue ) ) }
-
-sub opposite_rule  { $_[0]->set_rule( $_[0]->{'rules'}->opposite_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub symmetric_rule { $_[0]->set_rule( $_[0]->{'rules'}->symmetric_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub invert_rule    { $_[0]->set_rule( $_[0]->{'rules'}->inverted_nr( $_[0]->{'rule_nr'}->GetValue ) ) }
-sub random_rule    { $_[0]->set_rule( $_[0]->{'rule_calc'}->random_nr ) }
-
 sub set_callback {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'call_back'} = $code;
+}
+
+sub init         { $_[0]->set_settings( { summary => '01001000' } ) }
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'summary'};
+    $self->set_summary( $settings->{'summary'} );
+}
+sub get_settings { { summary => $_[0]->get_summary,                          } }
+sub get_state    { { summary => $_[0]->get_summary, calc => $_[0]->{'rules'} } }
+
+sub get_result_values { map { $_[0]->{'rule_result'}[$_]->GetValue } $_[0]->{'subrules'}->index_iterator }
+sub set_result_values {
+    my ($self, @values) = @_;
+    return unless @values == $self->{'subrules'}->independent_count;
+    $self->{'rule_result'}[$_]->SetValue( $values[$_], 'silent' ) for $self->{'subrules'}->index_iterator;
+    $self->update_widgets;
+}
+
+sub get_summary { join '', $_[0]->get_result_values }
+sub set_summary {
+    my ($self, $summary) = @_;
+    my @values = split '', $summary;
+    my $return = $self->{'rules'}->set_subrule_results( @values );
+    $self->set_result_values( @values );
+}
+
+sub update_subrule_result {
+    my ($self, $index, $result) = @_;
+    my $summary = $self->{'rules'}->set_subrule_result( $index, $result );
+    $self->update_widgets;
+}
+sub update_widgets {
+    my ($self) = shift;
+    $self->{'rule_nr'}->SetValue( $self->{'rules'}->get_rule_nr );
+    $self->{'button'}{'undo'}->Enable( $self->{'rules'}->can_undo );
+    $self->{'button'}{'redo'}->Enable( $self->{'rules'}->can_redo );
 }
 
 1;

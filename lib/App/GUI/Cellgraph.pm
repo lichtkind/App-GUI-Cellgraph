@@ -139,72 +139,112 @@ More details about this mechanics are to be found in the chapter
 =head2 General Settings
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal7.png"   alt=""  width="630" height="410">
 </p>
 
 The first tab contains settings, that shape the drawing in the most broad way.
 It is segmented into three parts that somewhat parallel the last three tabs.
 
 The topmost section sets the framework for rules by which the cell state
-changes - computation round by computation round.
+changes - computation round by computation round. B<Input Size> appoints
+the size of neighbourhood, the left side of an subrule. If you set it to
+an odd number like 5, then the cells current state plus its two neighbours
+on each side determine the next state of a cell. But if you set it to an
+even number like 2 then only one neighbour on each side has this power,
+but not the focal cell itself. You can recognize this by the struck through
+middle cell in each subrule in the "I<State Rules>" tab. B<Cell States>
+sets the number of different cell states / colors. The B<Select> option
+defines an subrule mapping - meaning: how many of the possible subrule
+results you can define manually? This aimes to solve the none trivial
+problem of combinatorial explosion. To guide you in that decision which
+mapping to choose - there are also two read only text fields in the second row,
+that display how many rules and subrules are possible during current settings.
+Let's clarify with an example: If you got 5 I<Cell State>s and an
+I<Input Size> of 3, each of these 3 neighbourhood cells can be in one of
+5 states. Since 5 to the power 3 is 125 , thats how many subrules get
+displayed in tab thee and four. For a lot of people this is no longer
+convenient. Other combinations like 8 ** 5 = 32768 would just overload
+the programm (caution when set these values!). But given the example of
+5 ** 3 = 125. 125 subrules can be managed. But since every subrule can
+have any state as result - there are 5 ** 125 = (way too many) subrule
+combinations = rules possible. The rule number display in tab 1 and 3
+stop working but the rest of app still churns on. To reduce the subrule
+count, you could set the subrule mapping from I<all> to I<symmetric>.
+Symmetric twins like the subrule input pattern 123 and 321 would have
+the then the same result. Only the pattern 123 (left neighbour has state 1,
+cell has 2 and right neighbour 3) will be displayed - 75 subrules in total.
+If that is still too much, select subrule mapping I<sorted>. Then also
+132, 213, 231 and 312 belong to the same group, because if sorted they
+all are equal to 123. Now we got only 35 subrules. The most compression
+you get with the mapping named I<summing>. Since 1+2+3 = 6, all input
+pattern that result in the same sum belong to the same group and there
+will be only 13 groups left. And furthermore 5**13 = 1_220_703_125 - all
+displays can work as intended. And you stil have 1_220_703_125 pattern to
+choose from. Please note if you select any mapping other than I<all> the
+picture becomes mirror-symmetric. The option B<Result> is normally set
+to I<insert>, meaning the new state defined by the matching subrule
+will be inserted = is the new cell state. But for sake of variation you
+could also add, subtract or multiply the new state with the previous
+state. The outcome of that operation modulo cell state count will become
+the new state. Two options contain the suffix _rot which means an
+additional one wil be added so you rotate through the states even if
+all subrules are not set and blank. Cells on the left and right edge
+normally have only a reduced amount of neighbours. During computation
+the virtual left neighbour of the left most cell has always the state zero.
+But if you activate the option B<Circular>, then the left neighbour of
+the leftmost cell is the rightmost cell and vice versa. This can fix
+certain types of irregularities in the drawing.
 
-B<Input Size>
-B<Cell States>
-B<Select>
-B<Result>
-B<Circular>
 
 The middle section sets the framework for the action rules, which change
-the activity value of a cell.
+the activity value of a cell. The activity value can never be below zero
+or above one. The B<Apply> option activates the aplication of action rules.
+And if action rules are in effect then the state of a cell can only change,
+if the activity value is equal or above the B<Threshold>. Action rules
+react to the same input pattern as state rules. However, the result of
+an action subrule is the increase of the activity value by an amount
+that is different for any subrule that can have its own result state.
+This amount of increase is usually but doesn't have to be positive.
+There is also another amount which is usually negative and which decreases
+the activity value of all cells each round. This decrease value is labeled
+here B<Change> and has to be negative in order to decrease all activity
+values. Then there is also a B<Spread> value, which is set to zero per
+default. If set to two, the a cell can influence the activity value of
+the neext two neigbours on the left and right. How much will also
+determined in the action rule tab. Since ever ection rule has also
+associated a second value. This second value defines how much a cell
+can influence its outer most neighbours (which value gets added to them).
+The neighbours in between the out most neighbour and the pivotal cell
+get influence by an amount that is linearly interpolated.
 
-B<Apply>
-B<Threshold>
-B<Spread>
-B<Change>
 
 The bottom section is about visual settings, which sometimes are not just
-cosmetic.
+cosmetic. The B<Direction> helps you to draw completely different pictures
+with way more symmetry. If set to I<top_down> (default) the picture gets
+painted as described in the L</Mechanics> paragraph (above). But if you
+set it to I<outside_in>, then you will see only a triangular slice of the
+previous pattern, painted four times. Every outer edge of the square shaped
+map will be the first row, displaying the same pattern and the computation
+will grow toward the center. The option I<inside_out> is a kinda opposite.
+Here it starts in the center of the grid growing outward in all four
+directions. If you deactivate B<Fill>, each tile is no longer filled by
+the state color. Instead only two small lines get drawn. B<Grid Style>
+offers three options: I<lines>, I<gaps> and I<no>. The first (default)
+option draws thin grey lines between the cells. These lines are white if
+I<gaps> is chosen. And there will be I<no> gaps between the tiles if
+that option is selected . And B<Cell Size> simply defines how many pixel
+a tile edge is long.
 
-B<Direction>
-B<Fill>
-B<Grid Style>
-B<>
-
-In upper left corder is the selector for the optical grid style. With or
-without grid lines (always sized one pixel) or just same sized gaps
-between the colored squares, which represent the cells. Right beside you
-set the size of the squares in pixel.
-
-In the row below are options how to draw the state matrix. Default
-is the already in the description mentioned top down drawing method,
-where the first row is the initial state of the cells as set in the next
-tab named I<start>. Each following state of a cell is in the square below,
-which makes Y so to speak the (vertical) time axis (top to down). To
-produce more decorative patterns there are two more frawing patters:
-I<inside out> and I<outside in>. Both are based on the idea of cutting
-the grid square into 4 triangles, by using the diagonals as dividing lines.
-With I<outside in> the upper triangle is filled as before and the content
-rotated 3 times around the center to fill the other triangles. With the
-option I<inside out> is almost everything the same except the upper triangle
-is filled from the center up so the central pixel of the square is the
-central pixel of the starting row, growing into all four directions.
-On the checkbox beside that you hab the option to make the leftmost and
-rightmost cells neighbours. It their not the program will calculate
-enough so no artefacts stemming from the corner cells will be visible.
-But making the cell row into a ring can produce a different kind of artefacts.
-
-
-The third row in this tab sets the meta properties of the rules: number
-of states and size of neighbourhood. If that is even, the cell in question
-is not part of its own neighbourhood.
 
 =head2 Starting Row
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart7.png"   alt=""  width="630" height="410">
 </p>
 
-B<Circular>
+This tab contains settings that define the start values - the states
+and activity values of all cell in the starting row. The upper part is
+about the cell states and the lower part about the activity values.
 
 The second tab contains settings for the starting values (states).
 By clicking on the squares you change (cycle) the state. Only the cells
@@ -220,6 +260,9 @@ are just increment or decrement the numeric value of the starting sequence.
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules.png"   alt=""  width="630" height="410">
 </p>
+
+
+B<Circular>
 
 On the third tab you can set the individual partial rules.
 Just click on the result square in the chosen subrule (after the =>).
@@ -255,7 +298,7 @@ The first buttom set the inverted distribution of action propagation.
 =head2 Colors
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolor.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolors.png"   alt=""  width="630" height="410">
 </p>
 
 This panel helps you to customize the automaton/cell state colors, with
@@ -271,18 +314,18 @@ see a preview of the selected set. It gets loaded by pushing C<Load>.
 Then you can see the colors in large boxes two sections below since there
 are the currently used colors. If you want to save the colors, which are
 displayed there into the currently selected set push C<Save>. Please
-keep in mind this will overwrite whatever was there before. To prefent
+keep in mind this will overwrite whatever was there before. To prevent
 this push C<New> to save the currently used colors into a new set.
-Its name will be asked for by a dialog. If you type in an already used
-name it will ask again, til the name is unique or you press C<Cancel>.
-C<Del> just deletes the currently selected color set.
+The name of the new set will be requested via dialog. If you type in an
+already used name it will ask again til the name is unique or you press
+C<Cancel>. C<Del> just deletes the currently selected color set.
 
 The second section from top contains three buttons that are just functions
 calculating new colors based up the colors in the section below. The result
 will be also inserted in the row below. The three values beside the buttons
 are just arguments to the functions. The gap in this row is by intention,
-since both buttons on the left part have this one value as argument and
-the third button on the right has the two arguments on the right.
+since both buttons on the left part have this one value on the left as
+argument and the third button on the right has the two arguments on the right.
 C<Gray> is the is the simplest function, since it produces just a gray
 gradient from white as (the leftmost) color 0 to black, stretching over
 all currently used states. The only argument (dynamics) has the default

@@ -13,7 +13,7 @@ sub new {
     my ( $class, $parent, $size ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$size, $size] );
     $self->{'img_size'} = $size;
-    $self->{'menu_size'} = 29;
+    $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $size;
     $self->{'size'}{'y'} = $size;
     $self->{'dc'} = Wx::MemoryDC->new( );

@@ -35,7 +35,7 @@ sub reset {
     my ($self, $full) = @_;
     $self->{'past'} = [];
     $self->{'future'} = [];
-    $self->{'present'} = undef if defined $full;
+    $self->{'present'} = undef if defined $full and $full;
 }
 
 sub add_value {
@@ -43,13 +43,12 @@ sub add_value {
     return unless defined $value;
     return if defined $self->{'present'} and $value eq $self->{'present'};
     return if $self->{'guard'} and not $self->{'guard'}->($value);
+    my $replace_present = 0;
     if ($self->{'merge'} and @data) {
-        my $replace_resent = $self->{'merge'}->( [@data], $self->{'last_merge_data'} );
+        $replace_present = $self->{'merge'}->( [@data], $self->{'last_merge_data'} );
         $self->{'last_merge_data'} = [@data];
-        if (not $replace_resent and defined $self->{'present'}) {
-            push @{$self->{'past'}}, $self->{'present'} ;
-        }
     }
+    push @{$self->{'past'}}, $self->{'present'} if not $replace_present and defined $self->{'present'};
     $self->{'future'} = [];
     $self->{'present'} = $value;
 }
