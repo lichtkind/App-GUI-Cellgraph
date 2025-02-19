@@ -36,18 +36,22 @@ sub new {
     $self->{'widget'}{'repeat_action'} = Wx::CheckBox->new( $self, -1, '  Repeat');
     $self->{'widget'}{'repeat_states'}->SetToolTip('repeat this pattern to fill first row');
     $self->{'widget'}{'repeat_action'}->SetToolTip('repeat this pattern to fill first row');
-    $self->{'widget'}{'button'}{'prev_start_state'}  = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'next_start_state'}  = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'init_start_state'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'rnd_start_state'}   = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'init_start_action'} = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'rnd_start_action'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
-    $self->{'widget'}{'button'}{'prev_start_state'}->SetToolTip('decrement number that summarizes all cell states of starting row');
-    $self->{'widget'}{'button'}{'next_start_state'}->SetToolTip('increment number that summarizes all cell states of starting row');
-    $self->{'widget'}{'button'}{'init_start_state'}->SetToolTip('reset cell states in starting row to initial values');
-    $self->{'widget'}{'button'}{'rnd_start_state'}->SetToolTip('generate random cell state values in starting row');
-    $self->{'widget'}{'button'}{'init_start_action'}->SetToolTip('reset cell activity values to initial values');
-    $self->{'widget'}{'button'}{'rnd_start_action'}->SetToolTip('generate random cell activity values in starting row');
+    $self->{'widget'}{'button'}{'prev_state'}  = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'next_state'}  = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'prev_action'} = Wx::Button->new( $self, -1, '<',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'next_action'} = Wx::Button->new( $self, -1, '>',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'init_state'}  = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'rnd_state'}   = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'init_action'} = Wx::Button->new( $self, -1, '1',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'rnd_action'}  = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] );
+    $self->{'widget'}{'button'}{'prev_state'}->SetToolTip('decrement number that summarizes all cell states of starting row');
+    $self->{'widget'}{'button'}{'next_state'}->SetToolTip('increment number that summarizes all cell states of starting row');
+    $self->{'widget'}{'button'}{'prev_action'}->SetToolTip('decrement number that summarizes the  activity values of all starting cells');
+    $self->{'widget'}{'button'}{'next_action'}->SetToolTip('increment number that summarizes all cell activity values');
+    $self->{'widget'}{'button'}{'init_state'}->SetToolTip('reset cell states in starting row to initial values');
+    $self->{'widget'}{'button'}{'rnd_state'}->SetToolTip('generate random cell state values in starting row');
+    $self->{'widget'}{'button'}{'init_action'}->SetToolTip('reset cell activity values to initial values');
+    $self->{'widget'}{'button'}{'rnd_action'}->SetToolTip('generate random cell activity values in starting row');
     $self->{'label'}{'state_rules'}    = Wx::StaticText->new( $self, -1, 'Cell States' );
     $self->{'label'}{'action_rules'}   = Wx::StaticText->new( $self, -1, 'Activity Values' );
     $self->{'label'}{'state_summary'}  = Wx::StaticText->new( $self, -1, 'Summary:' );
@@ -55,12 +59,14 @@ sub new {
     $self->{'label'}{'state_summary'}->SetToolTip('ID of current starting row configuration');
     $self->{'label'}{'action_summary'}->SetToolTip('ID of the configuration of activity values');
 
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'prev_start_state'}, sub { $self->prev_state;  $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'next_start_state'}, sub { $self->next_state;  $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'init_start_state'}, sub { $self->init_state;  $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'rnd_start_state'},  sub { $self->random_state;$self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'init_start_action'}, sub { $self->init_action;  $self->{'call_back'}->() });
-    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'rnd_start_action'},  sub { $self->random_action;$self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'prev_state'},  sub { $self->prev_state;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'next_state'},  sub { $self->next_state;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'init_state'},  sub { $self->init_state;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'rnd_state'},   sub { $self->random_state;$self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'prev_action'}, sub { $self->prev_action;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'next_action'}, sub { $self->next_action;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'init_action'}, sub { $self->init_action;  $self->{'call_back'}->() });
+    Wx::Event::EVT_BUTTON( $self, $self->{'widget'}{'button'}{'rnd_action'},  sub { $self->random_action;$self->{'call_back'}->() });
     Wx::Event::EVT_CHECKBOX($self,$self->{'widget'}{$_}, sub { $self->{'call_back'}->() }) for qw/repeat_states repeat_action/;
     $_->SetCallBack( sub { $self->set_state_list( $self->get_state_list ); $self->{'call_back'}->() }) for @{$self->{'state_switches'}};
     $_->SetCallBack( sub { $self->set_action_list( $self->get_action_list ); $self->{'call_back'}->() }) for @{$self->{'action_switches'}};
@@ -78,12 +84,12 @@ sub new {
     $state_summary_sizer->Add( $self->{'label'}{'state_summary'}, 0, $std_attr, 0 );
     $state_summary_sizer->Add( $self->{'widget'}{'state_summary'}, 0, $row_attr, 10 );
     $state_summary_sizer->AddSpacer( 15 );
-    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'prev_start_state'}, 0, $tb_attr, 5 );
-    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'next_start_state'}, 0, $tb_attr, 5 );
+    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'prev_state'}, 0, $tb_attr, 5 );
+    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'next_state'}, 0, $tb_attr, 5 );
     $state_summary_sizer->AddSpacer( 15 );
-    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'init_start_state'}, 0, $tb_attr, 5 );
+    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'init_state'}, 0, $tb_attr, 5 );
     $state_summary_sizer->AddSpacer( 10 );
-    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'rnd_start_state'},  0, $tb_attr, 5 );
+    $state_summary_sizer->Add( $self->{'widget'}{'button'}{'rnd_state'},  0, $tb_attr, 5 );
     $state_summary_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
@@ -99,11 +105,14 @@ sub new {
     my $action_summary_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $action_summary_sizer->AddSpacer( 10 );
     $action_summary_sizer->Add( $self->{'label'}{'action_summary'}, 0, &Wx::wxGROW | &Wx::wxALL, 10 );
-    $action_summary_sizer->Add( $self->{'widget'}{'action_summary'}, 0, $all_attr, 5 );
+    $action_summary_sizer->Add( $self->{'widget'}{'action_summary'}, 0, $row_attr, 5 );
     $action_summary_sizer->AddSpacer( 15 );
-    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'init_start_action'}, 0, $tb_attr, 5 );
+    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'prev_action'}, 0, $tb_attr, 5 );
+    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'next_action'}, 0, $tb_attr, 5 );
+    $action_summary_sizer->AddSpacer( 15 );
+    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'init_action'}, 0, $tb_attr, 5 );
     $action_summary_sizer->AddSpacer( 10 );
-    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'rnd_start_action'},  0, $tb_attr, 5 );
+    $action_summary_sizer->Add( $self->{'widget'}{'button'}{'rnd_action'},  0, $tb_attr, 5 );
     $action_summary_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $row_space = 15;
@@ -252,16 +261,6 @@ sub set_callback {
 }
 
 ########################################################################
-sub random_start { $_[0]->set_number( int rand $_[0]->{'max_value'} ) }
-sub next_start { $_[0]->set_number( $_[0]->{'widget'}{'state_int'}->GetValue + 1 ) }
-sub prev_start {
-    my ($self) = @_;
-    my $int = $self->{'widget'}{'state_int'}->GetValue;
-    $int-- if $int > 1;
-    $self->set_number( $int );
-}
-
-
 sub prev_state {
     my ($self) = @_;
     my @list = $self->get_state_list;
@@ -291,6 +290,38 @@ sub next_state {
     else {
         push @list, 1;
         $self->set_state_list(@list);
+    }
+}
+
+sub prev_action {
+    my ($self) = @_;
+    my @list = $self->get_action_list;
+    return $self->set_action_list( (5) x $self->{'cells_in_row'})
+        if @list == 1 and $list[0] == 1;
+    my $pos = 0;
+    while ($pos < @list){
+        $list[$pos]--;
+        return $self->set_action_list(@list) if $list[$pos] >= 0;
+        $list[$pos] = 5;
+        $pos++;
+    }
+    $self->set_action_list( (5) x $self->{'cells_in_row'} );
+}
+
+sub next_action {
+    my ($self) = @_;
+    my @list = $self->get_action_list;
+    my $pos = 0;
+    while ($pos < @list){
+        $list[$pos]++;
+        return $self->set_action_list(@list) unless $list[$pos] == 6;
+        $list[$pos] = 0;
+        $pos++;
+    }
+    if (@list == $self->{'cells_in_row'}) {$self->set_action_list(1) }
+    else {
+        push @list, 1;
+        $self->set_action_list(@list);
     }
 }
 

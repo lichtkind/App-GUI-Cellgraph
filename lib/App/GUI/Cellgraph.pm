@@ -243,17 +243,29 @@ a tile edge is long.
 </p>
 
 This tab contains settings that define the start values - the states
-and activity values of all cell in the starting row. The upper part is
+and activity values of all cells in the starting row. The upper part is
 about the cell states and the lower part about the activity values.
+Since both parts parallel each other, lets explain them in one go.
 
-The second tab contains settings for the starting values (states).
-By clicking on the squares you change (cycle) the state. Only the cells
-from the first to the last none zero (white) one will be recognised and
-placed into the center of the first grid row and the rest will be filled
-with zeros. If you choose I<Repeat>, the selected cell staes will repeated
-to take up the entire cell row. To get only one none zero cell, press the
-butoon C<1> and for a random starting sequence C<?>. The arrow buttons
-are just increment or decrement the numeric value of the starting sequence.
+
+Central in the upper and lower part are 20 cells that change their state
+by left or right clicking on them. You either cycle that way through the
+cell states or increase and decrease the activity value by steps of 0.2.
+
+Above the cell row you can read the summary of the selected values.
+Trailing zero's will get removed and to fit the value into the summary,
+each activity value will be multiplied by 5, so that 5 stands for an
+activity value of 1.0 (the maximum) of this cell and a 0 for 0 activity.
+The selected values will be placed into the center of the starting row
+in the drawing. Unless - you click on the B<Repeat> option. Then the
+chosen patter gets repeated until the first row is full. Right beside
+the summary display are a few buttons that trigger changes in the starting
+row values. The B<1> always (also in other panels) resets the default values.
+And B<?> always triggers a random value generator on all cells for happy
+accidents. In addition to that there are also the buttons with arrows on it.
+They just the summary value up or down, in order to give you the next or
+previous start configuration.
+
 
 =head2 State Rules
 

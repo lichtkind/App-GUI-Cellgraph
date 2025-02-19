@@ -18,7 +18,7 @@ sub set_guard_condition { # code ref that checks if data is well formed or passe
 }
 sub set_merge_condition { # code ref that checks if data just replaces present state
     my ($self, $condition) = @_;
-    return unless ref $condition eq 'CODE';# return 1 if data should replace
+    return unless ref $condition eq 'CODE'; # return 1 if data should replace presently held
     $self->{'merge'} = $condition;
 }
 
