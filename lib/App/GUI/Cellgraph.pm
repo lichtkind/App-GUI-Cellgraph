@@ -118,7 +118,7 @@ speak the time axis, with top being the beginning and bottom the end.
 
 During each round of computation every cell might change its state.
 It depends on which subrule matches. Each subrule is layed out as a
-row at the third tab ("I<State Rules>"). On a left side of the arrow (=>)
+row at the third tab ("I<State Rules>"). On a left side of the arrow (=&gt;)
 you see there a number of colored tiles. At the beginning there will be
 three tiles, representing our focal automaton and its left neighbour
 on its left flank and its right neighbour on the right. In case all three
@@ -273,22 +273,35 @@ previous start configuration.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules.png"   alt=""  width="630" height="410">
 </p>
 
+This tab contains settings that define the transfer function of cell states.
+The upper part is very similar to the previous tab containing a summary
+value and several buttons that trigger complex changes. Below that is a
+list of all distinct subrules (please check the second paragraph in chapter
+about the "general settings" tab). On the right side of each arrow is
+one cell. By clicking in with left or right you cycle through its states.
+This way you change the result of that subrule. If you see that subrules
+are missing, plese use the scrollwheel on you mouse or the scrollbar on
+the right margin of the window, to unveil the hidden subrules.
 
-B<Circular>
+The number in the text field is the number of the currently selected rule,
+as Steve Wolfram used them. Right beside the text field are two sets of
+arrows. The closer one count the rule number up and down, and changes the
+subrule result states accordingly. The next pair of buttons are undo and
+redo. They migh be disabled when undo or redo is not possible.
 
-On the third tab you can set the individual partial rules.
-Just click on the result square in the chosen subrule (after the =>).
-The state color will cycle through as in the previous tab.
-All rule results are combined in a rule number, which you can see on top.
-With the buttons left and right you can again count that number down and
-up or even shift the rule results left and right (<< and >>). The buttons
-in the second row you to reach related rules, like the inverted, symmetric
-or opposite. Inverted means every sub rule result will be inverted.
-(Inverted result state, C< = $state_count - $previous_state >)
-Symmetric means every subrule switches its result with its symmetric
-partner (neighbourhood pattern or sum reversed). Opposite rule means
-the pattern of result states will be reversed (mirrored).
-The button I<"?"> again selects a random rule.
+Below the first row is a second row of buttons. These bring forward a
+rule that has a relation to the current one. Only exception is the rightmost
+button with an B<?> that again triggers a random rule. The pair of buttons
+with arrows just do rotate the subrule results to the left (down) or right (up).
+The B<%> button flips the result list so the first subrule will get the
+result of the last and so forth. By pushing the next button - symmetric
+partner (like the input patterns '001' and '100') will exchange their results.
+This will only have an effect, when state rule selection (second row in the
+general settings) is set to "I<all>". And lastly the B<!> button inverts
+every subrule result. If a cell can have 5 states (0..4) and the current
+subrule result is 1, it will then switch to 3, since 4 - 1 = 3. 4 woud
+switch to zero and a state of 2 would not change because 4 - 2 = 2.
+
 
 =head2 Action Rules
 
@@ -296,16 +309,22 @@ The button I<"?"> again selects a random rule.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIaction.png"   alt=""  width="630" height="410">
 </p>
 
-Here are listed the same sub rule inputs as before (every possible
-neighbourhood configuration) on the left hand side of the =&gt;.
-The reults of these action rules control which cell are allowed to change
-during the next round (only neighbours marked with a circle).
-Behind the result of each subrule input is here a result for the action
-propagation. The circles show if the cell or its neighbours can do the
-transfer function next cycle. These settings are again combined in a
-singular action value (behind the label "Active:"). Here are also four
-buttons to select the init state, a grid patter or a random state.
-The first buttom set the inverted distribution of action propagation.
+This tab parallels the previous even more, by also listing all subrules.
+But here you can dial in the consequent activity value gain (right beside
+the =&gt; arrow) and activity value gain spread of each subrule (rightmost
+in each subrul row). The logic behind the activity values and their
+changes is explained in detail in the third paragraph in the chapter
+about the "I<General Settings>" tab.
+
+Since both type of values are different they have their own summary
+display and series of buttons. Again, 1 stands for the default values,
+? for random values and &lt;= and =&gt; for undo and redo. The B<=> button
+sets all values to the one present in the first subrule. B<+> and B<->
+lets you increase and decrease all values at once. B</> lets all
+values move toward zero and B<*> away from zero. B<%> increases the values
+in odd numbered subrules and decreases them in even numbered. And
+on the left of ? is the B<~> button that changes all values with a small,
+random amount.
 
 =head2 Colors
 
