@@ -10,8 +10,6 @@ use App::GUI::Cellgraph::Widget::RuleInput;
 use App::GUI::Cellgraph::Widget::SliderCombo;
 use Graphics::Toolkit::Color qw/color/;
 
-# undo redo
-
 sub new {
     my ( $class, $parent, $subrule_calculator ) = @_;
     my $self = $class->SUPER::new( $parent, -1);

@@ -43,6 +43,7 @@ sub new {
 
 sub draw {
     my( $self, $state ) = @_;
+    delete $self->{'flag'}; # ugly workaround
     return unless $self->set_state( $state );
     $self->{'flag'}{'draw'} = 1;
     $self->Refresh;
@@ -50,6 +51,7 @@ sub draw {
 
 sub sketch {
     my( $self, $state ) = @_;
+    delete $self->{'flag'}; # ugly workaround
     return unless $self->set_state( $state );
     $self->{'flag'}{'sketch'} = 5;
     $self->Refresh;

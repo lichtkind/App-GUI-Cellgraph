@@ -85,12 +85,10 @@ sub new {
     }
     $image_size_menu->Check( 12100 +($self->{'img_size'} / 100), 1);
 
-
     my $image_menu = Wx::Menu->new();
     $image_menu->Append( 12300, "&Draw\tCtrl+D", "complete a sketch drawing" );
     $image_menu->Append( 12100, "S&ize",  $image_size_menu,   "set image size" );
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
-
 
     my $help_menu = Wx::Menu->new();
     $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );
@@ -119,7 +117,6 @@ sub new {
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
 
     my $cmd_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $paint_lbl = Wx::StaticText->new( $self, -1, 'Grid Status:' );
@@ -196,14 +193,16 @@ sub set_settings_save {
 }
 
 sub spread_setting_changes {
-    my ($self) = @_;
-    my $global = $self->{'panel'}{'global'}->get_settings;
+    my ($self, $settings) = @_;
+    my $global = (ref $settings eq 'HASH') ? $settings->{'global'} : $self->{'panel'}{'global'}->get_settings;
     $self->{'panel'}{'color'}->set_state_count( $global->{'state_count'} );
+    $self->{'panel'}{'color'}->set_settings( $settings->{'color'} ) if ref $settings eq 'HASH';
+    $self->{'panel'}{'global'}->set_settings( $settings->{'global'} ) if ref $settings eq 'HASH';
     my @state_colors = $self->{'panel'}{'color'}->get_active_colors;
-    $self->{'progress'}->set_colors( @state_colors );
     $self->{'panel'}{'start'}->update_cell_colors( @state_colors );
     $self->{'panel'}{'rules'}->regenerate_rules( @state_colors );
     $self->{'panel'}{'action'}->regenerate_rules( @state_colors );
+    $self->{'progress'}->set_colors( @state_colors );
 }
 sub sketch {
     my ($self) = @_;
@@ -251,6 +250,7 @@ sub open_setting_file {
     my ($self, $file ) = @_;
     my $settings = App::GUI::Cellgraph::Settings::load( $file );
     if (ref $settings) {
+        $self->spread_setting_changes( $settings );
         $self->set_settings( $settings );
         $self->draw;
         $self->SetStatusText( "loaded settings from ".$file, 1) ;

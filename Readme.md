@@ -6,7 +6,7 @@
 
     0.7
 
-[Home on CPAN](https://metacpan.org/pod/App-GUI-Cellgraph)
+[Home on CPAN](https://metacpan.org/pod/App::GUI::Cellgraph)
 
     This is the landing page for the user documentation.
     There is also a download link on the left side under "Tools".

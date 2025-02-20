@@ -87,7 +87,7 @@ and a deeper B<understanding> about how cellular automatons work.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/sqrt.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/ukra.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/igt.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/blauberg.png"alt=""  width="300" height="300">
 </p>
 
