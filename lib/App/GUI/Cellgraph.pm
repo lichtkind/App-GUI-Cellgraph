@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.6_91';
+our $VERSION = '0.7';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -84,7 +84,7 @@ and a deeper B<understanding> about how cellular automatons work.
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/126.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/sqr_teppich.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/ukra.png"    alt=""  width="300" height="300">
@@ -139,7 +139,7 @@ More details about this mechanics are to be found in the chapter
 =head2 General Settings
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal7.png"   alt="" width="65%" height="65%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIglobal7.png"   alt="" width="75%" height="75%">
 </p>
 
 The first tab contains settings, that shape the drawing in the most broad way.
@@ -239,7 +239,7 @@ a tile edge is long.
 =head2 Starting Row
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart6.png" alt="" width="65%" height="65%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIstart6.png" alt="" width="75%" height="75%">
 </p>
 
 This tab contains settings that define the start values - the states
@@ -270,7 +270,7 @@ previous start configuration.
 =head2 State Rules
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules7.png" alt="" width="65%" height="65%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIrules7.png" alt="" width="75%" height="75%">
 </p>
 
 This tab contains settings that define the transfer function of cell states.
@@ -306,7 +306,7 @@ switch to zero and a state of 2 would not change because 4 - 2 = 2.
 =head2 Action Rules
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIaction7.png" alt="" width="65%" height="65%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIaction7.png" alt="" width="75%" height="75%">
 </p>
 
 This tab parallels the previous even more, by also listing all subrules.
@@ -329,7 +329,7 @@ random amount.
 =head2 Colors
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolors.png" alt="" width="65%" height="65%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolors.png" alt="" width="75%" height="75%">
 </p>
 
 This panel helps you to customize the automaton/cell state colors, with
