@@ -4,7 +4,7 @@
 
 ### VERSION
 
-    0.32
+    0.7
 
 [Home on CPAN](https://metacpan.org/pod/App-GUI-Cellgraph)
 
