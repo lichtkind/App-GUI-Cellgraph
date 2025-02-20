@@ -9,7 +9,6 @@
     * + making summing state rules mapping optional
     * + different types of subrule result application
     * + new faster drawing style option: not filled squares
-    * + buttons to randomize colors and activity values
     * / GUI overhaul
     * / subrules are numbered
     * / adjusted window size so draw board is fully seen
