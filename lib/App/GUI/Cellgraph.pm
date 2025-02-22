@@ -84,7 +84,7 @@ and a deeper B<understanding> about how cellular automatons work.
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/30.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/sqrt.png"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/cascadestar.png"    alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/7io.png"     alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/teppich2.png"alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/igt.png"    alt=""  width="300" height="300">
@@ -328,7 +328,7 @@ random amount.
 =head2 Colors
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolors.png" alt="" width="85%" height="85%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Cellgraph/main/example/POD/GUIcolor7.png" alt="" width="85%" height="85%">
 </p>
 
 This panel helps you to customize the automaton/cell state colors, with
