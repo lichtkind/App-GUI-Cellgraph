@@ -124,7 +124,7 @@ More details about this mechanics are to be found in the chapter
 "I<General Settings>" and "I<Action Rules>".
 
 
-=head2 GUI
+=head1 GUI
 
 The general layout is very simple: the picture gets drawn on the left
 window side. On the right side you change the settings from which the
