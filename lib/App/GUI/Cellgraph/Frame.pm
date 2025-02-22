@@ -31,6 +31,7 @@ sub new {
     my $sr_calc = App::GUI::Cellgraph::Compute::Subrule->new( 3, 2, 'all' );
     $self->{'img_size'} = 700;
     $self->{'img_format'} = 'png';
+    my $window_size = [1295, 890];
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
@@ -65,7 +66,6 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'}, sub { $self->draw });
 
     # GUI layout assembly
-
     my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
     $settings_menu->Append( 11100, "&Init\tCtrl+I", "put all settings to default" );
     $settings_menu->Append( 11200, "&Open\tCtrl+O", "load settings from an INI file" );
@@ -140,10 +140,9 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'tabs'}->SetFocus;
-    my $size = [1295, 890];
-    $self->SetSize($size);
-    $self->SetMinSize($size);
-    $self->SetMaxSize($size);
+    $self->SetSize( $window_size );
+    $self->SetMinSize( $window_size );
+    $self->SetMaxSize( $window_size );
 
     $self->update_recent_settings_menu();
     $self->sketch( );

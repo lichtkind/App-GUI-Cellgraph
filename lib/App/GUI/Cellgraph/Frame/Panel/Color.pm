@@ -63,8 +63,8 @@ sub new {
 
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
-    $self->{'state_marker'}[$_]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {

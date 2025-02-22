@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.7';
+our $VERSION = '0.71';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -92,18 +92,6 @@ and a deeper B<understanding> about how cellular automatons work.
 </p>
 
 
-=head1 GUI
-
-The general layout is very simple: the picture gets drawn on the left
-window side. On the right side you change the settings from which the
-picture is computed. Please note there the tabs, in the top row.
-They select which page of settings is visible.
-
-Please mind the tool tips - short help texts which appear if the mouse
-stands still over a button. Also helpful are messages in the status bar
-at the bottom that appear while browsing the menu of after a command given.
-
-
 =head1 Mechanics
 
 Every tile (square) in the picture represents one automaton (called B<cell>).
@@ -135,6 +123,17 @@ activity value reaches a threshold, the cell can change its state.
 More details about this mechanics are to be found in the chapter
 "I<General Settings>" and "I<Action Rules>".
 
+
+=head2 GUI
+
+The general layout is very simple: the picture gets drawn on the left
+window side. On the right side you change the settings from which the
+picture is computed. Please note there the tabs, in the top row.
+They select which page of settings is visible.
+
+Please mind the tool tips - short help texts which appear if the mouse
+stands still over a button. Also helpful are messages in the status bar
+at the bottom that appear while browsing the menu of after a command given.
 
 =head2 General Settings
 
