@@ -1,8 +1,10 @@
 
-0.72 2025-02-22  lichtkind
+0.72 2025-02-23  lichtkind
 -------
-    * = cleanup fix release
+    * = fix release
     * / making main window smaller
+    * ? small POD fixes
+    * ! fix tests
 
 0.71 2025-02-22  lichtkind
 -------

@@ -1,5 +1,5 @@
 
-# main window, functions and logic
+# main window, menu, functions
 
 use v5.12;
 use warnings;
@@ -9,7 +9,7 @@ use Wx::AUI;
 package App::GUI::Cellgraph::Frame;
 use base qw/Wx::Frame/;
 use App::GUI::Cellgraph::Widget::ProgressBar;
-use App::GUI::Cellgraph::Frame::Panel::Global;
+use App::GUI::Cellgraph::Frame::Panel::General;
 use App::GUI::Cellgraph::Frame::Panel::Start;
 use App::GUI::Cellgraph::Frame::Panel::Rules;
 use App::GUI::Cellgraph::Frame::Panel::Action;
@@ -35,7 +35,7 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new( $self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::Global->new( $self->{'tabs'}, $sr_calc );
+    $self->{'panel'}{'global'} = App::GUI::Cellgraph::Frame::Panel::General->new( $self->{'tabs'}, $sr_calc );
     $self->{'panel'}{'start'}  = App::GUI::Cellgraph::Frame::Panel::Start->new(  $self->{'tabs'} );
     $self->{'panel'}{'rules'}  = App::GUI::Cellgraph::Frame::Panel::Rules->new(  $self->{'tabs'}, $sr_calc );
     $self->{'panel'}{'action'} = App::GUI::Cellgraph::Frame::Panel::Action->new( $self->{'tabs'}, $sr_calc );
