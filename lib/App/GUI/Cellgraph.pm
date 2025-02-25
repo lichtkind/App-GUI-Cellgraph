@@ -75,7 +75,7 @@ You may change it manually or deleted it to reset it to default.
 
 This graphical application uses cellular automata logic, as described in
 I<Steve Wolfram>s book  I<"A new kind of science">, to paint tiled pictures.
-Although - the original concept got expanded by many additional options
+Although, the original concept got expanded by many additional options
 and functionalities.
 
 It is meant for B<fun>, leasure, B<beautiful>, personalized images
@@ -106,14 +106,14 @@ speak the time axis, with top being the beginning and bottom the end.
 
 During each round of computation every cell might change its state.
 It depends on which subrule matches. Each subrule is layed out as a
-row at the third tab ("I<State Rules>"). On a left side of the arrow (=&gt;)
-you see there a number of colored tiles. At the beginning there will be
-three tiles, representing our focal automaton and its left neighbour
+row at the third tab ("I<State Rules>"). On a left side of the arrow (=>)
+you see there a number of colored tiles. At the beginning its three tiles,
+representing our focal automaton in the middle and its left neighbour
 on its left flank and its right neighbour on the right. In case all three
-colors are the same as displayed, the new state of the focal automaton
-can be read on the right side of the arrow (result of this subrule).
-Of course this was simplified, since many options might complicate that
-picture. They are described in the paragraphs below.
+colors around our example cell are as displayed, then the new state of
+this cell can be read on the right side of the arrow. Its also called
+the result of this sub-rule. Of course this was simplified, since many
+options might complicate that picture, as decribed in next paragraphs.
 
 One big addition are B<action rules>. Parallel to its state, every cell has
 also an activity value. It starts with a value also set in the
