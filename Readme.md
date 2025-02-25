@@ -8,7 +8,7 @@
 
 [Home on CPAN](https://metacpan.org/pod/App::GUI::Cellgraph)
 
-    This is the landing page for the user documentation.
+    This is the landing page for the user documentation on github.
     There is also a download link on the left side under "Tools".
 
 
