@@ -310,14 +310,14 @@ switch to zero and a state of 2 would not change because 4 - 2 = 2.
 
 This tab parallels the previous even more, by also listing all subrules.
 But here you can dial in the consequent activity value gain (right beside
-the =&gt; arrow) and activity value gain spread of each subrule (rightmost
+the => arrow) and activity value gain spread of each subrule (rightmost
 in each subrul row). The logic behind the activity values and their
 changes is explained in detail in the third paragraph in the chapter
 about the "I<General Settings>" tab.
 
 Since both type of values are different they have their own summary
 display and series of buttons. Again, 1 stands for the default values,
-? for random values and &lt;= and =&gt; for undo and redo. The B<=> button
+? for random values and <= and => for undo and redo. The B<=> button
 sets all values to the one present in the first subrule. B<+> and B<->
 lets you increase and decrease all values at once. B</> lets all
 values move toward zero and B<*> away from zero. B<%> increases the values
