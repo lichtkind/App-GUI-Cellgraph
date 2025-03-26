@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.73';
+our $VERSION = '0.74';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
