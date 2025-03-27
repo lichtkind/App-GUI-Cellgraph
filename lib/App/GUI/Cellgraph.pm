@@ -44,7 +44,7 @@ read this POD
 
 =item 2.
 
-start the program (cellgraph)
+start the program: >C<cellgraph>
 
 =item 3.
 
@@ -57,12 +57,12 @@ push button I<Draw> in right bottom corner (or C<Ctrl+D>) to get a full picture
 =item 5.
 
 choose I<"Save"> in Image menu (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file
-(choose image size in menu beforehand)
+(choose image size beforehand in menu "Image" > "Size" > ...)
 
 =item 6.
 
-choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
-INI file for loading it and tweaking the parameters later
+choose I<"Write"> in I<"Settings"> menu (C<Ctrl+W>) to save current
+settings into an INI file for loading it and tweaking the parameters later
 
 After first use of the program, a config file will be created under
 I<~/.config/cellgraph> in your home directory. It contains mainly
