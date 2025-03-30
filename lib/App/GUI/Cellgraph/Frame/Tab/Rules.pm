@@ -1,7 +1,7 @@
 
 # panel to input subrule results
 
-package App::GUI::Cellgraph::Frame::Panel::Rules;
+package App::GUI::Cellgraph::Frame::Tab::Rules;
 use v5.12;
 use warnings;
 use Wx;

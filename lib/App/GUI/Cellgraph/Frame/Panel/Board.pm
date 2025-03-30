@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::Frame::Part::Board;
+package App::GUI::Cellgraph::Frame::Panel::Board;
 use base qw/Wx::Panel/;
 use Benchmark;
 

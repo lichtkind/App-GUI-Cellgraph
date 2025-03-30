@@ -1,7 +1,7 @@
 
 # panel to change the values that control cell activity dependent on current subrule
 
-package App::GUI::Cellgraph::Frame::Panel::Action;
+package App::GUI::Cellgraph::Frame::Tab::Action;
 use v5.12;
 use warnings;
 use Wx;

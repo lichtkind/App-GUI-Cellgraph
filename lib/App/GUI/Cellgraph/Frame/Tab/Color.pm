@@ -5,17 +5,17 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Cellgraph::Frame::Panel::Color;
+package App::GUI::Cellgraph::Frame::Tab::Color;
 use base qw/Wx::Panel/;
 
-use App::GUI::Cellgraph::Frame::Part::ColorBrowser;
-use App::GUI::Cellgraph::Frame::Part::ColorPicker;
-use App::GUI::Cellgraph::Frame::Part::ColorSetPicker;
+use App::GUI::Cellgraph::Frame::Panel::ColorBrowser;
+use App::GUI::Cellgraph::Frame::Panel::ColorPicker;
+use App::GUI::Cellgraph::Frame::Panel::ColorSetPicker;
 use App::GUI::Cellgraph::Widget::ColorDisplay;
 use App::GUI::Cellgraph::Widget::PositionMarker;
 use Graphics::Toolkit::Color qw/color/;
 
-our $default_color_def = $App::GUI::Cellgraph::Frame::Part::ColorSetPicker::default_color;
+our $default_color_def = $App::GUI::Cellgraph::Frame::Panel::ColorSetPicker::default_color;
 
 sub new {
     my ( $class, $parent, $config ) = @_;
@@ -32,8 +32,11 @@ sub new {
     $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
     $self->{'state_marker'}       = [ map { App::GUI::Cellgraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 ..$self->{'last_state'} ];
     $self->{'state_pic'}[$_]      = App::GUI::Cellgraph::Widget::ColorDisplay->new
-        ($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}-5,
-         $_, $self->{'state_colors'}[$_]->values(as => 'hash')          ) for 0 .. $self->{'last_state'};
+                                    ($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}-5,
+                                     $_, $self->{'state_colors'}[$_]->values(as => 'hash')  ) for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    $self->{'state_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+
     $self->{'color_set_store_lbl'}= Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'color_set_f_lbl'}    = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'state_color_lbl'}    = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
@@ -54,17 +57,14 @@ sub new {
     $self->{'widget'}{'delta_S'}->SetToolTip("max. satuaration deviation when computing complement colors ( -100 .. 100)");
     $self->{'widget'}{'delta_L'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
 
+    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Panel::ColorPicker->new( $self, $config->get_value('color') );
+    $self->{'setpicker'}  = App::GUI::Cellgraph::Frame::Panel::ColorSetPicker->new( $self, $config->get_value('color_set'));
 
-    $self->{'picker'}  = App::GUI::Cellgraph::Frame::Part::ColorPicker->new( $self, $config->get_value('color') );
-    $self->{'setpicker'}  = App::GUI::Cellgraph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
-
-    $self->{'browser'}  = App::GUI::Cellgraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
+    $self->{'browser'}  = App::GUI::Cellgraph::Frame::Panel::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
     Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
-    $self->{'state_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {

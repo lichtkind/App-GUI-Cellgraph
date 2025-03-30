@@ -1,7 +1,7 @@
 
 #  panel for general settings of image
 
-package App::GUI::Cellgraph::Frame::Panel::General;
+package App::GUI::Cellgraph::Frame::Tab::General;
 use v5.12;
 use warnings;
 use Wx;

@@ -1,7 +1,7 @@
 
 # tab to input states and action values of firs row of automata
 
-package App::GUI::Cellgraph::Frame::Panel::Start;
+package App::GUI::Cellgraph::Frame::Tab::Start;
 use v5.12;
 use warnings;
 use Wx;
