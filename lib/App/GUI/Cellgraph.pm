@@ -40,11 +40,11 @@ App::GUI::Cellgraph - draw pattern by cellular automata
 
 =item 1.
 
-read this POD
+read this POD page
 
 =item 2.
 
-start the program: >C<cellgraph>
+start the program in shell: >C<cellgraph>
 
 =item 3.
 
