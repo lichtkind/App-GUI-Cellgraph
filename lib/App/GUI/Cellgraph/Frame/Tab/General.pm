@@ -33,12 +33,11 @@ sub new {
     $self->create_label( 'cell_size',   'Cell Size :',  'Visual size of the cells in pixel.' );
     $self->create_label( 'direction',   'Direction :',  'painting direction and pattern mirroring style' );
 
-    $self->{'widget'}{'grid_circular'}    = Wx::CheckBox->new( $self, -1, '  Circular');
-    $self->{'widget'}{'action_rules_apply'} = Wx::CheckBox->new( $self, -1, '  Apply');
-    $self->{'widget'}{'fill_cells'}       = Wx::CheckBox->new( $self, -1, '  Fill');
+    $self->{'widget'}{'grid_circular'}     = Wx::CheckBox->new( $self, -1, '  Circular');
+    $self->{'widget'}{'action_rules_apply'}= Wx::CheckBox->new( $self, -1, '  Apply');
+    $self->{'widget'}{'fill_cells'}        = Wx::CheckBox->new( $self, -1, '  Fill');
 
-    $self->{'widget'}{'subrule_count'}    = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 45, -1], &Wx::wxTE_READONLY );
-    $self->{'widget'}{'rule_count'}       = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 125, -1], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'subrule_count'}     = Wx::TextCtrl->new( $self, -1, 8, [-1,-1], [ 55, -1], &Wx::wxTE_READONLY );
 
     $self->{'widget'}{'input_size'}        = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'state_count'}       = Wx::ComboBox->new( $self, -1, '2', [-1,-1],[65, -1], [qw/2 3 4 5 6 7 8 9/], &Wx::wxTE_READONLY);
@@ -51,11 +50,8 @@ sub new {
     $self->{'widget'}{'cell_size'}         = Wx::ComboBox->new( $self, -1, '3', [-1,-1],[75, -1], [qw/1 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30/], &Wx::wxTE_READONLY);
     $self->{'widget'}{'paint_direction'}   = Wx::ComboBox->new( $self, -1, 'top_down', [-1,-1],[120, -1], [qw/top_down outside_in inside_out/], &Wx::wxTE_READONLY);
 
-    $self->{'widget'}{'rule_count'}->SetToolTip('Count of subrules that a rule sonsists of with current settings?');
-    $self->{'widget'}{'subrule_count'}->SetToolTip('Count of possible rules with current amount of subrules?');
     $self->{'widget'}{'input_size'}->SetToolTip('Size of neighbourhood (how many cells) to compute new cell state from ?');
     $self->{'widget'}{'state_count'}->SetToolTip('How many states a cell can have?');
-    $self->{'widget'}{'rule_count'}->SetToolTip('Count of Rules resulting from current settings');
     $self->{'widget'}{'subrule_count'}->SetToolTip('Count of Subrules resulting from current settings');
     $self->{'widget'}{'subrule_selection'}->SetToolTip("symmetric = an asymetric rule and its mirror have same result\nsumming = all rules with same sum of input states have same result");
     $self->{'widget'}{'result_application'}->SetToolTip("Result of a subrule should replace previous value (insert) or be added to it ?");
@@ -97,12 +93,10 @@ sub new {
     $rule2_sizer->Add( $self->{'label'}{'subrule_selection'}, 0, $std_attr, 0);
     $rule2_sizer->AddSpacer( 10 );
     $rule2_sizer->Add( $self->{'widget'}{'subrule_selection'}, 0, $std_attr, 0);
-    $rule2_sizer->AddSpacer( 15 );
+    $rule2_sizer->AddSpacer( 20 );
     $rule2_sizer->Add( $self->{'label'}{'rule_count'}, 0,   $std_attr, 0);
     $rule2_sizer->AddSpacer( 10 );
     $rule2_sizer->Add( $self->{'widget'}{'subrule_count'}, 0, $std_attr, 0);
-    $rule2_sizer->AddSpacer( 5 );
-    $rule2_sizer->Add( $self->{'widget'}{'rule_count'}, 0,  $std_attr, 0);
     $rule2_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $rule3_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
@@ -195,7 +189,7 @@ sub set_callback {
 
 my $default_settings = {
     input_size => 3, state_count => 2, grid_circular => 1,
-    subrule_selection => 'all', subrule_count => 8, rule_count => 256,
+    subrule_selection => 'all', subrule_count => 8,
     result_application => 'insert',
     action_rules_apply => 0, action_spread => 0,
     action_change => -0.6, action_threshold => 0.7,
@@ -230,7 +224,6 @@ sub compute_subrule_count {
         $self->{'widget'}{'subrule_selection'}->GetValue
     );
     $self->{'widget'}{'subrule_count'}->SetValue( $self->{'subrules'}->independent_count );
-    $self->{'widget'}{'rule_count'}->SetValue( $self->{'subrules'}->state_count ** $self->{'subrules'}->independent_count );
 }
 
 sub create_label {

@@ -23,6 +23,7 @@ sub new {
     $self->{'rule_mode'} = '';
     $self->{'state_colors'} = [];
     $self->{'call_back'}  = sub {};
+    App::GUI::Cellgraph::Compute::Grid::set_rules_tab( $self );
 
     $self->{'rule_nr'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [ 115, -1], &Wx::wxTE_PROCESS_ENTER );
     $self->{'rule_nr'}->SetToolTip('number of currently displayed rule, works only on small subrule counts');
@@ -148,6 +149,7 @@ sub regenerate_rules {
             $self->{'rule_input'} = [];
             $self->{'arrow'} = [];
             $self->{'rule_result'} = [];
+            $self->{'rule_occur'} = [];
             map { $_->Destroy} @{$self->{'rule_input'}}, @{$self->{'rule_result'}}, @{$self->{'arrow'}};
             $refresh = 1;
         } else {
@@ -156,7 +158,10 @@ sub regenerate_rules {
         }
 
         my @sub_rule_pattern = $self->{'subrules'}->independent_input_patterns;
-        my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_HORIZONTAL;
+        my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW | &Wx::wxALIGN_CENTER_VERTICAL;
+        my $item = $std_attr | &Wx::wxLEFT;
+        my $row = $std_attr | &Wx::wxTOP;
+        my $box = $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             $self->{'rule_input'}[$rule_index]
                 = App::GUI::Cellgraph::Widget::RuleInput->new ( $self->{'rule_plate'}, $self->{'rule_square_size'},
@@ -170,18 +175,21 @@ sub regenerate_rules {
             $self->{'rule_result'}[$rule_index]->SetValue( $self->{'rules'}->get_subrule_result($rule_index) );
             $self->{'rule_result'}[$rule_index]->SetCallBack( sub { $self->update_subrule_result( $rule_index, $_[0]); $self->{'call_back'}->(); });
             $self->{'rule_result'}[$rule_index]->SetToolTip('result of partial rule '.($rule_index+1).'left or right click to change it (rotate states)');
+            $self->{'rule_occur'} [$rule_index] = Wx::TextCtrl->new( $self->{'rule_plate'}, -1, 0, [-1,-1], [ 60, -1], &Wx::wxTE_READONLY | &Wx::wxTE_RIGHT );
+            $self->{'rule_occur'} [$rule_index]->SetToolTip('how many times this sub rul was applied ?');
         }
         my $label_length = length $self->{'subrules'}->independent_count;
         for my $rule_index ($self->{'subrules'}->index_iterator){
             my $row_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+            my $label = Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' );
             $row_sizer->AddSpacer(20);
-            $row_sizer->Add( Wx::StaticText->new( $self->{'rule_plate'}, -1, sprintf('%0'.$label_length.'u',$rule_index+1).' :  ' ), 0, &Wx::wxGROW);
-            $row_sizer->Add( $self->{'rule_input'}[$rule_index], 0, &Wx::wxGROW);
-            $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'arrow'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            $row_sizer->AddSpacer(15);
-            $row_sizer->Add( $self->{'rule_result'}[$rule_index], 0, &Wx::wxGROW | &Wx::wxLEFT );
-            $row_sizer->AddSpacer(40);
+            $row_sizer->Add( $label,                              0, $row,   6);
+            $row_sizer->Add( $self->{'rule_input'}[$rule_index],  0, $box,   3);
+            $row_sizer->AddSpacer(13);
+            $row_sizer->Add( $self->{'arrow'}[$rule_index],       0, $row,   6 );
+            $row_sizer->AddSpacer(10);
+            $row_sizer->Add( $self->{'rule_result'}[$rule_index], 0, $box,   3 );
+            $row_sizer->Add( $self->{'rule_occur'}[$rule_index],  0, $item, 60 );
             $row_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
             $self->{'plate_sizer'}->AddSpacer(15);
             $self->{'plate_sizer'}->Add( $row_sizer, 0, $std_attr, 10);
@@ -228,6 +236,13 @@ sub update_subrule_result {
     my ($self, $index, $result) = @_;
     my $summary = $self->{'rules'}->set_subrule_result( $index, $result );
     $self->update_widgets;
+}
+
+sub update_subrule_occurance {
+    my ($self, @occurance) = @_;
+    for my $rule_index ($self->{'subrules'}->index_iterator){
+        $self->{'rule_occur'}[$rule_index]->SetValue( $occurance[$rule_index] );
+    }
 }
 sub update_widgets {
     my ($self) = shift;

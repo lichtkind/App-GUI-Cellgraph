@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.74';
+our $VERSION = '0.8';
 
 use base qw/Wx::App/;
 use App::GUI::Cellgraph::Frame;
@@ -279,8 +279,15 @@ list of all distinct subrules (please check the second paragraph in chapter
 about the "general settings" tab). On the right side of each arrow is
 one cell. By clicking in with left or right you cycle through its states.
 This way you change the result of that subrule. If you see that subrules
-are missing, plese use the scrollwheel on you mouse or the scrollbar on
-the right margin of the window, to unveil the hidden subrules.
+are missing, please use the scrollwheel on you mouse or the scrollbar on
+the right margin of the window, to unveil the hidden subrules. Right
+beside each subrule result is also a text field with a number. It shows
+how many times this subrule was applied in the picture. This might give
+you hints about the structure of the composition but also where the bottle
+necks are and what to change to get a more interesting drawing. For instance:
+if behind a subrule is a count of zero - this sub rule was never applied
+and changing it will to change the outcome. But changing the result with
+a high count might change the picture drastically.
 
 The number in the text field is the number of the currently selected rule,
 as Steve Wolfram used them. Right beside the text field are two sets of
@@ -414,10 +421,9 @@ L<App::GUI::Harmonograph>
 
 L<App::GUI::Juliagraph>
 
-L<App::GUI::Spirograph>
-
 L<App::GUI::Sierpingraph>
 
+L<App::GUI::Spirograph>
 
 =head1 AUTHOR
 
@@ -425,7 +431,7 @@ Herbert Breunung (lichtkind@cpan.org)
 
 =head1 COPYRIGHT
 
-Copyright(c) 2022-23 by Herbert Breunung
+Copyright(c) 2022-25 by Herbert Breunung
 
 All rights reserved.
 This program is free software and can be used and distributed

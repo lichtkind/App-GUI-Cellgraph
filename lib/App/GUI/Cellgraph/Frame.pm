@@ -48,7 +48,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'action'}, 'Action Rules');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},  'Colors');
     $self->{'tabs'}{'selected'} = 0;
-    $self->{'progress'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 320, 10, $self->{'tab'}{'color'}->get_active_colors);
+    $self->{'progress_bar'} = App::GUI::Cellgraph::Widget::ProgressBar->new( $self, 320, 10, $self->{'tab'}{'color'}->get_active_colors);
 
     $self->{'board'}               = App::GUI::Cellgraph::Frame::Panel::Board->new( $self, 700 );
     $self->{'dialog'}{'about'}     = App::GUI::Cellgraph::Dialog::About->new();
@@ -121,7 +121,7 @@ sub new {
     my $paint_lbl = Wx::StaticText->new( $self, -1, 'Grid Status:' );
     my $draw_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $draw_sizer->Add( $paint_lbl,                  0, $all_attr, 15 );
-    $draw_sizer->Add( $self->{'progress'},         0, &Wx::wxALIGN_CENTER_VERTICAL, 10 );
+    $draw_sizer->Add( $self->{'progress_bar'},         0, &Wx::wxALIGN_CENTER_VERTICAL, 10 );
     $draw_sizer->AddSpacer(5);
     $draw_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
     $draw_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -200,20 +200,20 @@ sub spread_setting_changes {
     $self->{'tab'}{'start'}->update_cell_colors( @state_colors );
     $self->{'tab'}{'rules'}->regenerate_rules( @state_colors );
     $self->{'tab'}{'action'}->regenerate_rules( @state_colors );
-    $self->{'progress'}->set_colors( @state_colors );
+    $self->{'progress_bar'}->set_colors( @state_colors );
 }
 sub sketch {
     my ($self) = @_;
     $self->spread_setting_changes();
     $self->{'board'}->sketch( $self->get_state );
-    $self->{'progress'}->reset;
+    $self->{'progress_bar'}->reset;
     $self->set_settings_save( 0 );
 }
 sub draw {
     my ($self) = @_;
     $self->spread_setting_changes();
     $self->{'board'}->draw( $self->get_state );
-    $self->{'progress'}->full;
+    $self->{'progress_bar'}->full;
 }
 
 sub open_settings_dialog {

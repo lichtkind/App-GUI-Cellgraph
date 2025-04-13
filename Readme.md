@@ -1,10 +1,10 @@
 ### NAME
 
-    App-GUI-Cellgraph - draw pattern by cellular automaton
+    App-GUI-Cellgraph - draw pattern by cellular automata
 
 ### VERSION
 
-    0.73
+    0.74
 
 [Home on CPAN](https://metacpan.org/pod/App::GUI::Cellgraph)
 
