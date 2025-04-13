@@ -1,5 +1,9 @@
 
-0.8 2025-04-14  lichtkind
+0.81 2025-04-14  lichtkind
+-------
+    * = major fix release
+
+0.8  2025-04-14  lichtkind
 -------
     * = major fix release
     * + display subrule occurance count in rules tab
