@@ -1,5 +1,9 @@
 
-0.81 2025-04-14  lichtkind
+0.82 2025-04-16  lichtkind
+-------
+    * = minor fix release
+
+0.81 2025-04-15  lichtkind
 -------
     * = minor fix release
     * ! fix tests
